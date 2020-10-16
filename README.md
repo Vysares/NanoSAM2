@@ -1,4 +1,2 @@
 # NanoSAM2
-This is the repository for all NanoSAM software, including:
-1. Teensy software
-2. Ground interface software
+This is the repository for all NanoSAM software, including teensy software, ground interface software, and EDAC testing software
