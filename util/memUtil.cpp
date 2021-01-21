@@ -14,11 +14,11 @@
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
-#include "headers/memUtil.hpp"
 
 // Other libraries
 
 // NS2 headers
+#include "../headers/memUtil.hpp"
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
