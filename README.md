@@ -1,6 +1,11 @@
 # NanoSAM2
 This is the repository for all NanoSAM software, including teensy software, ground interface software, and EDAC testing software
 
+### Directories ###
+FSW - Development for flight software in C++
+GSW - Development for ground software in C++ and/or Python
+Arduino - FSW build configured to compile in the Arduino IDE
+
 ### Compilation ###
 To compile and run main.cpp run the following command:
 g++ main.cpp util/memUtil.cpp -o NS2_main && ./NS2_main
