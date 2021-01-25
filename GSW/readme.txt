@@ -1,0 +1,1 @@
+This directory is for ground software written in C++ and/or Python
