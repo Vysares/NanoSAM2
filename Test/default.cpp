@@ -10,19 +10,6 @@
 // Other libraries
 
 // NS2 headers
-
-/* - - - - - - Functions - - - - - - */
-
-/* - - - - - - main - - - - - - *
- * Usage:
- *  Main function entered on runtime
- * 
- * Inputs:
- *  none
- *  
- * Outputs:
- *  None
- */
  
  // I think I'm writing this as Arduino code not c++? 
 int aRegCurr = 17;

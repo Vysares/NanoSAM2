@@ -1,6 +1,7 @@
-/* default.cpp verifies the Teensy is connected for NanoSAM II tests. 
+/* watchdog.cpp sends a signal to trigger the watchdog
  * Usage:
- *  run this script through Teensyduino to power the NS2 payload
+ *  run this script in sequence with "Electronics System Test" document
+ *  in order to validate the watchdog works
  *
  */
 
@@ -11,55 +12,19 @@
 
 // NS2 headers
 
-/* - - - - - - Functions - - - - - - */
-
-/* - - - - - - main - - - - - - *
- * Usage:
- *  Main function entered on runtime
- * 
- * Inputs:
- *  none
- *  
- * Outputs:
- *  None
- */
- 
- // I think I'm writing this as Arduino code not c++? 
-int aRegCurr = 17;
-int dRegCurr = 18;
-int dRegPG = 20; 
+int dogPin = 2; 
 
 void loop()
 {
     while(true) // run main loop forever
     {
-		// Check voltage regulator currents
-        aCurr = analogRead(aRegCurr);
-		dCurr = analogRead(dRegCurr);
-		dPG = analogRead(dRegPG);
+		// Send a 3.3V, 50ns width square wave to trigger dog
+		squareWave = 0; // TOOD: Construct square wave
+		digitalWrite(dogPin, squareWave);
 		
-		
-		// Print statements for confirmation
-		// TODO: Gotta be a better way to format these statements?
-		Serial.print('Analog Current Value [A]: ');
-		Serial.print(aCurr);
-		Serial.print('\n');
-		
-		Serial.print('Digital Current Value [A]: ');
-		Serial.print(dCurr);
-		Serial.print('\n');
-		
-		Serial.print('Digital Power Good [V]: ');
-		Serial.print(dPG);
-		Serial.print('\n');
-		
-		// if the power good signal returns around 3.3V, power is good
-		// TODO: I have no clue how to write an if statement in arduino
-		if (dPG > 3.25) && (dPG < 3.35)
-			Serial.print('Good to go')
-		end
-		
-        break;
+		// After signal, the Teensy should have shut off
+		// TODO: Some sort of reset function? Not sure how this works...
+		shutDownHandling()
     }
 
     return 0;
