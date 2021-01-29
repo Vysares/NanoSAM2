@@ -91,7 +91,7 @@ void scienceMemoryHandling()
         Serial.print(currentPhotodiodeVoltage);
         Serial.print("\n");
 
-        updateBuffer(dataBuffer[], currentPhotodiodeVoltage, bufIdx)
+        updateBuffer(currentPhotodiodeVoltage, bufIdx);
     }   
 
 }
@@ -113,7 +113,7 @@ void scienceMemoryHandling()
  * Outputs:
  *  none
  */
-void updateBuffer(float dataBuffer[], float sample, int &index){
+void updateBuffer(float sample, int &index){
     
     // check that index is valid
     if (0 <= index && index < BUFFERSIZE){
@@ -145,7 +145,7 @@ void updateBuffer(float dataBuffer[], float sample, int &index){
  * Outputs:
  *  file creation status
  */
-bool saveBuffer(float dataBuffer[], int &index){
+bool saveBuffer(int &index){
     
     // create array to hold data in time ascending order
     float timeSortArray[BUFFERSIZE];

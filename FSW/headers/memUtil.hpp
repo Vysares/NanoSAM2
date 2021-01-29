@@ -6,17 +6,17 @@
 #include <string>
 
 // Other libraries
-#include <SerialFlash.h> // for file I/O to flash modules
+//#include <SerialFlash.h> // for file I/O to flash modules
 //#include <SPI.h> // will probably use this shortly, but it is not in use yet
 
 // NS2 headers
 
 
 /* - - - - - - Declarations - - - - - - */
-void dataProcessing();
+float dataProcessing();
 void scienceMemoryHandling();
-void updateBuffer(float dataBuffer[], float sample, int &index);
-bool saveBuffer(float dataBuffer[], int &index);
+void updateBuffer(float sample, int &index);
+bool saveBuffer(int &index);
 void fullErase(); // in case we need to manually erase all of the flash
 
 
