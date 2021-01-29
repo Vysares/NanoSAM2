@@ -19,6 +19,4 @@ void updateBuffer(float sample, int &index);
 bool saveBuffer(int &index);
 void fullErase(); // in case we need to manually erase all of the flash
 
-
-
 #endif

@@ -92,7 +92,11 @@ void scienceMemoryHandling()
         Serial.print("\n");
 
         updateBuffer(currentPhotodiodeVoltage, bufIdx);
-    }   
+    }
+
+    if (time == timeToSaveBuffer){
+        saveBuffer(bufIdx);
+    }
 
 }
 
