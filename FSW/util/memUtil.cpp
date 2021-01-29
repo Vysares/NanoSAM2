@@ -36,6 +36,7 @@ const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
 static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
 
+
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - dataProcessing - - - - - - *
@@ -85,7 +86,7 @@ void scienceMemoryHandling()
     //       at the times we need them
     if (time == timeToGatherData){
         float currentPhotodiodeVoltage = dataProcessing();
-        
+
         Serial.print("Current Photodiode Voltage: ");
         Serial.print(currentPhotodiodeVoltage);
         Serial.print("\n");
@@ -129,7 +130,6 @@ void updateBuffer(float dataBuffer[], float sample, int &index){
         index = 0; 
     }  
 }
-
 
 /* - - - - - - saveBuffer - - - - - - *
  * Belongs to Science Memory Handling Module
@@ -191,7 +191,7 @@ bool saveBuffer(float dataBuffer[], int &index){
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    file.write(dataBuffer, BUFFERSIZE); //write dataBuffer
+    status = file.write(dataBuffer, BUFFERSIZE); //write dataBuffer
     
     // TODO: may need to seek position to end of file before writing again
     //file.seek(BUFFERSIZE);  
@@ -202,4 +202,30 @@ bool saveBuffer(float dataBuffer[], int &index){
     index = 0; // reset index to start of array since we have saved the buffer
 
     return status; // return whether or not file was successfully created
+}
+
+/* - - - - - - fullErase - - - - - - *
+ * Belongs to Science Memory Handling Module
+ *  
+ * Usage:
+ *  erases all contents of a flash module chip
+ *  this function will interrupt processing for a few minutes, only use 
+ *  during testing
+ *  https://github.com/PaulStoffregen/SerialFlash/blob/master/README.md
+ * 
+ * Inputs:
+ *  none
+ *  
+ * Outputs:
+ *  none
+ */
+void fullErase(){
+    Serial.println("Waiting for flash to clear");
+
+    SerialFlash.erase();
+    while (SerialFlash.ready() == false){
+        // wait a minute or two for flash to clear
+    }
+
+    Serial.println("Flash cleared");
 }
