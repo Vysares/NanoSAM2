@@ -35,7 +35,6 @@ int main()
     while(true) // run main loop forever
     {
         // test multiple file structure by calling functions from memUtil.cpp
-        dataProcessing();
         scienceMemoryHandling();
         break;
     }
