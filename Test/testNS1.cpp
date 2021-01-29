@@ -12,18 +12,19 @@
 #include <SPI.h>
 
 /* - - - - - - Initialization - - - - - - */
-const int ADC_CHIP_SELECT = 10; //chip select pin number for ADC
+const int ADC_CHIP_SELECT = 10;  //chip select pin number for ADC
+const int sampleInterval = 100;  // interval between samples in ms
 
 /* - - - - - - Functions - - - - - - */
 
 // getADC reads and returns one 16 bit data point from the ADC via SPI
 uint16_t getADC()
 {
-  uint16_t photodiode16;
+  uint16_t photodiode16; 
   SPI.beginTransaction(SPISettings(50, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
-  digitalWrite(ADC_CHIP_SELECT, LOW);  // set Slave Select pin 10 to low to select chip
-  photodiode16 = SPI.transfer16(0x00);
-  digitalWrite(ADC_CHIP_SELECT, HIGH); // set Slave Select pin 10 to high to de-select chip
+  digitalWrite(ADC_CHIP_SELECT, LOW);   // set Slave Select pin 10 to low to select chip
+  photodiode16 = SPI.transfer16(0x00);  // transfer data
+  digitalWrite(ADC_CHIP_SELECT, HIGH);  // set Slave Select pin 10 to high to de-select chip
   SPI.endTransaction();
   return photodiode16;
 }
@@ -42,4 +43,5 @@ void setup()
 void loop()
 {
   Serial.println(getADC()); //print the ADC voltage
+  delay(sampleInterval);
 }
