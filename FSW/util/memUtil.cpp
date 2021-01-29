@@ -68,7 +68,7 @@ float dataProcessing()
 
     // access ADC Pin (SPI)
     uint16_t photodiode16; 
-    SPI.beginTransaction(SPISettings(50, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
+    SPI.beginTransaction(SPISettings(SPI_MAX_SPEED, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
     digitalWrite(ADC_CHIP_SELECT, LOW);   // set Slave Select pin to low to select chip
     photodiode16 = SPI.transfer16(0x0000);// transfer data, send 0 to slave, recieve data from ADC
     digitalWrite(ADC_CHIP_SELECT, HIGH);  // set Slave Select pin to high to de-select chip
