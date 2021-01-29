@@ -35,7 +35,7 @@ void setup()
   
   Serial.begin(9600);
   while (!Serial); // wait for serial to be ready
-  Serial.println("Serial ready to go. Here comes the data:");
+  Serial.println("Serial ready to go. Here (hopefully) comes the data:");
   Serial.flush();
 }
 
