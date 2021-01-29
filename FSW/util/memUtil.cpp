@@ -23,9 +23,16 @@ const int SAMPLING_RATE = 50;   // Hz, desired irradiance sampling rate
 const int WINDOW_LENGTH = 240;  // seconds, length of science data buffer 
 const int MAXFILES = 10;        // maximum number of files in flash storage
 
+const int ADC_CHIP_SELECT = 10; // chip select pin for ADC
+const int SPI_MAX_SPEED = 2000000; // clock speed of 2MHz for SPI
+
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = 1;   // array indices needed to store timestamp
 
+// contants for converting ADC bins to voltage
+const float ADC_BINS = 65536;       // bins, number of bins in ADC (2^16)
+const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
+const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 
 // set number of measurements to store in science data buffer
 const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH; // indices
@@ -52,16 +59,25 @@ static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer element
  */
 float dataProcessing()
 {
-    Serial.println("Data Processing Module: Test Print");
     float voltage;
 
-    // TODO: STUBBED IN VOLTAGE PLACEHOLDER WHILE I LEARN SPI 
-    //       BUT RETURNING THE ACTUAL VOLTAGE WILL BE PRETTY KEY
-    voltage = 0; //
+    // begin an SPI connection
+    // TODO: we should probably begin the SPI connection in main to avoid duplicates
+    SPI.begin();  
+    pinMode(ADC_CHIP_SELECT, OUTPUT); // set ADC chip select pin to output
 
     // access ADC Pin (SPI)
+    uint16_t photodiode16; 
+    SPI.beginTransaction(SPISettings(50, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
+    digitalWrite(ADC_CHIP_SELECT, LOW);   // set Slave Select pin to low to select chip
+    photodiode16 = SPI.transfer16(0x0000);// transfer data, send 0 to slave, recieve data from ADC
+    digitalWrite(ADC_CHIP_SELECT, HIGH);  // set Slave Select pin to high to de-select chip
+    SPI.endTransaction();
 
-    // Convert ADC output to voltage by scaling over voltage range?
+    // Convert ADC output to voltage by scaling over voltage range
+
+    //TODO: can we scale this by the actual digital voltage on the board?
+    voltage = photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
 
     return voltage;
 }
@@ -79,9 +95,7 @@ float dataProcessing()
  *  None
  */
 void scienceMemoryHandling()
-{
-    Serial.println("Science Memory Handling Module: Test Print");
-    
+{    
     // TODO: Convert pseudocode for timing to actually call these functions
     //       at the times we need them
     if (time == timeToGatherData){
