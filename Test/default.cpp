@@ -1,4 +1,4 @@
-/* default.cpp verifies the Teensy is connected for NanoSAM II tests. 
+/* default.cpp verifies the Teensy is connected for NanoSAM II tests.
  * Usage:
  *  run this script through Teensyduino to power the NS2 payload
  *
@@ -8,47 +8,108 @@
 // C++ libraries
 
 // Other libraries
+#include <Arduino.h>
 
 // NS2 headers
- 
- // I think I'm writing this as Arduino code not c++? 
-int aRegCurr = 17;
-int dRegCurr = 18;
-int dRegPG = 20; 
 
-void loop()
+
+/* - - - - - - Initialization - - - - - - */
+// pin numbers
+const int PIN_AREG_CURR = 17;   // analog regulator current pin
+const int PIN_DREG_CURR = 18;   // digital regulator current pin
+const int PIN_DREG_PG = 20;     // digital regulator 'power good' pin
+const int PIN_WD_RESET = 2;     // watchdog reset pin
+
+// Acceptable voltage range
+const float VMIN = 3.25;        // minimum accpetable voltage
+const float VMAX = 3.35;        // maximum acceptable voltage
+
+// timing
+const int SAMPLE_INTERVAL = 3000;       // time between samples in ms
+const int WD_RESET_INTERVAL = 1000;     // watchdog feeding interval, ms
+const int WD_PULSE_DUR = 10;            // watchdog reset signal duration, MICROSECONDS!!!
+
+int wdLastFeedMillis;
+int lastSampleMillis;
+
+// conversion factors
+const int ADC_BINS = 1024;    // number of ADC bins
+const float HI_VOLTAGE = 3.3; // high board voltage, 3.3V for teensy
+const float R_SENSE = 0.02;    // current sensor resistance, ohms
+
+
+/* - - - - - - Functions - - - - - - */
+
+/* - - - - - printStatus - - - - - */
+void printStatus()
 {
-    while(true) // run main loop forever
-    {
-		// Check voltage regulator currents
-        aCurr = analogRead(aRegCurr);
-		dCurr = analogRead(dRegCurr);
-		dPG = analogRead(dRegPG);
-		
-		
-		// Print statements for confirmation
-		// TODO: Gotta be a better way to format these statements?
-		Serial.print('Analog Current Value [A]: ');
-		Serial.print(aCurr);
-		Serial.print('\n');
-		
-		Serial.print('Digital Current Value [A]: ');
-		Serial.print(dCurr);
-		Serial.print('\n');
-		
-		Serial.print('Digital Power Good [V]: ');
-		Serial.print(dPG);
-		Serial.print('\n');
-		
-		// if the power good signal returns around 3.3V, power is good
-		// TODO: I have no clue how to write an if statement in arduino
-		if (dPG > 3.25) && (dPG < 3.35)
-			Serial.print('Good to go')
-		end
-		
-        break;
-    }
+  float aCurr = HI_VOLTAGE*(float)analogRead(PIN_AREG_CURR)/(ADC_BINS*R_SENSE);   // analog regulator current, Amps
+  float dCurr = HI_VOLTAGE*(float)analogRead(PIN_DREG_CURR)/(ADC_BINS*R_SENSE);   // digital regulator current, Amps
+  float dRegPG = HI_VOLTAGE*(float)analogRead(PIN_DREG_PG)/ADC_BINS;              // digital regulator voltage 
 
-    return 0;
+  // Print statements for confirmation
+  Serial.print("\nAnalog Current Value [A]: ");
+  Serial.print(aCurr);
+  Serial.print("\nDigital Current Value [A]: ");
+  Serial.print(dCurr);
+  Serial.print("\nDigital Power Good [V]: ");
+  Serial.print(dRegPG);
+  
+
+  // if the power good signal returns around 3.3V, power is good
+  if (dRegPG > VMIN && dRegPG < VMAX)
+  {
+    Serial.println("\nGood to go.");
+  }
+  else
+  {
+    Serial.print("\nVoltage out of nominal range: ");
+    Serial.print(VMIN);
+    Serial.print(" - ");
+    Serial.println(VMAX);
+  }
 }
 
+/* - - - - - feedDog - - - - - */
+void feedDog()
+{
+  digitalWrite(PIN_WD_RESET,HIGH);
+  delayMicroseconds(WD_PULSE_DUR);
+  digitalWrite(PIN_WD_RESET,LOW);
+}
+
+/* - - - - - Setup - - - - - */
+void setup()
+{
+  // set pin modes
+  pinMode(PIN_AREG_CURR, INPUT);
+  pinMode(PIN_DREG_CURR, INPUT);
+  pinMode(PIN_DREG_PG, INPUT);
+  pinMode(PIN_WD_RESET,OUTPUT);
+  Serial.begin(9600);
+
+  //feed the dog
+  wdLastFeedMillis = millis();
+  feedDog();
+
+  lastSampleMillis = millis();
+  printStatus();
+}
+
+/* - - - - - Main Loop - - - - - */
+void loop()
+{
+  // watchdog reset
+  if (millis() >= wdLastFeedMillis + WD_RESET_INTERVAL)
+  {
+    wdLastFeedMillis = millis();
+    feedDog();
+  }
+
+  // sampling data
+  if (millis() >= lastSampleMillis + SAMPLE_INTERVAL)
+  {
+    lastSampleMillis = millis();
+    printStatus();
+  }
+}
