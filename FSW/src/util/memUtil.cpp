@@ -96,9 +96,7 @@ float dataProcessing()
  */
 void scienceMemoryHandling()
 {    
-    // TODO: Convert pseudocode for timing to actually call these functions
-    //       at the times we need them
-    if (time == timeToGatherData){
+    if (dataProcessEvent.checkInvoked()){ // checks event status from timing module
         float currentPhotodiodeVoltage = dataProcessing();
 
         Serial.print("Current Photodiode Voltage: ");
@@ -108,10 +106,9 @@ void scienceMemoryHandling()
         updateBuffer(currentPhotodiodeVoltage, bufIdx);
     }
 
-    if (time == timeToSaveBuffer){
+    if (saveEvent.checkInvoked()){
         saveBuffer(bufIdx);
     }
-
 }
 
 /* - - - - - - Helper Functions - - - - - - */
@@ -139,11 +136,11 @@ void updateBuffer(float sample, int &index){
         index++;
     
     } else {
-        Serial.print("WARNING: invalid dataBuffer index ")
-        Serial.print("(Science Memory Handling Module)\n")
+        Serial.print("WARNING: invalid dataBuffer index ");
+        Serial.print("(Science Memory Handling Module)\n");
     }
 
-    if (index = BUFFERSIZE){
+    if (index == BUFFERSIZE){
         // reset index if we have reached end of buffer
         index = 0; 
     }  
@@ -187,16 +184,14 @@ bool saveBuffer(int &index){
      */
 
     // check if file exists
-    std::string filestr, extension, filename;
-    int fileIdx;
+    int fileIdx; // iterator for loop checking file existence
     bool fileFlag = true;
+    char filename[] = "scienceFile0.csv";   // null-terminated char array
+    int fileIdxOffset = 11;                 // index of file number
 
-    filestr = "scienceFile";
-    extension = ".csv";
-    
     while (fileFlag){
         if (fileIdx < MAXFILES){ // prevent infinite loop
-            filename = filestr + std::to_string(fileIdx) + extension;
+            filename[fileIdxOffset] += fileIdx; // iterate up from zero
             fileFlag = SerialFlash.exists(filename);
             fileIdx++;
         }
@@ -205,6 +200,12 @@ bool saveBuffer(int &index){
     // create new file (non-erasable, delete file after downlink)
     bool status = true; // track file creation/writing status
     status = SerialFlash.create(filename, FILESIZE);
+
+    if (status){
+        Serial.print("Found file ");
+        Serial.print(filename);
+        Serial.print(" on flash chip");
+    }
 
     // write buffer to this new file
     SerialFlashFile file;
@@ -224,7 +225,7 @@ bool saveBuffer(int &index){
 
 /* - - - - - - fullErase - - - - - - *
  * Belongs to Science Memory Handling Module
- *  
+ *  NOT CURRENTLY SUPPORTED, chip-wide .erase() function not compiling
  * Usage:
  *  erases all contents of a flash module chip
  *  this function will interrupt processing for a few minutes, only use 
@@ -237,13 +238,13 @@ bool saveBuffer(int &index){
  * Outputs:
  *  none
  */
-void fullErase(){
-    Serial.println("Waiting for flash to clear");
+// void fullErase(){
+//     Serial.println("Waiting for flash to clear");
 
-    SerialFlash.erase();
-    while (SerialFlash.ready() == false){
-        // wait a minute or two for flash to clear
-    }
+//     SerialFlash.erase();
+//     while (SerialFlash.ready() == false){
+//         // wait a minute or two for flash to clear
+//     }
 
-    Serial.println("Flash cleared");
-}
+//     Serial.println("Flash cleared");
+// }
