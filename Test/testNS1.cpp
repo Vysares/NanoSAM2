@@ -14,7 +14,6 @@
 /* - - - - - - Initialization - - - - - - */
 const int ADC_CHIP_SELECT = 10;  //chip select pin number for ADC
 const int sampleInterval = 100;  // interval between samples in ms
-const int maxSpeed = 2000000; // max SPI clock speed for ADC, Hz
 
 /* - - - - - - Functions - - - - - - */
 
@@ -45,20 +44,4 @@ void loop()
 {
   Serial.println(getADC()); //print the ADC voltage
   delay(sampleInterval);
-}
-
-const int pinNum = 20;
-
-void setup()
-{
-  pinMode(pinNum,INPUT);
-  Serial.begin(9600);
-  while (!Serial); // wait for serial to be ready
-  
-}
-
-void loop()
-{
-  Serial.println(digitalRead(pinNum);
-  delay(100);
 }

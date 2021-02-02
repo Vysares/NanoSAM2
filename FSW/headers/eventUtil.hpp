@@ -48,4 +48,5 @@ class RecurringEvent : public TimedEvent
         bool checkInvoked();
 };
 
+
 #endif
