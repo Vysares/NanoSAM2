@@ -5,8 +5,6 @@
  * Additional files needed for compilation:
  *  memUtil.hpp
  *  memUtil.cpp
- *  hkUtil.hpp
- *  hkUtil.cpp
  *
  */
 
@@ -17,7 +15,6 @@
 
 // NS2 headers
 #include "headers/memUtil.hpp"
-
 
 
 /* - - - - - - Functions - - - - - - */
