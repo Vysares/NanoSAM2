@@ -1,4 +1,4 @@
-/* wathcdog.cpp verifies the Teensy can feed the watchdog and that the watchdog triggers a restart.
+/* watchdog.cpp verifies the Teensy can feed the watchdog and that the watchdog triggers a restart.
  * Usage:
  *  run this script through Teensyduino to power the NS2 payload
  *  Send "1" over the serial monitor to trigger a restart
