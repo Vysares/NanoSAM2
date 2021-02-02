@@ -18,7 +18,7 @@ const int PIN_HEAT = 0;         // activate heater pin
 const int PIN_WD_RESET = 2;     // watchdog reset pin
 
 // timing
-const int WD_RESET_INTERVAL = 1000;     // watchdog feeding interval, ms
+const int WD_RESET_INTERVAL = 100;     // watchdog feeding interval, ms
 const int WD_PULSE_DUR = 10;            // watchdog reset signal duration, MICROSECONDS!!!
 
 int wdLastFeedMillis;

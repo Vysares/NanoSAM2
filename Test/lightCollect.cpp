@@ -16,23 +16,25 @@
 /* - - - - - - Initialization - - - - - - */
 // pin numbers
 const int PIN_ADC_CS = 10;      // ADC chip select pin
-const int PIN_PHOTO = 14;       // direct photodiode data pin for use with Teensy ADC
+const int PIN_PHOTO = 21;       // direct photodiode data pin for use with Teensy ADC
 const int PIN_WD_RESET = 2;     // watchdog reset pin
 
 // timing
 const int SAMPLE_INTERVAL = 500;        // time between samples in ms
-const int WD_RESET_INTERVAL = 1000;     // watchdog feeding interval, ms
+const int WD_RESET_INTERVAL = 100;     // watchdog feeding interval, ms
 const int WD_PULSE_DUR = 10;            // watchdog reset signal duration, MICROSECONDS!!!
 
 int wdLastFeedMillis;
 int lastSampleMillis;
 
 //SPI settings
-SPISettings adcSettings(2000000,MSBFIRST, SPI_MODE3); // max serial clock speed, data order, data mode
+const int SPI_MAXSPEED = 2000000;                          // SPI max clock speed, depends on ADC
+SPISettings adcSettings(SPI_MAXSPEED,MSBFIRST, SPI_MODE3); // max speed, data order, data mode
 
 // conversion factors
-const int ADC_BINS = 1024;
+const int ADC_BINS = 1023;
 const float HI_VOLTAGE = 3.3;
+const float VOLTAGE_RES = HI_VOLTAGE/ADC_BINS;   // voltage per bin as read by analogRead()
 
 
 /* - - - - - - Functions - - - - - - */
@@ -40,7 +42,7 @@ const float HI_VOLTAGE = 3.3;
 /* - - - - - readDataBackup - - - - - */
 void readDataBackup() // read data direct from pin using Teensy ADC
 {
-    double sciData = HI_VOLTAGE*(float)analogRead(PIN_PHOTO)/ADC_BINS;
+    float sciData = VOLTAGE_RES*(float)analogRead(PIN_PHOTO);
     Serial.print(sciData);
 }
 

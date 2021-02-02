@@ -26,16 +26,16 @@ const float VMAX = 3.35;        // maximum acceptable voltage
 
 // timing
 const int SAMPLE_INTERVAL = 3000;       // time between samples in ms
-const int WD_RESET_INTERVAL = 1000;     // watchdog feeding interval, ms
+const int WD_RESET_INTERVAL = 100;     // watchdog feeding interval, ms
 const int WD_PULSE_DUR = 10;            // watchdog reset signal duration, MICROSECONDS!!!
 
 int wdLastFeedMillis;
 int lastSampleMillis;
 
 // conversion factors
-const int ADC_BINS = 1024;    // number of ADC bins
-const float HI_VOLTAGE = 3.3; // high board voltage, 3.3V for teensy
-const float R_SENSE = 0.02;    // current sensor resistance, ohms
+const int ADC_BINS = 1023;                      // number of ADC bins
+const float HI_VOLTAGE = 3.3;                   // high board voltage, 3.3V for teensy
+const float VOLTAGE_RES = HI_VOLTAGE/ADC_BINS;   // voltage per bin as read by analogRead()
 
 
 /* - - - - - - Functions - - - - - - */
@@ -43,9 +43,9 @@ const float R_SENSE = 0.02;    // current sensor resistance, ohms
 /* - - - - - printStatus - - - - - */
 void printStatus()
 {
-  float aCurr = HI_VOLTAGE*(float)analogRead(PIN_AREG_CURR)/(ADC_BINS*R_SENSE);   // analog regulator current, Amps
-  float dCurr = HI_VOLTAGE*(float)analogRead(PIN_DREG_CURR)/(ADC_BINS*R_SENSE);   // digital regulator current, Amps
-  float dRegPG = HI_VOLTAGE*(float)analogRead(PIN_DREG_PG)/ADC_BINS;              // digital regulator voltage 
+  float aCurr = VOLTAGE_RES*(float)analogRead(PIN_AREG_CURR);   // analog regulator current, Amps
+  float dCurr = VOLTAGE_RES*(float)analogRead(PIN_DREG_CURR);   // digital regulator current, Amps
+  float dRegPG = VOLTAGE_RES*(float)analogRead(PIN_DREG_PG);    // digital regulator voltage 
 
   // Print statements for confirmation
   Serial.print("\nAnalog Current Value [A]: ");
@@ -85,7 +85,7 @@ void setup()
   pinMode(PIN_AREG_CURR, INPUT);
   pinMode(PIN_DREG_CURR, INPUT);
   pinMode(PIN_DREG_PG, INPUT);
-  pinMode(PIN_WD_RESET,OUTPUT);
+  pinMode(PIN_WD_RESET, OUTPUT);
   Serial.begin(9600);
 
   //feed the dog

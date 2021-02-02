@@ -17,7 +17,7 @@
 const int PIN_WD_RESET = 2;     // watchdog reset pin
 
 // timing
-const int WD_RESET_INTERVAL = 1000;     // watchdog feeding interval, ms
+const int WD_RESET_INTERVAL = 100;     // watchdog feeding interval, ms
 const int WD_PULSE_DUR = 10;            // watchdog reset signal duration, MICROSECONDS!!!
 const int SERIAL_TIMEOUT = 50;          // time to wait for serial input, ms
 
@@ -44,7 +44,7 @@ void setup()
     //feed the dog
     wdLastFeedMillis = millis();
     feedDog();
-
+    Serial.println("Send \"1\" to stop feeding the dog");
 }
 
 /* - - - - - Main Loop - - - - - */
@@ -58,7 +58,7 @@ void loop()
         if (serialInput == 1)
         {
             // push next watchdog reset wayyy over the maximum time limit
-            wdLastFeedMillis += 1000*WD_RESET_INTERVAL; 
+            wdLastFeedMillis += 100000*WD_RESET_INTERVAL; 
             Serial.println("Watchdog feeding paused. Restart imminent!");
         }
     }
