@@ -17,6 +17,7 @@
 // NS2 headers
 #include "../headers/config.hpp"
 #include "../headers/memUtil.hpp"
+#include "../headers/eventUtil.hpp"
 
 /* Module Variable Definitions */
 
@@ -25,6 +26,12 @@
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
 static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
 
+/* Events */
+Event DataProcessEvent;
+//DataProcessEvent.Event(); // use constructor to set isInvoked to false???
+
+Event SaveBufferEvent;
+//SaveBufferEvent.Event(); // same question as line 31
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -46,14 +53,14 @@ float dataProcessing()
     // begin an SPI connection
     // TODO: we should probably begin the SPI connection in main to avoid duplicates
     SPI.begin();  
-    pinMode(ADC_CHIP_SELECT, OUTPUT); // set ADC chip select pin to output
+    pinMode(PIN_ADC_CS, OUTPUT); // set ADC chip select pin to output
 
     // access ADC Pin (SPI)
     uint16_t photodiode16; 
     SPI.beginTransaction(SPISettings(SPI_MAX_SPEED, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
-    digitalWrite(ADC_CHIP_SELECT, LOW);   // set Slave Select pin to low to select chip
+    digitalWrite(PIN_ADC_CS, LOW);   // set Slave Select pin to low to select chip
     photodiode16 = SPI.transfer16(0x0000);// transfer data, send 0 to slave, recieve data from ADC
-    digitalWrite(ADC_CHIP_SELECT, HIGH);  // set Slave Select pin to high to de-select chip
+    digitalWrite(PIN_ADC_CS, HIGH);  // set Slave Select pin to high to de-select chip
     SPI.endTransaction();
 
     // convert from Bin number to voltage, assuming board voltage does not fluctuate
@@ -76,7 +83,7 @@ float dataProcessing()
  */
 void scienceMemoryHandling()
 {    
-    if (dataProcessEvent.checkInvoked()){ // checks event status from timing module
+    if (DataProcessEvent.checkInvoked()){ // checks event status from timing module
         float photodiodeVoltage = dataProcessing();
 
         Serial.print("Photodiode Voltage: ");
@@ -86,7 +93,7 @@ void scienceMemoryHandling()
         updateBuffer(photodiodeVoltage, bufIdx);
     }
 
-    if (saveEvent.checkInvoked()){
+    if (SaveBufferEvent.checkInvoked()){
         saveBuffer(bufIdx);
     }
 }
@@ -164,7 +171,7 @@ bool saveBuffer(int &index){
      */
 
     // check if file exists
-    int fileIdx; // iterator for loop checking file existence
+    int fileIdx = 0; // iterator for loop checking file existence
     bool fileFlag = true;
     char filename[] = "scienceFile0.csv";   // null-terminated char array
     int fileIdxOffset = 11;                 // index of file number
