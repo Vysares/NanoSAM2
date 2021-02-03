@@ -56,9 +56,7 @@ float dataProcessing()
     digitalWrite(ADC_CHIP_SELECT, HIGH);  // set Slave Select pin to high to de-select chip
     SPI.endTransaction();
 
-    // Convert ADC output to voltage by scaling over voltage range
-
-    //TODO: can we scale this by the actual digital voltage on the board?
+    // convert from Bin number to voltage, assuming board voltage does not fluctuate
     voltage = photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
 
     return voltage;
