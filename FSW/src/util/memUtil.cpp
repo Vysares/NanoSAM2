@@ -15,28 +15,10 @@
 /* - - - - - - Includes - - - - - - */
 // All libraries are put in memUtil.hpp
 // NS2 headers
+#include "../headers/config.hpp"
 #include "../headers/memUtil.hpp"
 
 /* Module Variable Definitions */
-//TODO: should sampling rate and window length be configurable on flight?
-const int SAMPLING_RATE = 50;   // Hz, desired irradiance sampling rate
-const int WINDOW_LENGTH = 240;  // seconds, length of science data buffer 
-const int MAXFILES = 10;        // maximum number of files in flash storage
-
-const int ADC_CHIP_SELECT = 10; // chip select pin for ADC
-const int SPI_MAX_SPEED = 2000000; // clock speed of 2MHz for SPI
-
-// TODO: Update this with size of actual timestamp once it is known
-const int TIMESTAMP_SIZE = 1;   // array indices needed to store timestamp
-
-// contants for converting ADC bins to voltage
-const float ADC_BINS = 65536;       // bins, number of bins in ADC (2^16)
-const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
-const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
-
-// set number of measurements to store in science data buffer
-const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH; // indices
-const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
 
 // declare static variables so that they do not go away when we leave this module
 // whole purpose is to make this into a black-box module of sorts
@@ -97,13 +79,13 @@ float dataProcessing()
 void scienceMemoryHandling()
 {    
     if (dataProcessEvent.checkInvoked()){ // checks event status from timing module
-        float currentPhotodiodeVoltage = dataProcessing();
+        float photodiodeVoltage = dataProcessing();
 
-        Serial.print("Current Photodiode Voltage: ");
-        Serial.print(currentPhotodiodeVoltage);
+        Serial.print("Photodiode Voltage: ");
+        Serial.print(photodiodeVoltage);
         Serial.print("\n");
 
-        updateBuffer(currentPhotodiodeVoltage, bufIdx);
+        updateBuffer(photodiodeVoltage, bufIdx);
     }
 
     if (saveEvent.checkInvoked()){
