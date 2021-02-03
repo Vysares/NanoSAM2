@@ -14,7 +14,7 @@
 // Other libraries
 
 // NS2 headers
-#include "headers/memUtil.hpp"
+#include "src/headers/memUtil.hpp"
 
 
 /* - - - - - - Functions - - - - - - */
@@ -31,14 +31,16 @@
  */
 int main()
 {
+    //carry out initializations
+    
     // TODO: Change main loop to account for critical exit conditions
     while(true) // run main loop forever
     {
         // test multiple file structure by calling functions from memUtil.cpp
-        dataProcessing();
         scienceMemoryHandling();
         break;
     }
 
     return 0;
 }
+
