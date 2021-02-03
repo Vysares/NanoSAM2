@@ -222,29 +222,3 @@ bool saveBuffer(int &index){
 
     return status; // return whether or not file was successfully created
 }
-
-/* - - - - - - fullErase - - - - - - *
- * Belongs to Science Memory Handling Module
- *  NOT CURRENTLY SUPPORTED, chip-wide .erase() function not compiling
- * Usage:
- *  erases all contents of a flash module chip
- *  this function will interrupt processing for a few minutes, only use 
- *  during testing
- *  https://github.com/PaulStoffregen/SerialFlash/blob/master/README.md
- * 
- * Inputs:
- *  none
- *  
- * Outputs:
- *  none
- */
-// void fullErase(){
-//     Serial.println("Waiting for flash to clear");
-
-//     SerialFlash.erase();
-//     while (SerialFlash.ready() == false){
-//         // wait a minute or two for flash to clear
-//     }
-
-//     Serial.println("Flash cleared");
-// }
