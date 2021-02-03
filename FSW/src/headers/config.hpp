@@ -14,7 +14,7 @@
 /* - - - - - - Teensy Pins - - - - - - */
 const int PIN_HEAT = 0;         // activate heater pin
 const int PIN_WD_RESET = 2;     // Watchdog reset pin
-const int PIN_ACD_CS = 10;      // ADC Chip Select Pin
+const int PIN_ADC_CS = 10;      // ADC Chip Select Pin
 const int PIN_AREG_CURR = 17;   // analog regulator current pin
 const int PIN_DREG_CURR = 18;   // digital regulator current pin
 const int PIN_DREG_PG = 20;     // digital regulator 'power good' pin
