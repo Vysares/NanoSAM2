@@ -119,7 +119,7 @@ void updateBuffer(float sample, int &index){
     
     } else {
         Serial.print("WARNING: invalid dataBuffer index ");
-        Serial.print("(Science Memory Handling Module)\n");
+        Serial.print("(Science Memory Handling Module - updateBuffer() func)\n");
     }
 
     if (index == BUFFERSIZE){
@@ -176,6 +176,9 @@ bool saveBuffer(int &index){
             filename[fileIdxOffset] += fileIdx; // iterate up from zero
             fileFlag = SerialFlash.exists(filename);
             fileIdx++;
+        } else if (fileIdx >= MAXFILES) {
+            Serial.print("WARNING: fileIdx reached MAXFILES ");
+            Serial.print("(Science Memory Handling Module - saveBuffer() func)\n");
         }
     }
 
