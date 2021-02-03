@@ -2,16 +2,15 @@
 This is the repository for all NanoSAM software, including teensy software, ground interface software, and EDAC testing software
 
 ### Directories ###
-FSW - Development for flight software in C++
+FSW - Development for flight software in C++ (using `arduino.h`, `SerialFlash.h`, and `SPI.h` arduino libraries)
 GSW - Development for ground software in C++ and/or Python
 Arduino - FSW build configured to compile in the Arduino IDE
 
 ### Compilation ###
-To compile and run main.cpp run the following command:
-g++ main.cpp util/memUtil.cpp -o NS2_main && ./NS2_main
+The FSW file structure is flexible as long as `main.cpp` is in the sketch directory and any other files are included under the directory `src`.
+For NanoSAM II, there are utility and header files, organized into the `util` and `header` dirs respectively. Include these directories under `src` in your arduino sketches.
+Then, open `main.cpp` in the Arduino IDE, add the `src` directory and all nested files/folders, and compile using the checkmark or arrow in the top left. 
+Arduino IDE: https://www.arduino.cc/en/software
 
-Make sure to add in any other helper files as they are added
-Keep relative paths accurate if file structure changes
-*Note:* g++ might not be the same compiler that Teensyduino uses
-    so make sure to test with the Arduino IDE sooner rather than
-    later and fix the code if we need to compile differently
+Make sure you have the Teensyduino addon for the Arduino IDE if uploading sketches to the Teensy:
+https://www.pjrc.com/teensy/teensyduino.html
