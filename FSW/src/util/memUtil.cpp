@@ -17,7 +17,6 @@
 // NS2 headers
 #include "../headers/config.hpp"
 #include "../headers/memUtil.hpp"
-#include "../headers/eventUtil.hpp"
 
 /* Module Variable Definitions */
 
@@ -25,10 +24,6 @@
 // whole purpose is to make this into a black-box module of sorts
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
 static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
-
-/* Events */
-RecurringEvent DataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that duration arg is ms
-Event SaveBufferEvent;
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -80,7 +75,7 @@ float dataProcessing()
  */
 void scienceMemoryHandling()
 {    
-    if (DataProcessEvent.checkInvoked()){ // checks event status from timing module
+    if (dataProcessEvent.checkInvoked()){ // checks event status from timing module
         float photodiodeVoltage = dataProcessing();
 
         Serial.print("Photodiode Voltage: ");
@@ -90,7 +85,7 @@ void scienceMemoryHandling()
         updateBuffer(photodiodeVoltage, bufIdx);
     }
 
-    if (SaveBufferEvent.checkInvoked()){
+    if (saveBufferEvent.checkInvoked()){
         saveBuffer(bufIdx);
     }
 }
