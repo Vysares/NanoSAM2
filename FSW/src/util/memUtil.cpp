@@ -27,11 +27,8 @@ static int bufIdx = 0;               // index of next dataBuffer element to over
 static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
 
 /* Events */
-Event DataProcessEvent;
-//DataProcessEvent.Event(); // use constructor to set isInvoked to false???
-
+RecurringEvent DataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that duration arg is ms
 Event SaveBufferEvent;
-//SaveBufferEvent.Event(); // same question as line 31
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
