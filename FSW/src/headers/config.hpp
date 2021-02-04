@@ -32,9 +32,9 @@ const int SERIAL_TIMEOUT = 50;      // time to wait for serial input, ms
  * = = = = = = = = = = = = = = = = = = = = = */
 
 /* - - - - - - Memory Handling Module - - - - - - */
-const int SAMPLING_RATE = 50;   // Hz, desired irradiance sampling rate
-const int WINDOW_LENGTH = 240;  // seconds, length of science data buffer 
-const int MAXFILES = 10;        // maximum number of files in flash storage
+const int SAMPLING_RATE = 50;       // Hz, desired irradiance sampling rate
+const int WINDOW_LENGTH_SEC = 240;  // seconds, length of science data 
+const int MAXFILES = 10;            // maximum number of files in flash storage
 const float ADC_BINS = 65536;       // bins, number of bins in ADC (2^16)
 const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
 const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
@@ -43,8 +43,12 @@ const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 const int TIMESTAMP_SIZE = 1;   // array indices needed to store timestamp
 
 // set number of measurements to store in science data buffer
-const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH; // indices
+const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices
 const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
+
+// timing constants
+const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // millisec, time between samples  
+const int WINDOW_LENGTH_MSEC = WINDOW_LENGTH_SEC * 1000; // milliseconds, length of science data
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
 const int WD_RESET_INTERVAL = 100;  // watchdog feeding interval, ms
