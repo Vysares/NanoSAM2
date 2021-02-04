@@ -7,6 +7,9 @@
  *  from a single location and include in multiple modules
  */
 
+// NS2 Headers
+#include "eventUtil.hpp"
+
 /* = = = = = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Configuration Declarations  = = = = = = 
  * = = = = = = = = = = = = = = = = = = = = = = = = = */
@@ -49,6 +52,10 @@ const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // millisec, time between samples  
 const int WINDOW_LENGTH_MSEC = WINDOW_LENGTH_SEC * 1000; // milliseconds, length of science data
+
+// Events
+static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that duration arg is ms
+static Event saveBufferEvent;
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
 const int WD_RESET_INTERVAL = 100;  // watchdog feeding interval, ms
