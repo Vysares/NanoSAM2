@@ -22,7 +22,7 @@
 // NS2 headers
 #include "../headers/comUtil.hpp"
 
-int command[commandQueueSize];
+static CommandQueue commandQueue();
 
 
 /* - - - - - - Module Driver Functions - - - - - - */
@@ -40,28 +40,49 @@ int command[commandQueueSize];
  */
 void commandHandling()
 {
-    int newCommand = getCommand();
-    newCommand
+    int newCommandCode = getCommand();
+    
+    if (newCommandCode != -1) // if the new command is valid, add it to the queue
+    {
+        queueCommand(newCommandCode);
+    }
+
 }
 
 
-
-byte getCommand();
+int getCommand();
 {
     // read Serial
     if (Serial.available() > 0) // check if there is serial input
     {
-        int serialInput = Serial.parseInt();
-        return serialInput;
+        int serialInput = Serial.parseInt(); // read the command
+        if ((serialInput <= static_cast<int>(Command::DoNothing)) && (serialInput >= 0)) // check if command is valid
+        {
+            Serial.println("Command Recieved.")
+            return serialInput;
+        }
+        else
+        {
+            Serial.println("Invalid command recieved.");
+            Serial.println("(Command Handling)");
+        }
     }
-    return 0; // no command
+    return -1; // no command
 
 }
 
-void parseCommand(byte command)
+void queueCommand(int commandCode)
 {
-    switch newCommand
-    {
 
+}
+
+void executeCommand(int commandCode)
+{
+    switch (commandCode)
+    {
+        case EnterSafeMode:
+        {
+            
+        }
     }
 }
