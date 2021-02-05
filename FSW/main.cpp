@@ -16,7 +16,6 @@
 // NS2 headers
 #include "src/headers/memUtil.hpp"
 
-
 /* - - - - - - Functions - - - - - - */
 
 /* - - - - - - main - - - - - - *
