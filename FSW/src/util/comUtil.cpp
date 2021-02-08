@@ -1,17 +1,16 @@
-/* hkUtil.cpp handles NS2 payload housekeeping
+/* comUtil.cpp handles NS2 payload commands
  * Usage:
- *  module functionality
- *      system state data collection
- *      temperature control
- * 
- *  function definitions
- *  put function declarations in memUtil.hpp
+ *  Reads incoming commands from serial, adds them to the command queue
+ *  and executes each command. 
+ *      
  * 
  * Modules encompassed:
- *  
+ *  Command Handling
  *
  * Additional files needed for compilation:
- *  none
+ *  config.hpp
+ *  comUtil.hpp
+ *  
  */
 
 /* - - - - - - Includes - - - - - - */
