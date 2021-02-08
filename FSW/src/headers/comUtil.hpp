@@ -14,42 +14,37 @@
 
 
 /* - - - - - - Declarations - - - - - - */
+void commandHandling();
+int readCommand();
+void queueCommand(int command);
+bool checkMetaCommand(int command);
+void executeAllCommands();
+void clearCommandQueue();
+void executeCommand(int command);
 
-// TODO: put this in config file
-
-enum Command
+enum Command // all possible commands
 {
+    // commands are 1 indexed so that the default initializer can be used for the command queue
+
     // Mode change
-    EnterSafeMode,              // enter safemode state
-    EnterStandbyMode,           // enter standby state
-    EnterSunsetMode,            // enter sunset data collection mode
-    EnterPreSunriseMode,        // enter watch-for-sunset mode
-    EnterSunriseMode,           // enter sunrise data collection mode
+    ENTER_SAFE_MODE = 1,          // enter safemode state
+    ENTER_STANDBY_MODE,           // enter standby state
+    ENTER_SUNSET_MODE,            // enter sunset data collection mode
+    ENTER_PRE_SUNRISE_MODE,       // enter watch-for-sunset mode
+    ENTER_SUNRISE_MODE,           // enter sunrise data collection mode
     
-    // Memory handling
-    ForceSaveBuffer,            // save the buffer contents to flash immediately
-    EraseFlash,                 // wipe the flash modules
+    // Housekeeping
+    DISABLE_WD_RESET,             // disable watchdog reset signal, forcing a restart
+    HEATER_ON,                    // turn heater on, does not override housekeeping heater control
+    HEATER_OFF,                   // turn heater off, does not override housekeeping heater control
 
-    // System
-    DisableWDReset,             // disable watchdog reset signal, forcing a restart
-    HeaterOn,                   // turn heater on
-    HeaterOff,                  // turn heater off
-    StartCommandSequence,       // pause command execution
-    ExecuteAllCommands,         // execute all commands in the queue
+    // Command Handling
+    PAUSE_EXECUTE_COMMANDS,       // pause command execution
+    RESUME_EXECUTE_COMMANDS,      // resume command execution
+    CLEAR_COMMAND_QUEUE,          // clears all commands from queue
     
-    
-    DoNothing                  // this command does nothing. KEEP THIS LAST IN THE ENUM!
+    // End of list
+    DO_NOTHING                    // do nothing. KEEP THIS LAST IN THE ENUM, it is used for indexing.
 };
-
-int commandHandling();
-
-class CommandQueue
-{
-    public:
-        int queue[COMMAND_QUEUE_SIZE];
-
-        CommandQueue();
-};
-
 
 #endif
