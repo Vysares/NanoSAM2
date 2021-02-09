@@ -30,6 +30,11 @@ const int SPI_MAX_SPEED = 2000000; // clock speed of 2MHz for SPI
 const int SERIAL_BAUD = 9600;
 const int SERIAL_TIMEOUT = 50;      // time to wait for serial input, ms
 
+/* - - - - - - ADCS - - - - - - */
+// NanoSAM II will assume that ADCS will be implemented later, but have places in the logic
+// for a future team to slot in these ADCS measurements 
+const bool ADCS_IN_USE = false;     // flag on whether or not an ADCS system is implemented
+
 /* = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Module Constants  = = = = = = =
  * = = = = = = = = = = = = = = = = = = = = = */
