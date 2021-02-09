@@ -57,6 +57,10 @@ const int WINDOW_LENGTH_MSEC = WINDOW_LENGTH_SEC * 1000; // milliseconds, length
 static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that duration arg is ms
 static Event saveBufferEvent;
 
+/* - - - - - - Command Handling Module - - - - - - */
+const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
+const int SERIAL_TIMEOUT_MSEC = 50;     // milliseconds, maximum time to wait for serial input
+
 /* - - - - - - Fault Mitigation Module - - - - - - */
 const int WD_RESET_INTERVAL = 100;  // watchdog feeding interval, ms
 const int WD_PULSE_DUR = 10;        // watchdog reset signal duration, MICROSECONDS!!!
