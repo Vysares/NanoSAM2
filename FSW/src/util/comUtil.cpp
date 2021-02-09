@@ -28,8 +28,6 @@ int commandQueue[COMMAND_QUEUE_SIZE] = {};  // initializes as all zeros
 static int queueIndex = 0;                  // next available index of command queue
 static bool isPaused = false;               // indicates if command execution is paused
 
-// TODO: set Serial.setTimeout() in config.hpp
-
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - commandHandling - - - - - - *
@@ -83,7 +81,11 @@ int readCommand()
         }
         else
         {
-            Serial.println("Invalid command recieved.");
+            // print warning, indicating the invalid command and the range of valid commands
+            Serial.print("Invalid command recieved: ");
+            Serial.println(serialInput);
+            Serial.print("Valid commands are between 1 and ");
+            Serial.println(static_cast<int>(Command::DO_NOTHING));
             Serial.println("(Command Handling)");
         }
     }
@@ -224,7 +226,6 @@ void executeCommand(int command)
             // TODO: call corresponding function in timing module
             break;
         
-        
         // Housekeeping
         case DISABLE_WD_RESET: 
             // TODO: change WD timer value to >1.2 sec by calling setDuration()
@@ -238,7 +239,6 @@ void executeCommand(int command)
             // TODO: call corresponding function in houskeeping module
             break;
         
-
         // Command Handling
         case PAUSE_EXECUTE_COMMANDS: 
             isPaused = true;
