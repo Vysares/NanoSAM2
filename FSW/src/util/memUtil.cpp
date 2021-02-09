@@ -64,7 +64,7 @@ float dataProcessing()
      *      However, NS2 did not have enough info about what form the pointing data
      *      for the cubesat would take, so we figured selecting a format would only
      *      lead to more work for future teams trying to retrofit our format
-     * /
+     */
 
     // convert from Bin number to voltage, assuming board voltage does not fluctuate
     voltage = photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
