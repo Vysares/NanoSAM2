@@ -7,7 +7,7 @@
 // Other libraries
 
 // NS2 headers
-#include "config.hpp"
+//#include "config.hpp"
 
 /* - - - - - - Enums - - - - - - - */
 enum Mode // all payload science modes
@@ -25,22 +25,17 @@ enum Mode // all payload science modes
     MODE_NOT_RECOGNIZED        // KEEP AS LAST IN ENUM, used to check that a valid mode is being used
 };
 
-/* - - - - - - Class Definitions - - - - - -
+/* - - - - - - Class Definitions - - - - - - */
 class ScienceMode
 {
     protected:
         int mode; // according to mode enum
+        // could add more states such as ADCS ready, sweep direction, etc.
 
     public:
         ScienceMode();
-        int getMode();
-        void setMode();
-} */
+        int get();
+        void set(int newMode);
+};
 
-/* - - - - - - Declarations - - - - - - */
-int updatePayloadMode(int currentMode, float buffer[BUFFERSIZE], int bufIdx);
-float smoothBuffer(float buffer[BUFFERSIZE], int bufIdx);
-void checkSweepChange(float buffer[BUFFERSIZE], int bufIdx);
-int wrapBufferIdx(int idx);
-// TODO recoverPayloadMode();
 #endif

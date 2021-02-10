@@ -18,7 +18,8 @@
 // NS2 headers
 #include "../headers/config.hpp"
 #include "../headers/memUtil.hpp"
-#include "../headers/timing.hpp"
+//#include "../headers/timing.hpp"
+#include "../headers/timingDeclarations.hpp"
 
 /* Module Variable Definitions */
 
@@ -26,7 +27,6 @@
 // whole purpose is to make this into a black-box module of sorts
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
 static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
-static int mode = SUNSET_MODE;       // default payload mode to standby in case of power cycle
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -94,13 +94,12 @@ void scienceMemoryHandling()
         updateBuffer(photodiodeVoltage, bufIdx);
 
         // determine which mode the payload is in to act on this data properly
-        mode = updatePayloadMode(mode, dataBuffer, bufIdx); // from timing module
+        updatePayloadMode(dataBuffer, bufIdx); // from timing module
 
         Serial.print("Photodiode Voltage: ");
         Serial.print(photodiodeVoltage);
         Serial.print(" - Payload Mode ");
-        Serial.println(mode);
-
+        Serial.println(scienceMode.get());
     }
 
     if (saveBufferEvent.checkInvoked()){

@@ -20,12 +20,28 @@
 // NS2 headers
 #include "../headers/config.hpp"
 #include "../headers/timing.hpp"
+#include "../headers/timingDeclarations.hpp"
 #include "../headers/eventUtil.hpp"
 #include "../headers/comUtil.hpp"
 
 /* Module Variable Definitions */
 
-/* - - - - - - Module Driver Functions - - - - - - */
+/* - - - - - - Class Implementations - - - - - - */
+/* - - - - - - ScienceMode - - - - - - *
+ * Usage:
+ *  tracks the Science Mode of the payload
+ */
+ScienceMode::ScienceMode(){ // constructor
+    mode = STANDBY_MODE;
+}
+
+int ScienceMode::get(){
+    return mode;
+}
+
+void ScienceMode::set(int newMode){
+    mode = newMode;
+}
 
 /* - - - - - - Helper Functions - - - - - - */
 
@@ -33,30 +49,33 @@
  * Usage:
  *  returns the new mode that the payload should be in given the current mode and the buffer 
  *  invokes/starts any events that are used in transitioning payload mode 
+ *  acts on scienceMode declared in config.hpp
  * 
  * Inputs:
- *  currentMode - current mode payload is in (defined by enum in timing.hpp)
  *  buffer - buffer array containing most recent photodiode voltage measurements
  *  bufIdx - index of most recent measurement updated in bufIdx
  * 
  * Outputs:
- *  mode of payload according to enum in timing.hpp
+ *  none
  */
-int updatePayloadMode(int currentMode, float buffer[], int bufIdx){
+void updatePayloadMode(float buffer[], int bufIdx){
 
-    /* FUTURE TEAMS: Flesh out this if statement with the logic for 
-    *   controlling payload mode based on ADCS outputs 
-    *   for ground testing this is hardcoded as true in config.hpp,
-    *   but once ADCS is implemented you will need to dynamically update this,
-    *   i.e.    if (digitalRead(BUS_READY_PIN) == HIGH){ } */    
+    int currentMode = scienceMode.get();
+    
     if ((currentMode < MODE_NOT_RECOGNIZED) && (currentMode > STANDBY_MODE)){
+        
+        /*FUTURE TEAMS: Flesh out the below if statement with the logic for 
+        *   controlling the payload mode based on ADCS outputs 
+        * For ground testing this is hardcoded as true in config.hpp,
+        *   but once ADCS is implemented you will need to dynamically update this,
+        *   i.e.    ADCS_READY = (digitalRead(BUS_READY_PIN) == HIGH); */
         if (ADCS_READY_FOR_SCIENCE){
 
             // smooth data to avoid a single noisy value prematurely ending a window
             float pdVoltageSmooth = smoothBuffer(buffer, bufIdx); //photodiode voltage
             
-            switch (currentMode) {
-
+            switch (currentMode) 
+            {
                 case SUNSET_MODE: // gathering data until sun passes behind horizon
                     if (pdVoltageSmooth < SUN_THRESH_VOLTAGE){ // if the sun is not found
                         
@@ -66,28 +85,24 @@ int updatePayloadMode(int currentMode, float buffer[], int bufIdx){
                         if (sweepTimeoutEvent.checkInvoked()){
                             // if we have waited long enough for ADCS sweeping
                             saveBufferEvent.invoke();
-                            return PRE_SUNRISE_MODE;
+                            scienceMode.set(PRE_SUNRISE_MODE);
 
-                        } else { // continue waiting for sweep timeout or sun found
-                            return SUNSET_MODE;
                         }
 
                     } else { 
                         // sun still found, return same mode and refresh sweep timeout
                         sweepTimeoutEvent.start();
-                        return SUNSET_MODE;
                     }
+                    break;
                 
                 case PRE_SUNRISE_MODE: // waiting for sun to rise above horizon
                     if (pdVoltageSmooth >= SUN_THRESH_VOLTAGE){
                         // start sunrise event 
                         sunriseTimerEvent.start();
-                        return SUNRISE_MODE;
-
-                    } else { // sun not found, keep waiting
-                        return PRE_SUNRISE_MODE;
+                        scienceMode.set(SUNRISE_MODE);
                     }
-                
+                    break;
+
                 case SUNRISE_MODE: // gathering data for length of buffer
                     
                     // check if it is time to change sweep direction
@@ -97,25 +112,24 @@ int updatePayloadMode(int currentMode, float buffer[], int bufIdx){
                     // and return to standby
                     if (sunriseTimerEvent.checkInvoked()){
                         saveBufferEvent.invoke();
-                        return STANDBY_MODE;
-
-                    } else { // wait for sunrise data window to complete
-                        return SUNRISE_MODE;
+                        scienceMode.set(STANDBY_MODE);
                     }
+                    break;
             
                 default: // mode not recognized, this should not happen
-                    return MODE_NOT_RECOGNIZED;
+                    scienceMode.set(MODE_NOT_RECOGNIZED);
+                    break;
             }
 
         } else { // standby until ADCS points payload at the sun
             Serial.println("ADCS Not Ready for Science Measurements (Timing Module)");
-            return STANDBY_MODE;
+            scienceMode.set(STANDBY_MODE);
         }
 
     } else if (currentMode == STANDBY_MODE){
         // TODO: currently the only way to leave standby is through a command,
         //       do we want some automated way to leave for testing?
-        //       it honeslty might be best to leave it as having to manually start
+        //       it honestly might be best to leave it as having to manually start
         //       a data window for testing
         
         // execute command queue  
@@ -123,11 +137,9 @@ int updatePayloadMode(int currentMode, float buffer[], int bufIdx){
 
         // TODO: memory scrubbing  
 
-        return STANDBY_MODE;
-
     } else { // mode was not recognized, this should not happen
         Serial.println("Payload Mode not recognized (Timing Module) - Defaulting to Safe Mode");
-        return SAFE_MODE;
+        scienceMode.set(SAFE_MODE);
     }
 }
 
