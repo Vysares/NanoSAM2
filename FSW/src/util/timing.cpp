@@ -20,9 +20,6 @@
 // NS2 headers
 #include "../headers/config.hpp"
 #include "../headers/timing.hpp"
-#include "../headers/timingDeclarations.hpp"
-#include "../headers/eventUtil.hpp"
-#include "../headers/comUtil.hpp"
 
 /* Module Variable Definitions */
 

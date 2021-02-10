@@ -11,8 +11,7 @@
 // (all of them)
 #include "config.hpp"
 #include "memUtil.hpp"
-//#include "timing.hpp" //to use ScienceMode object defined in timing module
-
+#include "timing.hpp" //for mode enum
 
 /* - - - - - - Declarations - - - - - - */
 void commandHandling();
