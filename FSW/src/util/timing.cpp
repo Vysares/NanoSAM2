@@ -83,7 +83,6 @@ void updatePayloadMode(float buffer[], int bufIdx){
                             // if we have waited long enough for ADCS sweeping
                             saveBufferEvent.invoke();
                             scienceMode.set(PRE_SUNRISE_MODE);
-
                         }
 
                     } else { 
@@ -101,7 +100,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
                     break;
 
                 case SUNRISE_MODE: // gathering data for length of buffer
-                    
+
                     // check if it is time to change sweep direction
                     checkSweepChange(buffer, bufIdx);
 
@@ -129,8 +128,8 @@ void updatePayloadMode(float buffer[], int bufIdx){
         //       it honestly might be best to leave it as having to manually start
         //       a data window for testing
         
-        // execute command queue  
-        executeAllCommands();
+        // execute commands  
+        commandHandling();
 
         // TODO: memory scrubbing  
 
@@ -166,7 +165,7 @@ float smoothBuffer(float buffer[], int bufIdx){
 
         smoothVoltage += buffer[idx]; // sum voltages
     }
-    return smoothVoltage / SMOOTH_IDX_COUNT; // return mean
+    return smoothVoltage / (float)SMOOTH_IDX_COUNT; // return mean
 }
 
 /* - - - - - - wrapBufferIdx - - - - - - *
@@ -182,7 +181,7 @@ float smoothBuffer(float buffer[], int bufIdx){
 int wrapBufferIdx(int idx){
     const int NUM_TRIES = 10; // max iterations (prevent infinite loop)
 
-    for (int j = NUM_TRIES; j < NUM_TRIES; j++){
+    for (int j = 0; j < NUM_TRIES; j++){
         if (idx < 0) {                  // wrap index if it is negative
             idx = idx + BUFFERSIZE;     // -1 becomes BUFFERSIZE - 1
         } else if (idx >= BUFFERSIZE) { // wrap index if it is too large
@@ -196,7 +195,7 @@ int wrapBufferIdx(int idx){
     Serial.println(" tries.");
     Serial.println("Defaulting to an index of 0 (Timing module)");
     
-    // TODO: Should this return -1 instead and throw an error?
+    // TODO: Should this return -1 instead to throw an error?
     return 0;
 }
 
