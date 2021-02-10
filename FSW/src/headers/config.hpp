@@ -5,11 +5,14 @@
  *  define any mission-wide constants (pin numbers, 
  *  sampling rates, etc) that we will want to be able to change
  *  from a single location and include in multiple modules
+ * 
+ *  declare all objects as static to avoid the error 
+ *      "multiple definitions of <object>" during compilation
  */
 
 // NS2 Headers
+#include "timingClass.hpp"
 #include "eventUtil.hpp"
-#include "timing.hpp"
 
 /* = = = = = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Configuration Declarations  = = = = = = 
@@ -85,6 +88,6 @@ const int SMOOTH_IDX_COUNT = 5; // number of indices to use in smoothing the vol
 const int ADCS_SWEEP_IDX_OFFSET = SMOOTH_IDX_COUNT; // number of indices to traverse backwards in buffer when checking ADCS sweep direction 
 
 // timing science mode object declaration
-ScienceMode scienceMode;
+static ScienceMode scienceMode;
 
 #endif
