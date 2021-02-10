@@ -1,5 +1,9 @@
 #ifndef TIMING_H
 #define TIMING_H 
+/* Function Declarations for Timing module
+ * (class definitions must be included with higher 
+ *   priority than config.hpp, but this file must be 
+ *   included after config.hpp to use BUFFERSIZE) */
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
@@ -7,7 +11,9 @@
 // Other libraries
 
 // NS2 headers
-//#include "config.hpp"
+#include "config.hpp"
+#include "../headers/eventUtil.hpp"
+#include "../headers/comUtil.hpp"
 
 /* - - - - - - Enums - - - - - - - */
 enum Mode // all payload science modes
@@ -25,17 +31,10 @@ enum Mode // all payload science modes
     MODE_NOT_RECOGNIZED        // KEEP AS LAST IN ENUM, used to check that a valid mode is being used
 };
 
-/* - - - - - - Class Definitions - - - - - - */
-class ScienceMode
-{
-    protected:
-        int mode; // according to mode enum
-        // could add more states such as ADCS ready, sweep direction, etc.
-
-    public:
-        ScienceMode();
-        int get();
-        void set(int newMode);
-};
-
+/* - - - - - - Declarations - - - - - - */
+void updatePayloadMode(float buffer[BUFFERSIZE], int bufIdx);
+float smoothBuffer(float buffer[BUFFERSIZE], int bufIdx);
+void checkSweepChange(float buffer[BUFFERSIZE], int bufIdx);
+int wrapBufferIdx(int idx);
+// TODO recoverPayloadMode();
 #endif
