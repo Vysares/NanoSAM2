@@ -24,7 +24,7 @@
 
 
 /* Module Variable Definitions */
-int commandQueue[COMMAND_QUEUE_SIZE] = {};  // initializes as all zeros
+static int commandQueue[COMMAND_QUEUE_SIZE] = {};  // initializes as all zeros
 static int queueIndex = 0;                  // next available index of command queue
 static bool isPaused = false;               // indicates if command execution is paused
 
