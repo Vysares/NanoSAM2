@@ -128,8 +128,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
         //       it honestly might be best to leave it as having to manually start
         //       a data window for testing
         
-        // execute commands  
-        commandHandling();
+
 
         // TODO: memory scrubbing  
 
@@ -219,9 +218,8 @@ void checkSweepChange(float buffer[], int bufIdx){
     float pdOld = smoothBuffer(buffer, wrapBufferIdx(bufIdx - ADCS_SWEEP_IDX_OFFSET));
 
     // change the sweep direction if the voltage crossed the threshold
-    //  if both expressions have the same logical value, it means that the
-    //  photodiode voltage was on the same side of the threshold for both measurements 
-    if ((pdNew < SUN_THRESH_VOLTAGE) != (pdOld < SUN_THRESH_VOLTAGE)){
+    //  requires optic to have recently dropped below the voltage threshold 
+    if ((pdNew < SUN_THRESH_VOLTAGE) && (pdOld > SUN_THRESH_VOLTAGE)){
         sweepDirectionChangeEvent.invoke();
     }
 }

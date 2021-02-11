@@ -35,9 +35,13 @@ int main()
     // TODO: Change main loop to account for critical exit conditions
     while(true) // run main loop forever
     {
+        // execute commands  
+        commandHandling();
+
         // test multiple file structure by calling functions from memUtil.cpp
-        scienceMemoryHandling();
-        break;
+        if (scienceMode.get() != SAFE_MODE){
+            scienceMemoryHandling();
+        }
     }
 
     return 0;
