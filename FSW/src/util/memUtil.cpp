@@ -70,7 +70,7 @@ float dataProcessing()
      */
 
     // convert from Bin number to voltage, assuming board voltage does not fluctuate
-    voltage = photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
+    voltage = (float)photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
 
     return voltage;
 }
