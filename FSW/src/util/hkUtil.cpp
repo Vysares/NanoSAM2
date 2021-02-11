@@ -21,17 +21,10 @@
 #include "../headers/hkUtil.hpp"
 
 
-// safe temperature range
-const int MIN_SAFE_TEMP = 50;
-const int MAX_SAFE_TEMP = 0;
-
-// pins
-const int DIGITAL_THERM_PIN = 14;
-const int ANALOG_THERM_PIN = 15;
-const int OPTICS_THEM_PIN = 16;
 
 /* Module Variable Definitions */
-
+static HkData hkData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
+static int hkIndex = 0;
 
 
 /* - - - - - - Module Driver Functions - - - - - - */
@@ -65,3 +58,20 @@ void handleHousekeeping()
  * Outputs:
  *  None
  */
+void setHeater()
+{
+
+}
+
+void sampleHousekeepingData()
+{
+    hkData[hkIndex].tempAnalog = analogRead(PIN_ANALOG_THERM);
+    hkData[hkIndex].tempDigital = analogRead(PIN_DIGITAL_THERM);
+    hkData[hkIndex].tempOptics = analogRead(PIN_OPTICS_THERM);
+    hkData[hkIndex].analogCurrent = VOLTAGE_RES*(float)analogRead(PIN_AREG_CURR);   // analog regulator current, Amps
+    hkData[hkIndex].digitalCurrent = VOLTAGE_RES*(float)analogRead(PIN_DREG_CURR);   // digital regulator current, Amps
+    hkData[hkIndex].digitalRegPG = VOLTAGE_RES*(float)analogRead(PIN_DREG_PG);    // digital regulator voltage 
+    hkIndex++;
+}
+
+

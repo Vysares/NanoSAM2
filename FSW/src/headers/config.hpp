@@ -27,6 +27,12 @@ const int PIN_ANALOG_THERM = 15;    // analog board thermistor pin
 const int PIN_OPTICS_THERM = 16;    // optics bench thermistor pin
 
 
+/* - - - - - - Teensy ADC - - - - - - */
+const int TEENSY_ADC_BINS = 1023;       // bins, number of bins in Teensy ADC
+const float TEENSY_HIGH_VOLTAGE = 3.3;  // volts, max teensy voltage
+const float TEENSY_LOW_VOLTAGE = 0.0;   // volts, min teensy voltage
+const float TEENSY_VOLTAGE_RANGE = TEENSY_HIGH_VOLTAGE - TEENSY_LOW_VOLTAGE; // volts, Teensy ADC voltage range
+
 /* - - - - - - SPI - - - - - - */
 const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
 
@@ -76,15 +82,14 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 const int HK_SAMPLES_TO_KEEP = 20;   // number of previous housekeeping samples to keep
 
 // safe temperature range
-const double MIN_SAFE_OPTICS_TEMP = 0;  // celsius, minimum safe photodiode temp
-const double MAX_SAFE_OPTICS_TEMP = 50; // celsius, maximum safe photodiode temp
-const double MIN_SAFE_BOARD_TEMP = 0;   // celsius, minimum safe board temp
-const double MAX_SAFE_BOARD_TEMP = 50;  // celsius, maximum safe board temp
+const float MIN_SAFE_OPTICS_TEMP = 0;  // celsius, minimum safe photodiode temp
+const float MAX_SAFE_OPTICS_TEMP = 50; // celsius, maximum safe photodiode temp
+const float MIN_SAFE_BOARD_TEMP = 0;   // celsius, minimum safe board temp
+const float MAX_SAFE_BOARD_TEMP = 50;  // celsius, maximum safe board temp
 
 // thermistor constants
-const int  
-const int THERM_R25 = 10000;         // from thermistor datasheet
-const int THERM_B = 3940;            // from thermistor data sheet
+const float THERM_VCC = 3.3;           // volts
+
 
 // timing constants
 const int HK_SAMPLE_PERIOD_MSEC = 1000;    // milliseconds, interval between housekeeping updates
