@@ -15,20 +15,24 @@
  * = = = = = = = = = = = = = = = = = = = = = = = = = */
 
 /* - - - - - - Teensy Pins - - - - - - */
-const int PIN_HEAT = 0;         // activate heater pin
-const int PIN_WD_RESET = 2;     // Watchdog reset pin
-const int PIN_ADC_CS = 10;      // ADC Chip Select Pin
-const int PIN_AREG_CURR = 17;   // analog regulator current pin
-const int PIN_DREG_CURR = 18;   // digital regulator current pin
-const int PIN_DREG_PG = 20;     // digital regulator 'power good' pin
-const int PIN_PHOTO = 21;       // direct photodiode data pin for use with Teensy ADC
+const int PIN_HEAT = 0;             // activate heater pin
+const int PIN_WD_RESET = 2;         // Watchdog reset pin
+const int PIN_ADC_CS = 10;          // ADC Chip Select Pin
+const int PIN_AREG_CURR = 17;       // analog regulator current pin
+const int PIN_DREG_CURR = 18;       // digital regulator current pin
+const int PIN_DREG_PG = 20;         // digital regulator 'power good' pin
+const int PIN_PHOTO = 21;           // direct photodiode data pin for use with Teensy ADC
+const int PIN_DIGITAL_THERM = 14;   // digital board thermistor pin
+const int PIN_ANALOG_THERM = 15;    // analog board thermistor pin
+const int PIN_OPTICS_THERM = 16;    // optics bench thermistor pin
+
 
 /* - - - - - - SPI - - - - - - */
-const int SPI_MAX_SPEED = 2000000; // clock speed of 2MHz for SPI
+const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
 
 /* - - - - - - Serial - - - - - - */
-const int SERIAL_BAUD = 9600;
-const int SERIAL_TIMEOUT = 50;      // time to wait for serial input, ms
+const int SERIAL_BAUD = 9600;       // Hz, baud rate of serial connection
+const int SERIAL_TIMEOUT = 50;      // milliseconds, time to wait for serial input
 
 /* = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Module Constants  = = = = = = =
@@ -50,19 +54,43 @@ const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices
 const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
 
 // timing constants
-const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // millisec, time between samples  
+const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  
 const int WINDOW_LENGTH_MSEC = WINDOW_LENGTH_SEC * 1000; // milliseconds, length of science data
 
 // Events
 static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that duration arg is ms
 static Event saveBufferEvent;
 
+
 /* - - - - - - Command Handling Module - - - - - - */
 const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
 const int SERIAL_TIMEOUT_MSEC = 50;     // milliseconds, maximum time to wait for serial input
 
+
 /* - - - - - - Fault Mitigation Module - - - - - - */
-const int WD_RESET_INTERVAL = 100;  // watchdog feeding interval, ms
-const int WD_PULSE_DUR = 10;        // watchdog reset signal duration, MICROSECONDS!!!
+const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
+const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset signal duration
+
+
+/* - - - - - - Housekeeping Module - - - - - - */
+const int HK_SAMPLES_TO_KEEP = 20;   // number of previous housekeeping samples to keep
+
+// safe temperature range
+const double MIN_SAFE_OPTICS_TEMP = 0;  // celsius, minimum safe photodiode temp
+const double MAX_SAFE_OPTICS_TEMP = 50; // celsius, maximum safe photodiode temp
+const double MIN_SAFE_BOARD_TEMP = 0;   // celsius, minimum safe board temp
+const double MAX_SAFE_BOARD_TEMP = 50;  // celsius, maximum safe board temp
+
+// thermistor constants
+const int  
+const int THERM_R25 = 10000;         // from thermistor datasheet
+const int THERM_B = 3940;            // from thermistor data sheet
+
+// timing constants
+const int HK_SAMPLE_PERIOD_MSEC = 1000;    // milliseconds, interval between housekeeping updates
+
+// Events
+static RecurringEvent housekeepingEvent(HK_PERIOD_MSEC);
+
 
 #endif
