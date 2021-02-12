@@ -57,7 +57,7 @@ void ScienceMode::setPointingAtSun(bool newState){
 void ScienceMode::sweepChange(){
     // method to check if the ADCS system has permission to change sweep direction
     // and invoke the sweep change event if so
-    if (!sweepChangeLockout.isInvoked()){
+    if (!sweepChangeLockout.checkInvoked()){
         sweepChangeEvent.invoke();
         sweepChangeLockout.start();
     }
