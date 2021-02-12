@@ -244,6 +244,11 @@ void checkSweepChange(float buffer[], int bufIdx){
 /* - - - - - - TODO: recoverPayloadMode - - - - - - *
  * Usage:
  *  Called in init routine to determine the payload mode after an unexpected shutdown
+ *  would be useful to implement in the future if the payload mode list becomes more complicated
+ *  but for now the payload mode is just initialized as STANDBY_MODE in the constructor
+ *  which is sufficient for testing at this stage
+ *  If an unexpected shutdown were to happen at this point, returning to STANDBY_MODE is 
+ *  always the proper response, as this will result in a maximum of two lost data windows
  * 
  * Inputs:
  * 

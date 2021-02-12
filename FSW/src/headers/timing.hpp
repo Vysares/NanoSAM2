@@ -36,5 +36,4 @@ void updatePayloadMode(float buffer[BUFFERSIZE], int bufIdx);
 float voltageRunningMean(float buffer[BUFFERSIZE], int bufIdx);
 void checkSweepChange(float buffer[BUFFERSIZE], int bufIdx);
 int wrapBufferIdx(int idx);
-// TODO recoverPayloadMode();
 #endif
