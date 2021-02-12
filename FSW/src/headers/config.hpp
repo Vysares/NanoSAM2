@@ -52,11 +52,11 @@ const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
 const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 
 // TODO: Update this with size of actual timestamp once it is known
-const int TIMESTAMP_SIZE = 1;   // array indices needed to store timestamp
+const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
 
 // set number of measurements to store in science data buffer
-const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices
-const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
+const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices in array
+const int FILESIZE = (BUFFERSIZE * sizeof(float)) + TIMESTAMP_SIZE; // bytes in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // millisec, time between samples  
