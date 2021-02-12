@@ -207,27 +207,28 @@ void executeCommand(int command)
     {
         // Mode change
         case ENTER_SAFE_MODE: 
-            scienceMode.set(SAFE_MODE);
+            scienceMode.setMode(SAFE_MODE);
             Serial.println("Command Recieved - Entering Safe Mode. This mode must be manually exited.");
             break;
         
         case ENTER_STANDBY_MODE: 
-            scienceMode.set(STANDBY_MODE);
+            scienceMode.setMode(STANDBY_MODE);
             Serial.println("Command Recieved - Entering Standby Mode. This mode must be manually exited.");
             break;
         
         case ENTER_SUNSET_MODE: 
-            scienceMode.set(SUNSET_MODE);
+            scienceMode.setMode(SUNSET_MODE);
             Serial.println("Command Recieved - Entering Sunset Mode.");
             break;
         
         case ENTER_PRE_SUNRISE_MODE: 
-            scienceMode.set(PRE_SUNRISE_MODE);
+            scienceMode.setMode(PRE_SUNRISE_MODE);
             Serial.println("Command Recieved - Entering Pre-Sunrise Mode.");
             break;
         
         case ENTER_SUNRISE_MODE: 
-            scienceMode.set(SUNRISE_MODE);
+            sunriseTimerEvent.start(); // sunrise mode will never end w/o this call
+            scienceMode.setMode(SUNRISE_MODE);
             Serial.println("Command Recieved - Entering Sunrise Mode.");
             break;
         
@@ -258,6 +259,16 @@ void executeCommand(int command)
         case CLEAR_COMMAND_QUEUE: 
             clearCommandQueue();
             Serial.println("Command queue cleared.");
+            break;
+
+        case ADCS_POINTING_AT_SUN_T:
+            scienceMode.setPointingAtSun(true);
+            Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to true.");
+            break;
+
+        case ADCS_POINTING_AT_SUN_F:
+            scienceMode.setPointingAtSun(false);
+            Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to false.");
             break;
 
         // End of list

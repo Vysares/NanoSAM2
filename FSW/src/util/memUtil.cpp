@@ -59,7 +59,7 @@ float dataProcessing()
     SPI.endTransaction();
 
     /* NOTE TO FUTURE TEAMS:
-     *      Append pointing data to the voltage here
+     *      Append ADCS attitude (direction payload is pointing) to the voltage here
      *      pointing data it essential for profiling the aerosol contents
      *      of the atmosphere, if we do not have pointing data associated with
      *      the voltage measurement we do not actually achieve any science
@@ -99,7 +99,7 @@ void scienceMemoryHandling()
         Serial.print("Photodiode Voltage: ");
         Serial.print(photodiodeVoltage);
         Serial.print(" - Payload Mode ");
-        Serial.println(scienceMode.get());
+        Serial.println(scienceMode.getMode());
     }
 
     if (saveBufferEvent.checkInvoked()){
