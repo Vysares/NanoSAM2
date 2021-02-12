@@ -81,7 +81,7 @@ const int WD_PULSE_DUR = 10;        // watchdog reset signal duration, MICROSECO
 const float SUN_THRESH_VOLTAGE = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / 4; // value signifying we are pointing at sun
 const int SMOOTH_IDX_COUNT = 5; // number of indices to use in smoothing the voltage buffer for mode change comparisons
 const int ADCS_SWEEP_IDX_OFFSET = SMOOTH_IDX_COUNT; // number of indices to traverse backwards in buffer when checking ADCS sweep direction 
-const int ADCS_SWEEP_CHANGE_DURATION = 2 * SMOOTH_IDX_COUNT * SAMPLE_PERIOD_MSEC; // duration to prevent ADCS sweep direction change
+const int ADCS_SWEEP_CHANGE_DURATION = 2 * SMOOTH_IDX_COUNT * SAMPLE_PERIOD_MSEC; // millisec, duration to prevent ADCS sweep direction change
 
 // timing science mode object declaration
 static ScienceMode scienceMode;

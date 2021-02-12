@@ -37,6 +37,10 @@ bool init(){
     scienceMode.setPointingAtSun(true);
     scienceMode.setMode(SAFE_MODE); // this is done in the class constructor so we may not need it
 
+    // lockout duration has to be initialized with a bad value for compilation, overwrite
+    //    it here with a value that is a function of existing vars in config.hpp
+    scienceMode.sweepChangeLockout.setDuration(ADCS_SWEEP_CHANGE_DURATION);
+
     return true;
 }
 
