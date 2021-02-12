@@ -66,7 +66,7 @@ int main()
         return -1;
     }
     
-    while(true) // run main loop forever
+    while(true) // run main loop until exit command
     {
         // execute commands  
         commandHandling();
