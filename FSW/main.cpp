@@ -14,9 +14,31 @@
 // Other libraries
 
 // NS2 headers
+#include "src/headers/config.hpp"
+#include "src/headers/comUtil.hpp"
+#include "src/headers/eventUtil.hpp"
+#include "src/headers/timingClass.hpp"
+#include "src/headers/timing.hpp"
 #include "src/headers/memUtil.hpp"
 
 /* - - - - - - Functions - - - - - - */
+
+/* - - - - - - init - - - - - - *
+ * Usage:
+ *  initializes NanoSAM II FSW
+ * 
+ * Inputs:
+ *  none
+ *  
+ * Outputs:
+ *  initStatus - flag (true if initialization was successful)
+ */
+bool init(){
+    scienceMode.setPointingAtSun(true);
+    scienceMode.setMode(SAFE_MODE); // this is done in the class constructor so we may not need it
+
+    return true;
+}
 
 /* - - - - - - main - - - - - - *
  * Usage:
@@ -31,6 +53,10 @@
 int main()
 {
     //carry out initializations
+    if (!init()){
+        Serial.println("Initialization failed, exiting main loop");
+        return -1;
+    }
     
     // TODO: Change main loop to account for critical exit conditions
     while(true) // run main loop forever
@@ -39,11 +65,10 @@ int main()
         commandHandling();
 
         // test multiple file structure by calling functions from memUtil.cpp
-        if (scienceMode.get() != SAFE_MODE){
+        if (scienceMode.getMode() != SAFE_MODE){
             scienceMemoryHandling();
         }
     }
 
     return 0;
 }
-
