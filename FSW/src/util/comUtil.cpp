@@ -207,23 +207,28 @@ void executeCommand(int command)
     {
         // Mode change
         case ENTER_SAFE_MODE: 
-            // TODO: call corresponding function in timing module
+            scienceMode.set(SAFE_MODE);
+            Serial.println("Command Recieved - Entering Safe Mode. This mode must be manually exited.");
             break;
         
         case ENTER_STANDBY_MODE: 
-            // TODO: call corresponding function in timing module
+            scienceMode.set(STANDBY_MODE);
+            Serial.println("Command Recieved - Entering Standby Mode. This mode must be manually exited.");
             break;
         
         case ENTER_SUNSET_MODE: 
-            // TODO: call corresponding function in timing module
+            scienceMode.set(SUNSET_MODE);
+            Serial.println("Command Recieved - Entering Sunset Mode.");
             break;
         
         case ENTER_PRE_SUNRISE_MODE: 
-            // TODO: call corresponding function in timing module
+            scienceMode.set(PRE_SUNRISE_MODE);
+            Serial.println("Command Recieved - Entering Pre-Sunrise Mode.");
             break;
         
         case ENTER_SUNRISE_MODE: 
-            // TODO: call corresponding function in timing module
+            scienceMode.set(SUNRISE_MODE);
+            Serial.println("Command Recieved - Entering Sunrise Mode.");
             break;
         
         // Housekeeping
