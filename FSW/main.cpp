@@ -34,6 +34,8 @@
  *  initStatus - flag (true if initialization was successful)
  */
 bool init(){
+    Serial.print("Initializing NanoSAM II FSW... ");
+
     scienceMode.setPointingAtSun(true);
     scienceMode.setMode(SAFE_MODE); // this is done in the class constructor so we may not need it
 
@@ -41,6 +43,8 @@ bool init(){
     //    it here with a value that is a function of existing vars in config.hpp
     scienceMode.sweepChangeLockout.setDuration(ADCS_SWEEP_CHANGE_DURATION);
 
+
+    Serial.println("Complete");
     return true;
 }
 
@@ -62,7 +66,6 @@ int main()
         return -1;
     }
     
-    // TODO: Change main loop to account for critical exit conditions
     while(true) // run main loop forever
     {
         // execute commands  
@@ -71,6 +74,11 @@ int main()
         // test multiple file structure by calling functions from memUtil.cpp
         if (scienceMode.getMode() != SAFE_MODE){
             scienceMemoryHandling();
+        }
+
+        if (scienceMode.exitMainLoopEvent.checkInvoked()){
+            Serial.println("Exiting main loop");
+            break;
         }
     }
 

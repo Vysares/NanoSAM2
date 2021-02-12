@@ -271,6 +271,11 @@ void executeCommand(int command)
             Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to false.");
             break;
 
+        case EXIT_MAIN_LOOP:
+            scienceMode.exitMainLoopEvent.invoke();
+            Serial.println("Command Recieved - Exiting main loop at next opportunity.");
+            break;
+
         // End of list
         case DO_NOTHING: 
             Serial.println("Doing nothing.");
