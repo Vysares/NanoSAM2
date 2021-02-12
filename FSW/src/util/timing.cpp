@@ -211,8 +211,8 @@ int wrapBufferIdx(int idx){
     Serial.println(" tries.");
     Serial.println("Defaulting to an index of 0 (Timing module)");
     
-    // TODO: Should this return -1 instead to throw an error?
-    return 0;
+    // Return -1 to throw an error since something has gone very wrong if we get here
+    return -1;
 }
 
 /* - - - - - - checkSweepChange - - - - - - *
