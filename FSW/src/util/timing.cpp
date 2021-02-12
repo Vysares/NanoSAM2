@@ -86,7 +86,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
         if (scienceMode.getPointingAtSun()){
 
             // smooth data to avoid a single noisy value prematurely ending a window
-            float pdVoltageSmooth = smoothBuffer(buffer, bufIdx); //photodiode voltage
+            float pdVoltageSmooth = voltageRunningMean(buffer, bufIdx); //photodiode voltage
             
             switch (currentMode) 
             {
@@ -155,7 +155,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
     }
 }
 
-/* - - - - - - smoothBuffer - - - - - - *
+/* - - - - - - voltageRunningMean - - - - - - *
  * Usage:
  *  Apply basic smoothing to a configurable number of the most recent buffer entries
  *  Avoids a single noisy measurement prematurely ending a window
@@ -168,7 +168,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
  * Outputs:
  *  smoothVoltage - average of the previous SMOOTH_IDX_COUNT indices of buffer
  */
-float smoothBuffer(float buffer[], int bufIdx){
+float voltageRunningMean(float buffer[], int bufIdx){
     float smoothVoltage = 0;
     int i, idx;
     for (i = bufIdx; i > bufIdx - SMOOTH_IDX_COUNT; i--){ // decrement to move backwards in time
@@ -229,10 +229,10 @@ int wrapBufferIdx(int idx){
  */
 void checkSweepChange(float buffer[], int bufIdx){
     // get the most recent smoothed photodiode voltage
-    float pdNew = smoothBuffer(buffer, bufIdx);
+    float pdNew = voltageRunningMean(buffer, bufIdx);
 
     // subtract the proper number of indices to get the next most recent photodiode voltage
-    float pdOld = smoothBuffer(buffer, wrapBufferIdx(bufIdx - ADCS_SWEEP_IDX_OFFSET));
+    float pdOld = voltageRunningMean(buffer, wrapBufferIdx(bufIdx - ADCS_SWEEP_IDX_OFFSET));
 
     // change the sweep direction if the voltage crossed the threshold
     //  requires optic to have recently dropped below the voltage threshold 

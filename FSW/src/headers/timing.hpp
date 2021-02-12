@@ -33,7 +33,7 @@ enum Mode // all payload science modes
 
 /* - - - - - - Declarations - - - - - - */
 void updatePayloadMode(float buffer[BUFFERSIZE], int bufIdx);
-float smoothBuffer(float buffer[BUFFERSIZE], int bufIdx);
+float voltageRunningMean(float buffer[BUFFERSIZE], int bufIdx);
 void checkSweepChange(float buffer[BUFFERSIZE], int bufIdx);
 int wrapBufferIdx(int idx);
 // TODO recoverPayloadMode();
