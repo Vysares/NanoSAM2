@@ -97,21 +97,21 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 
 
 /* - - - - - - Housekeeping Module - - - - - - */
-const int HK_SAMPLES_TO_KEEP = 20;   // number of previous housekeeping samples to keep
+const int HK_SAMPLES_TO_KEEP = 100;   // number of previous housekeeping samples to keep
 
 // heater cutoff temperatures
 const float HEATER_TEMP_LOW = 0;     // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
 
 // safe temperature range
-const float MIN_SAFE_OPTICS_TEMP = -20; // celsius, minimum safe photodiode temp
-const float MAX_SAFE_OPTICS_TEMP = 50;  // celsius, maximum safe photodiode temp
-const float MIN_SAFE_BOARD_TEMP = 0;    // celsius, minimum safe board temp
-const float MAX_SAFE_BOARD_TEMP = 50;   // celsius, maximum safe board temp
+const float OPTICS_TEMP_MIN_SAFE = -20; // celsius, minimum safe photodiode temp
+const float OPTICS_TEMP_MAX_SAFE = 50;  // celsius, maximum safe photodiode temp
+const float BOARD_TEMP_MIN_SAFE = 0;    // celsius, minimum safe board temp
+const float BOARD_TEMP_MAX_SAFE = 50;   // celsius, maximum safe board temp
 
-// thermistor constants
-const float THERM_VCC = 3.3;           // volts
-
+// power supply expected voltage range
+const float PG_VOLTAGE_MAX_EXPECTED = 3.4;  // volts, maximum expected reading from "power good" pin
+const float PG_VOLTAGE_MIN_EXPECTED = 3.2;  // volts, minimum expected reading from "power good" pin
 
 // timing constants
 const int HK_SAMPLE_PERIOD_MSEC = 1000;    // milliseconds, interval between housekeeping updates
