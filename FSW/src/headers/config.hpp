@@ -117,7 +117,7 @@ const float PG_VOLTAGE_MIN_EXPECTED = 3.2;  // volts, minimum expected reading f
 const int HK_SAMPLE_PERIOD_MSEC = 1000;    // milliseconds, interval between housekeeping updates
 
 // Events
-static RecurringEvent housekeepingEvent(HK_PERIOD_MSEC);
+static RecurringEvent housekeepingTimer(HK_SAMPLE_PERIOD_MSEC);
 
 
 /* - - - - - - Timing Module - - - - - - */

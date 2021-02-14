@@ -22,9 +22,8 @@
 
 
 /* Module Variable Definitions */
-static HkData hkData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
+static HousekeepingData hkData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
 static int hkIndex = 0;
-
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -64,11 +63,11 @@ void handleHousekeeping()
  */
 void setHeater()
 {
-    if (hkData[hkIndex].opticsTemp >= HEATER_TEMP_HIGH)
+    if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH)
     {
         digitalWrite(PIN_HEAT, LOW); // turn heater off
     }
-    else if (hkData[hkIndex].opticsTemp <= HEATER_TEMP_LOW)
+    else if (latestHkSample.opticsTemp <= HEATER_TEMP_LOW)
     {
         digitalWrite(PIN_HEAT, HIGH); // turn heater on
     }
@@ -93,26 +92,27 @@ void sampleHousekeepingData()
     float digitalTempVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_DIGITAL_THERM);
     
     // update housekeeping data
-    hkData[hkIndex].opticsTemp = voltageToTemp(opticsTempVoltage); 
-    hkData[hkIndex].analogTemp = voltageToTemp(analogTempVoltage);
-    hkData[hkIndex].digitalTemp = voltageToTemp(digitalTempVoltage);
-    hkData[hkIndex].analogCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_AREG_CURR);
-    hkData[hkIndex].digitalCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_CURR);   
-    hkData[hkIndex].digitalRegPG = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_PG);
+    latestHkSample.opticsTemp = voltageToTemp(opticsTempVoltage); 
+    latestHkSample.analogTemp = voltageToTemp(analogTempVoltage);
+    latestHkSample.digitalTemp = voltageToTemp(digitalTempVoltage);
+    latestHkSample.analogCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_AREG_CURR);
+    latestHkSample.digitalCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_CURR);   
+    latestHkSample.digitalRegPG = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_PG);
+    hkData[hkIndex] = latestHkSample; // update data array
 
     // Check if values are in acceptable ranges
     // TODO: Log a fault for every case
-    if (hkData[hkIndex].opticsTemp > OPTICS_TEMP_MAX_SAFE) { } // optics temp too high
-    else if (hkData[hkIndex].opticsTemp < OPTICS_TEMP_MIN_SAFE) { } // optics temp too low
+    if (latestHkSample.opticsTemp > OPTICS_TEMP_MAX_SAFE) { } // optics temp too high
+    else if (latestHkSample.opticsTemp < OPTICS_TEMP_MIN_SAFE) { } // optics temp too low
 
-    if (hkData[hkIndex].analogTemp > BOARD_TEMP_MAX_SAFE) { } // analog board temp too high
-    else if (hkData[hkIndex].analogTemp < BOARD_TEMP_MIN_SAFE) { } // analog board temp too low
+    if (latestHkSample.analogTemp > BOARD_TEMP_MAX_SAFE) { } // analog board temp too high
+    else if (latestHkSample.analogTemp < BOARD_TEMP_MIN_SAFE) { } // analog board temp too low
 
-    if (hkData[hkIndex].digitalTemp > BOARD_TEMP_MAX_SAFE) { } // digital board temp too high
-    else if (hkData[hkIndex].digitalTemp < BOARD_TEMP_MIN_SAFE) { } // digital board temp too low
+    if (latestHkSample.digitalTemp > BOARD_TEMP_MAX_SAFE) { } // digital board temp too high
+    else if (latestHkSample.digitalTemp < BOARD_TEMP_MIN_SAFE) { } // digital board temp too low
 
-    if (hkData[hkIndex].digitalRegPG > PG_VOLTAGE_MAX_EXPECTED) { } // digital regulator PG signal too high
-    else if (hkData[hkIndex].digitalRegPG < PG_VOLTAGE_MIN_EXPECTED) { } // digital regulator PG signal too low
+    if (latestHkSample.digitalRegPG > PG_VOLTAGE_MAX_EXPECTED) { } // digital regulator PG signal too high
+    else if (latestHkSample.digitalRegPG < PG_VOLTAGE_MIN_EXPECTED) { } // digital regulator PG signal too low
 
 }
 
@@ -134,13 +134,13 @@ float voltageToTemp(float voltage)
     
     // find lower adjacent entry
     int i = 0;
-    while (thermLookup[i].voltage < voltage && i < thermLookupSize - 1) { i++; }
+    while (thermLookup[i].voltage > voltage && i < thermLookupSize - 1) { i++; }
     
-    float tempGap = thermLookup[i + 1].temperature - thermLookup[i].temperature; // temp difference between upper and lower entries
-    float voltageGap = thermLookup[i + 1].voltage - thermLookup[i].voltage; // voltage difference between upper and lower entries
+    float tempGap = thermLookup[i - 1].temperature - thermLookup[i].temperature; // temp difference between upper and lower entries
+    float voltageGap = thermLookup[i - 1].voltage - thermLookup[i].voltage; // voltage difference between upper and lower entries
     
     // interpolate temperature
-    float temperature = tempGap*(voltage - thermLookup[i].voltage) / voltageGap;
+    float temperature = tempGap*(voltage - thermLookup[i].voltage) / voltageGap + thermLookup[i].temperature;
     return temperature;
 }
 
@@ -158,7 +158,7 @@ float voltageToTemp(float voltage)
 void timeSortHkData()
 {
     // create array to hold data in time ascending order
-    HkData timeSortHkData[HK_SAMPLES_TO_KEEP];
+    HousekeepingData timeSortHkData[HK_SAMPLES_TO_KEEP];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
@@ -175,6 +175,10 @@ void timeSortHkData()
         j++;
     }
 
-    hkIndex = 0;
-    hkData = timeSortHkData;
+    // copy sorted array to hkData
+    for (int i = 0; i < HK_SAMPLES_TO_KEEP; i++)
+    {
+        hkData[i] = timeSortHkData[i];
+    }
+    hkIndex = 0; // reset index
 }
