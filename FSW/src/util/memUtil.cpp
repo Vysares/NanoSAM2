@@ -59,7 +59,7 @@ float dataProcessing()
     SPI.endTransaction();
 
     /* NOTE TO FUTURE TEAMS:
-     *      Append pointing data to the voltage here
+     *      Append ADCS attitude (direction payload is pointing) to the voltage here
      *      pointing data it essential for profiling the aerosol contents
      *      of the atmosphere, if we do not have pointing data associated with
      *      the voltage measurement we do not actually achieve any science
@@ -70,7 +70,7 @@ float dataProcessing()
      */
 
     // convert from Bin number to voltage, assuming board voltage does not fluctuate
-    voltage = photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
+    voltage = (float)photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
 
     return voltage;
 }
@@ -99,7 +99,7 @@ void scienceMemoryHandling()
         Serial.print("Photodiode Voltage: ");
         Serial.print(photodiodeVoltage);
         Serial.print(" - Payload Mode ");
-        Serial.println(scienceMode.get());
+        Serial.println(scienceMode.getMode());
     }
 
     if (saveBufferEvent.checkInvoked()){
@@ -183,7 +183,7 @@ bool saveBuffer(int &index){
     int fileIdx = 0; // iterator for loop checking file existence
     bool fileFlag = true;
     char filename[] = "scienceFile0.csv";   // null-terminated char array
-    int fileIdxOffset = 11;                 // index of file number
+    int fileIdxOffset = 11;                 // index of file number in char array
 
     while (fileFlag){
         if (fileIdx < MAXFILES){ // prevent infinite loop
@@ -214,10 +214,49 @@ bool saveBuffer(int &index){
     // TODO: may need to seek position to end of file before writing again
     //file.seek(BUFFERSIZE);  
 
-    //TODO: decide on timestamp format and append it to file
-    //file.write(timestamp);
+    // compute and write timestamp
+    unsigned long timestamp = calcTimestamp();
+    file.write(&timestamp, sizeof(timestamp));
 
     index = 0; // reset index to start of array since we have saved the buffer
 
     return status; // return whether or not file was successfully created
+}
+
+/* - - - - - - calcTimestamp - - - - - - *
+ * Belongs to Science Memory Handling Module
+ *  
+ * Usage:
+ *  computes the relative time between teensy startup and when this file is saved
+ *  returns relative time be appended to the end of the file   
+ *  NOTE: in the file, only the timestamp of the final data point will be 
+ *        available. Use GSW and the sampling rate of FSW to backsolve for the 
+ *        timestamp of all preceding data points
+ * 
+ * FOR FUTURE TEAMS:
+ * this year's time is relative since we do not have a bus clock signal
+ *   however, it may be desirable to downlink the times in UTC or another standardized
+ *   time so that you do not have to keep track of the time that the teensy powered on
+ * By piping in a clock signal from the bus, you could potentially use the 
+ *  teensy time library to append timestamp
+ *  https://www.pjrc.com/teensy/td_libs_Time.html
+ *  might be useful to convert timestamp to ISO 8601 timekeeping standard for storing to file
+ *       ([YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss] where [sss] is subseconds)
+ * 
+ * Inputs:
+ *  none
+ *  
+ * Outputs:
+ *  relative timestamp
+ */
+unsigned long calcTimestamp(){
+    unsigned long currentTimeRelative = millis(); // milliseconds    
+
+    // FUTURE TEAMS: offset this relative time by the known time from the bus so that 
+    // a UTC (or some other standard) time is downlinked instead of a relative time
+
+    // for now we just return relative time
+    unsigned long timestamp = currentTimeRelative; 
+
+    return timestamp;
 }

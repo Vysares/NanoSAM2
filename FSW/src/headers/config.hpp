@@ -11,8 +11,8 @@
  */
 
 // NS2 Headers
-#include "timingClass.hpp"
 #include "eventUtil.hpp"
+#include "timingClass.hpp"
 
 /* = = = = = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Configuration Declarations  = = = = = = 
@@ -52,11 +52,11 @@ const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
 const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 
 // TODO: Update this with size of actual timestamp once it is known
-const int TIMESTAMP_SIZE = 1;   // array indices needed to store timestamp
+const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
 
 // set number of measurements to store in science data buffer
-const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices
-const int FILESIZE = BUFFERSIZE + TIMESTAMP_SIZE;
+const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices in array
+const int FILESIZE = (BUFFERSIZE * sizeof(float)) + TIMESTAMP_SIZE; // bytes in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // millisec, time between samples  
@@ -68,11 +68,6 @@ static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that dur
 static Event saveBufferEvent;
 static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
 static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
-
-// FUTURE TEAMS: this event is invoked when the ADCS should switch its sweep direction
-//   so link your ADCS module with this event to tell it when to switch direction 
-//      look at checkSweepChange() in timing.cpp for more info
-static Event sweepDirectionChangeEvent; 
 
 /* - - - - - - Command Handling Module - - - - - - */
 const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
@@ -86,6 +81,7 @@ const int WD_PULSE_DUR = 10;        // watchdog reset signal duration, MICROSECO
 const float SUN_THRESH_VOLTAGE = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / 4; // value signifying we are pointing at sun
 const int SMOOTH_IDX_COUNT = 5; // number of indices to use in smoothing the voltage buffer for mode change comparisons
 const int ADCS_SWEEP_IDX_OFFSET = SMOOTH_IDX_COUNT; // number of indices to traverse backwards in buffer when checking ADCS sweep direction 
+const int ADCS_SWEEP_CHANGE_DURATION = 2 * SMOOTH_IDX_COUNT * SAMPLE_PERIOD_MSEC; // millisec, duration to prevent ADCS sweep direction change
 
 // timing science mode object declaration
 static ScienceMode scienceMode;

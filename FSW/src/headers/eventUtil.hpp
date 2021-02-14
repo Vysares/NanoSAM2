@@ -36,6 +36,7 @@ class TimedEvent : public Event
 
     public:
         TimedEvent(unsigned long newDuration);
+        TimedEvent(); // overloaded constructor to set default duration
         void setDuration(unsigned long newDuration);
         bool checkInvoked();
         void start();
