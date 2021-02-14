@@ -11,7 +11,7 @@
 // (all of them)
 #include "config.hpp"
 #include "memUtil.hpp"
-
+#include "timing.hpp" //for mode enum
 
 /* - - - - - - Declarations - - - - - - */
 void commandHandling();

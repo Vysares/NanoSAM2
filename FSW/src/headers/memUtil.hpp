@@ -10,7 +10,7 @@
 #include <SPI.h> // will probably use this shortly, but it is not in use yet
 
 // NS2 headers
-
+#include "config.hpp"
 
 /* - - - - - - Declarations - - - - - - */
 float dataProcessing();
