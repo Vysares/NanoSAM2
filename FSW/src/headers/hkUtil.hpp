@@ -17,7 +17,7 @@ void sampleHousekeepingData();
 float voltageToTemp(float voltage);
 void timeSortHkData();
 
-struct HousekeepingData // stores housekeeping data
+struct HousekeepingData // stores one point of housekeeping data
 {
     float opticsTemp;      // optics bench temp, celsius
     float analogTemp;      // analog board temp, celsius
@@ -27,7 +27,7 @@ struct HousekeepingData // stores housekeeping data
     float digitalRegPG;    // digital regulator "power good" signal, volts
 };
 
-static HousekeepingData latestHkSample;
+static HousekeepingData latestHkSample;             // latest point of housekeeping data
 
 struct TempVoltagePair { float temperature, voltage; };
 
