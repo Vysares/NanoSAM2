@@ -31,7 +31,7 @@ static HousekeepingData latestHkSample;
 
 struct TempVoltagePair { float temperature, voltage; };
 
-// thermistor temperature/voltage lookup table
+// thermistor temperature (deg C) / voltage (Volts) lookup table
 const TempVoltagePair thermLookup[] = { { -30.000F, 2.747F },
                                         { -25.000F, 2.580F },
                                         { -20.000F, 2.388F },
