@@ -13,12 +13,29 @@ class ScienceMode
 {
     protected:
         int mode; // according to mode enum
-        // could add more states such as ADCS ready, sweep direction, etc.
-
+        bool adcsPointingAtSun; // flag from ADCS signaling optic is pointing at sun
+        
     public:
         ScienceMode();
-        int get();
-        void set(int newMode);
+        int getMode();
+        void setMode(int newMode);
+
+        // setter and getter for adcsPointingAtSun
+        bool getPointingAtSun();
+        void setPointingAtSun(bool newState);
+        void sweepChange();
+
+        // event for exiting main loop
+        Event exitMainLoopEvent;
+
+        // FUTURE TEAMS: this event is invoked when the ADCS should switch its sweep direction
+        //   so link your ADCS module with this event to tell it when to switch direction 
+        //      look at checkSweepChange() in timing.cpp for more info
+        Event sweepChangeEvent;
+        
+        // lockout to prevent sweep change while ADCS is reversing direction
+        // (has placeholder duration for compilation, this is set properly during initialization)
+        TimedEvent sweepChangeLockout; 
 };
 
 #endif

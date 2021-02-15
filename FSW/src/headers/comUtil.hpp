@@ -43,6 +43,13 @@ enum Command // all possible commands
     RESUME_EXECUTE_COMMANDS,      // resume command execution
     CLEAR_COMMAND_QUEUE,          // clears all commands from queue
     
+    // ADCS
+    ADCS_POINTING_AT_SUN_T,       // sets pointing at sun flag to true
+    ADCS_POINTING_AT_SUN_F,       // sets pointing at sun flag to false
+
+    // Main Loop Commands
+    EXIT_MAIN_LOOP,
+
     // End of list
     DO_NOTHING                    // do nothing. KEEP THIS LAST IN THE ENUM, it is used for indexing.
 };

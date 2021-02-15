@@ -30,14 +30,37 @@
  */
 ScienceMode::ScienceMode(){ // constructor
     mode = STANDBY_MODE;
+    adcsPointingAtSun = false;
 }
 
-int ScienceMode::get(){
+int ScienceMode::getMode(){
     return mode;
 }
 
-void ScienceMode::set(int newMode){
+void ScienceMode::setMode(int newMode){
     mode = newMode;
+}
+
+bool ScienceMode::getPointingAtSun(){
+    return adcsPointingAtSun;
+}
+
+void ScienceMode::setPointingAtSun(bool newState){
+    /*FUTURE TEAMS: Flesh out the below if statement with the logic for 
+    *   controlling the payload mode based on ADCS outputs 
+    * For ground testing this is hardcoded as true in config.hpp,
+    *   but once ADCS is implemented you will need to dynamically update this,
+    *   i.e.    ADCS_READY = (digitalRead(BUS_READY_PIN) == HIGH); */
+    adcsPointingAtSun = newState;
+}
+
+void ScienceMode::sweepChange(){
+    // method to check if the ADCS system has permission to change sweep direction
+    // and invoke the sweep change event if so
+    if (!sweepChangeLockout.checkInvoked()){
+        sweepChangeEvent.invoke();
+        sweepChangeLockout.start();
+    }
 }
 
 /* - - - - - - Helper Functions - - - - - - */
@@ -57,19 +80,13 @@ void ScienceMode::set(int newMode){
  */
 void updatePayloadMode(float buffer[], int bufIdx){
 
-    int currentMode = scienceMode.get();
+    int currentMode = scienceMode.getMode();
     
     if ((currentMode < MODE_NOT_RECOGNIZED) && (currentMode > STANDBY_MODE)){
-        
-        /*FUTURE TEAMS: Flesh out the below if statement with the logic for 
-        *   controlling the payload mode based on ADCS outputs 
-        * For ground testing this is hardcoded as true in config.hpp,
-        *   but once ADCS is implemented you will need to dynamically update this,
-        *   i.e.    ADCS_READY = (digitalRead(BUS_READY_PIN) == HIGH); */
-        if (ADCS_READY_FOR_SCIENCE){
+        if (scienceMode.getPointingAtSun()){
 
             // smooth data to avoid a single noisy value prematurely ending a window
-            float pdVoltageSmooth = smoothBuffer(buffer, bufIdx); //photodiode voltage
+            float pdVoltageSmooth = voltageRunningMean(buffer, bufIdx); //photodiode voltage
             
             switch (currentMode) 
             {
@@ -82,7 +99,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
                         if (sweepTimeoutEvent.checkInvoked()){
                             // if we have waited long enough for ADCS sweeping
                             saveBufferEvent.invoke();
-                            scienceMode.set(PRE_SUNRISE_MODE);
+                            scienceMode.setMode(PRE_SUNRISE_MODE);
                         }
 
                     } else { 
@@ -95,7 +112,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
                     if (pdVoltageSmooth >= SUN_THRESH_VOLTAGE){
                         // start sunrise event 
                         sunriseTimerEvent.start();
-                        scienceMode.set(SUNRISE_MODE);
+                        scienceMode.setMode(SUNRISE_MODE);
                     }
                     break;
 
@@ -108,18 +125,18 @@ void updatePayloadMode(float buffer[], int bufIdx){
                     // and return to standby
                     if (sunriseTimerEvent.checkInvoked()){
                         saveBufferEvent.invoke();
-                        scienceMode.set(STANDBY_MODE);
+                        scienceMode.setMode(STANDBY_MODE);
                     }
                     break;
             
                 default: // mode not recognized, this should not happen
-                    scienceMode.set(MODE_NOT_RECOGNIZED);
+                    scienceMode.setMode(MODE_NOT_RECOGNIZED);
                     break;
             }
 
         } else { // standby until ADCS points payload at the sun
             Serial.println("ADCS Not Ready for Science Measurements (Timing Module)");
-            scienceMode.set(STANDBY_MODE);
+            scienceMode.setMode(STANDBY_MODE);
         }
 
     } else if (currentMode == STANDBY_MODE){
@@ -128,18 +145,17 @@ void updatePayloadMode(float buffer[], int bufIdx){
         //       it honestly might be best to leave it as having to manually start
         //       a data window for testing
         
-        // execute commands  
-        commandHandling();
+
 
         // TODO: memory scrubbing  
 
     } else { // mode was not recognized, this should not happen
         Serial.println("Payload Mode not recognized (Timing Module) - Defaulting to Safe Mode");
-        scienceMode.set(SAFE_MODE);
+        scienceMode.setMode(SAFE_MODE);
     }
 }
 
-/* - - - - - - smoothBuffer - - - - - - *
+/* - - - - - - voltageRunningMean - - - - - - *
  * Usage:
  *  Apply basic smoothing to a configurable number of the most recent buffer entries
  *  Avoids a single noisy measurement prematurely ending a window
@@ -152,7 +168,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
  * Outputs:
  *  smoothVoltage - average of the previous SMOOTH_IDX_COUNT indices of buffer
  */
-float smoothBuffer(float buffer[], int bufIdx){
+float voltageRunningMean(float buffer[], int bufIdx){
     float smoothVoltage = 0;
     int i, idx;
     for (i = bufIdx; i > bufIdx - SMOOTH_IDX_COUNT; i--){ // decrement to move backwards in time
@@ -195,8 +211,8 @@ int wrapBufferIdx(int idx){
     Serial.println(" tries.");
     Serial.println("Defaulting to an index of 0 (Timing module)");
     
-    // TODO: Should this return -1 instead to throw an error?
-    return 0;
+    // Return -1 to throw an error since something has gone very wrong if we get here
+    return -1;
 }
 
 /* - - - - - - checkSweepChange - - - - - - *
@@ -213,22 +229,26 @@ int wrapBufferIdx(int idx){
  */
 void checkSweepChange(float buffer[], int bufIdx){
     // get the most recent smoothed photodiode voltage
-    float pdNew = smoothBuffer(buffer, bufIdx);
+    float pdNew = voltageRunningMean(buffer, bufIdx);
 
     // subtract the proper number of indices to get the next most recent photodiode voltage
-    float pdOld = smoothBuffer(buffer, wrapBufferIdx(bufIdx - ADCS_SWEEP_IDX_OFFSET));
+    float pdOld = voltageRunningMean(buffer, wrapBufferIdx(bufIdx - ADCS_SWEEP_IDX_OFFSET));
 
     // change the sweep direction if the voltage crossed the threshold
-    //  if both expressions have the same logical value, it means that the
-    //  photodiode voltage was on the same side of the threshold for both measurements 
-    if ((pdNew < SUN_THRESH_VOLTAGE) != (pdOld < SUN_THRESH_VOLTAGE)){
-        sweepDirectionChangeEvent.invoke();
+    //  requires optic to have recently dropped below the voltage threshold 
+    if ((pdNew < SUN_THRESH_VOLTAGE) && (pdOld > SUN_THRESH_VOLTAGE)){
+        scienceMode.sweepChange();
     }
 }
 
 /* - - - - - - TODO: recoverPayloadMode - - - - - - *
  * Usage:
  *  Called in init routine to determine the payload mode after an unexpected shutdown
+ *  would be useful to implement in the future if the payload mode list becomes more complicated
+ *  but for now the payload mode is just initialized as STANDBY_MODE in the constructor
+ *  which is sufficient for testing at this stage
+ *  If an unexpected shutdown were to happen at this point, returning to STANDBY_MODE is 
+ *  always the proper response, as this will result in a maximum of two lost data windows
  * 
  * Inputs:
  * 

@@ -52,6 +52,15 @@ TimedEvent::TimedEvent(unsigned long newDuration) // constructor
     isInvoked = true;  // A timed event will not invoke itself unless start() is first called
 }
 
+TimedEvent::TimedEvent() // overloaded constructor to set default duration
+{
+    unsigned long defaultDuration = 1000; // milliseconds
+    duration = defaultDuration; 
+    currentMillis = millis();
+    nextInvokeMillis = 0;
+    isInvoked = true;  // A timed event will not invoke itself unless start() is first called
+}
+
 void TimedEvent::setDuration(unsigned long newDuration) // set new duration
 {
     duration = newDuration;
