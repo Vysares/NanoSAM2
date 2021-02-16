@@ -64,7 +64,7 @@ void handleHousekeeping()
 void setHeater()
 {
     // force heater on (if set in config)
-    if (forceHeaterOn)
+    if (FORCE_HEATER_ON)
     {
         digitalWrite(PIN_HEAT, HIGH);
         return;
@@ -95,14 +95,14 @@ void setHeater()
 void sampleHousekeepingData()
 {
     // read thermistor voltage values
-    float opticsTempVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_OPTICS_THERM);
-    float analogTempVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_ANALOG_THERM);
-    float digitalTempVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_DIGITAL_THERM);
+    float opticsThermVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_OPTICS_THERM);
+    float analogThermVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_ANALOG_THERM);
+    float digitalThermVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_DIGITAL_THERM);
     
     // update housekeeping data
-    latestHkSample.opticsTemp = voltageToTemp(opticsTempVoltage); 
-    latestHkSample.analogTemp = voltageToTemp(analogTempVoltage);
-    latestHkSample.digitalTemp = voltageToTemp(digitalTempVoltage);
+    latestHkSample.opticsTemp = voltageToOpticsTemp(opticsThermVoltage); 
+    latestHkSample.analogTemp = voltageToBoardTemp(analogThermVoltage);
+    latestHkSample.digitalTemp = voltageToBoardTemp(digitalThermVoltage);
     latestHkSample.analogCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_AREG_CURR);
     latestHkSample.digitalCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_CURR);   
     latestHkSample.digitalRegPG = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_PG);
@@ -125,10 +125,11 @@ void sampleHousekeepingData()
 
 }
 
-/* - - - - - - voltageToTemp - - - - - - *
+/* - - - - - - voltageToBoardTemp - - - - - - *
  * Usage:
- *  Interpolates and returns the corresponding temperature for a given thermistor voltage reading
- *  based on the data in thermLookup. 
+ *  Returns the corresponding temperature of the board thermistors 
+ *  for a given thermistor voltage reading.
+ *  Temperature is interpolated from the data in thermLookup. 
  *  Will extrapolate beyond max and min entries in thermLookup if needed
  * 
  * Inputs:
@@ -137,20 +138,38 @@ void sampleHousekeepingData()
  * Outputs:
  *  temperature - celsius, the temperature corresponding to thermistor voltage reading
  */
-float voltageToTemp(float voltage)
+float voltageToBoardTemp(float voltage)
 {
-    int thermLookupSize = sizeof(thermLookup) / sizeof(thermLookup[0]); // size of lookup table
-    
+    int thermLookupSize = sizeof(boardThermLookup) / sizeof(boardThermLookup[0]); // size of thermistor lookup table
+
     // find lower adjacent entry
-    int i = 0;
+    int i = 1;
     while (thermLookup[i].voltage > voltage && i < thermLookupSize - 1) { i++; }
-    
+
     float tempGap = thermLookup[i - 1].temperature - thermLookup[i].temperature; // temp difference between upper and lower entries
     float voltageGap = thermLookup[i - 1].voltage - thermLookup[i].voltage; // voltage difference between upper and lower entries
-    
+
     // interpolate temperature
     float temperature = tempGap*(voltage - thermLookup[i].voltage) / voltageGap + thermLookup[i].temperature;
+
     return temperature;
+}
+
+/* - - - - - - voltageToOpticsTemp - - - - - - *
+ * Usage:
+ *  Returns the temperature of optics thermistor for a given thermistor voltage reading.
+ *  The relationship between voltage and temp for is linear.
+ * 
+ * Inputs:
+ *  voltage - thermistor voltage
+ *  
+ * Outputs:
+ *  temperature - celsius, the temperature corresponding to thermistor voltage reading
+ */
+float voltageToOpticsTemp(float voltage)
+{
+    float opticsTemp = ( (voltage - OPTICS_THERM_CAL_VOLTAGE) / OPTICS_THERM_GAIN ) + OPTICS_THERM_CAL_TEMP;
+    return opticsTemp;
 }
 
 /* - - - - - - timeSortHkData - - - - - - *

@@ -14,7 +14,7 @@
 void handleHousekeeping();
 void setHeater();
 void sampleHousekeepingData();
-float voltageToTemp(float voltage);
+float voltageToBoardTemp(float voltage);
 void timeSortHkData();
 
 struct HousekeepingData // stores one point of housekeeping data
@@ -28,26 +28,24 @@ struct HousekeepingData // stores one point of housekeeping data
     float timeMillis;      // time that sample was taken, milliseconds
 };
 
-static HousekeepingData latestHkSample;             // latest point of housekeeping data
+static HousekeepingData latestHkSample;                 // latest point of housekeeping data
+struct TempVoltagePair { float temperature, voltage; }; // used for entries in thermistor lookup table
 
-struct TempVoltagePair { float temperature, voltage; };
-
-// thermistor temperature (deg C) / voltage (Volts) lookup table
-const TempVoltagePair thermLookup[] = { { -30.000F, 2.747F },
-                                        { -25.000F, 2.580F },
+// Thermistor lookup table for board thermistors, temperature (deg C) / voltage (Volts).
+const TempVoltagePair thermLookup[] = { { -40.000F, 2.999F },
+                                        { -30.000F, 2.747F },
                                         { -20.000F, 2.388F },
-                                        { -15.000F, 2.177F },
                                         { -10.000F, 1.953F },
-                                        { -5.000F, 1.726F },
                                         { 0.000F, 1.505F },
-                                        { 5.000F, 1.296F },
                                         { 10.000F, 1.105F },
-                                        { 15.000F, 0.935F },
                                         { 20.000F, 0.787F },
-                                        { 25.000F, 0.660F },
                                         { 30.000F, 0.552F },
-                                        { 35.000F, 0.462F },
-                                        { 40.000F, 0.387F } };
-
+                                        { 40.000F, 0.387F },
+                                        { 50.000F, 0.272F },
+                                        { 60.000F, 0.194F },
+                                        { 70.000F, 0.140F },
+                                        { 80.000F, 0.102F },
+                                        { 90.000F, 0.076F } };
+// End thermistor lookup table
 
 #endif

@@ -97,12 +97,17 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 
 
 /* - - - - - - Housekeeping Module - - - - - - */
-const int HK_SAMPLES_TO_KEEP = 100;   // number of previous housekeeping samples to keep
+const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
 
 // heater cutoff temperatures
 static bool forceHeaterOn = false;   // if true, heater will always be on regardless of temperature
-const float HEATER_TEMP_LOW = -20;     // celsius, heater will turn on at or below this temp
+const float HEATER_TEMP_LOW = -20;   // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
+
+// optics thermistor calibration
+const float OPTICS_THERM_CAL_TEMP = 30;            // celsius, known temperature of optics baseline
+static float OPTICS_THERM_CAL_VOLTAGE = 1.777F;    // volts, thermistor voltage at baseline temp
+const float OPTICS_THERM_GAIN = -0.0109;           // volts/deg celsius, V/T relationship for optics thermistor
 
 // safe temperature range
 const float OPTICS_TEMP_MIN_SAFE = -35; // celsius, minimum safe photodiode temp

@@ -234,17 +234,36 @@ void executeCommand(int command)
         
         // Housekeeping
         case DISABLE_WD_RESET: 
-            // TODO: change WD timer value to >1.2 sec by calling setDuration()
+            // TODO: change wd timer duration by calling setDuration()
             break;
         
         case HEATER_ON: 
-            // TODO: call corresponding function in housekeeping module
+            digitalWrite(PIN_HEAT, HIGH);
+            Serial.println("Command Recieved - Heater ON.");
             break;
         
         case HEATER_OFF: 
-            // TODO: call corresponding function in houskeeping module
+            digitalWrite(PIN_HEAT, LOW);
+            Serial.println("Command Recieved - Heater OFF.");
             break;
         
+        case FORCE_HEATER_ON_T:
+            FORCE_HEATER_ON = true;
+            Serial.println("Command Recieved - Heater forced ON.");
+            break;
+
+        case FORCE_HEATER_ON_F:
+            FORCE_HEATER_ON = false;
+            Serial.println("Command Recieved - Heater forced OFF.");
+            break;
+
+        case CALIBRATE_OPTICS_THERM:
+            OPTICS_THERM_CAL_VOLTAGE = TEENSY_VOLTAGE_RES*analogRead(PIN_OPTICS_THERM);
+            Serial.print("Command Recieved - Optics thermistor calibrated at ");
+            Serial.print(OPTICS_THERM_CAL_TEMP);
+            Serial.println(" C");
+            break;
+
         // Command Handling
         case PAUSE_EXECUTE_COMMANDS: 
             isPaused = true;
@@ -261,6 +280,7 @@ void executeCommand(int command)
             Serial.println("Command queue cleared.");
             break;
 
+        // ADCS
         case ADCS_POINTING_AT_SUN_T:
             scienceMode.setPointingAtSun(true);
             Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to true.");
@@ -271,6 +291,7 @@ void executeCommand(int command)
             Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to false.");
             break;
 
+        // Main Loop
         case EXIT_MAIN_LOOP:
             scienceMode.exitMainLoopEvent.invoke();
             Serial.println("Command Recieved - Exiting main loop at next opportunity.");
