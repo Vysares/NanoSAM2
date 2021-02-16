@@ -18,8 +18,7 @@
 // NS2 headers
 #include "../headers/config.hpp"
 #include "../headers/memUtil.hpp"
-//#include "../headers/timing.hpp"
-#include "../headers/timingDeclarations.hpp"
+#include "../headers/timing.hpp"
 
 /* Module Variable Definitions */
 
