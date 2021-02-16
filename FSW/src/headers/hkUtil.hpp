@@ -25,6 +25,7 @@ struct HousekeepingData // stores one point of housekeeping data
     float analogCurrent;   // analog board current, amps
     float digitalCurrent;  // digital board current, amps
     float digitalRegPG;    // digital regulator "power good" signal, volts
+    float timeMillis;      // time that sample was taken, milliseconds
 };
 
 static HousekeepingData latestHkSample;             // latest point of housekeeping data

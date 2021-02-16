@@ -22,7 +22,7 @@
 
 
 /* Module Variable Definitions */
-static HousekeepingData hkData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
+static HousekeepingData housekeepingData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
 static int hkIndex = 0;
 
 /* - - - - - - Module Driver Functions - - - - - - */
@@ -63,6 +63,14 @@ void handleHousekeeping()
  */
 void setHeater()
 {
+    // force heater on (if set in config)
+    if (forceHeaterOn)
+    {
+        digitalWrite(PIN_HEAT, HIGH);
+        return;
+    }
+
+    // toggle heater based on current temperature
     if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH)
     {
         digitalWrite(PIN_HEAT, LOW); // turn heater off
@@ -75,7 +83,7 @@ void setHeater()
 
 /* - - - - - - sampleHousekeepingData - - - - - - *
  * Usage:
- *  samples temperature and power data and stores it in hkData,
+ *  samples temperature and power data and stores it in housekeepingData,
  *  checks for out-of-bounds values and logs faults if found
  * 
  * Inputs:
@@ -98,7 +106,8 @@ void sampleHousekeepingData()
     latestHkSample.analogCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_AREG_CURR);
     latestHkSample.digitalCurrent = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_CURR);   
     latestHkSample.digitalRegPG = TEENSY_VOLTAGE_RES*(float)analogRead(PIN_DREG_PG);
-    hkData[hkIndex] = latestHkSample; // update data array
+    latestHkSample.timeMillis = millis();
+    housekeepingData[hkIndex] = latestHkSample; // update data array
 
     // Check if values are in acceptable ranges
     // TODO: Log a fault for every case
@@ -146,8 +155,8 @@ float voltageToTemp(float voltage)
 
 /* - - - - - - timeSortHkData - - - - - - *
  * Usage:
- *  Sorts hkData in ascending cronological order and resets hkIndex to 0
- *  call before using hkData in another function
+ *  Sorts housekeepingData in ascending cronological order and resets hkIndex to 0
+ *  call before using housekeepingData in another function
  * 
  * Inputs:
  *  none
@@ -164,21 +173,21 @@ void timeSortHkData()
     // reorder array so that it is ascending in time
     for (int i = hkIndex; i < HK_SAMPLES_TO_KEEP; i++)
     {
-        timeSortHkData[j] = hkData[i];
+        timeSortHkData[j] = housekeepingData[i];
         j++;
     } 
 
     // loop back to top of array and store remaining values
     for (int i = 0; i < hkIndex; i++)
     {
-        timeSortHkData[j] = hkData[i];
+        timeSortHkData[j] = housekeepingData[i];
         j++;
     }
 
-    // copy sorted array to hkData
+    // copy sorted array to housekeepingData
     for (int i = 0; i < HK_SAMPLES_TO_KEEP; i++)
     {
-        hkData[i] = timeSortHkData[i];
+        housekeepingData[i] = timeSortHkData[i];
     }
     hkIndex = 0; // reset index
 }
