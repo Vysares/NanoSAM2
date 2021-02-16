@@ -100,14 +100,15 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 const int HK_SAMPLES_TO_KEEP = 100;   // number of previous housekeeping samples to keep
 
 // heater cutoff temperatures
-const float HEATER_TEMP_LOW = 0;     // celsius, heater will turn on at or below this temp
+static bool forceHeaterOn = false;   // if true, heater will always be on regardless of temperature
+const float HEATER_TEMP_LOW = -20;     // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
 
 // safe temperature range
-const float OPTICS_TEMP_MIN_SAFE = -20; // celsius, minimum safe photodiode temp
-const float OPTICS_TEMP_MAX_SAFE = 50;  // celsius, maximum safe photodiode temp
-const float BOARD_TEMP_MIN_SAFE = 0;    // celsius, minimum safe board temp
-const float BOARD_TEMP_MAX_SAFE = 50;   // celsius, maximum safe board temp
+const float OPTICS_TEMP_MIN_SAFE = -35; // celsius, minimum safe photodiode temp
+const float OPTICS_TEMP_MAX_SAFE = 70;  // celsius, maximum safe photodiode temp
+const float BOARD_TEMP_MIN_SAFE = -20;    // celsius, minimum safe board temp
+const float BOARD_TEMP_MAX_SAFE = 70;   // celsius, maximum safe board temp
 
 // power supply expected voltage range
 const float PG_VOLTAGE_MAX_EXPECTED = 3.4;  // volts, maximum expected reading from "power good" pin
