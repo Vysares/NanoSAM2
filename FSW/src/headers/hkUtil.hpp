@@ -15,6 +15,7 @@ void handleHousekeeping();
 void setHeater();
 void sampleHousekeepingData();
 float voltageToBoardTemp(float voltage);
+float voltageToOpticsTemp(float voltage);
 void timeSortHkData();
 
 struct HousekeepingData // stores one point of housekeeping data

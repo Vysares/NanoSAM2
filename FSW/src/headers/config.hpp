@@ -100,7 +100,7 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
 
 // heater cutoff temperatures
-static bool forceHeaterOn = false;   // if true, heater will always be on regardless of temperature
+static bool FORCE_HEATER_ON = false;   // if true, heater will always be on regardless of temperature
 const float HEATER_TEMP_LOW = -20;   // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
 

@@ -140,7 +140,7 @@ void sampleHousekeepingData()
  */
 float voltageToBoardTemp(float voltage)
 {
-    int thermLookupSize = sizeof(boardThermLookup) / sizeof(boardThermLookup[0]); // size of thermistor lookup table
+    int thermLookupSize = sizeof(thermLookup) / sizeof(thermLookup[0]); // size of thermistor lookup table
 
     // find lower adjacent entry
     int i = 1;
@@ -158,7 +158,7 @@ float voltageToBoardTemp(float voltage)
 /* - - - - - - voltageToOpticsTemp - - - - - - *
  * Usage:
  *  Returns the temperature of optics thermistor for a given thermistor voltage reading.
- *  The relationship between voltage and temp for is linear.
+ *  The relationship between voltage and temp is linear for the optics thermistor.
  * 
  * Inputs:
  *  voltage - thermistor voltage
