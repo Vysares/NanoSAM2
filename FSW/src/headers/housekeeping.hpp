@@ -1,5 +1,5 @@
-#ifndef HKUTIL_H
-#define HKUTIL_H 
+#ifndef HK_H
+#define HK_H 
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
