@@ -40,8 +40,7 @@ static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer element
  * Outputs:
  *  data from the ADC (voltage measurement)
  */
-float dataProcessing()
-{
+float dataProcessing() {
     float voltage;
 
     // begin an SPI connection
@@ -86,9 +85,8 @@ float dataProcessing()
  * Outputs:
  *  None
  */
-void scienceMemoryHandling()
-{    
-    if (dataProcessEvent.checkInvoked()){ // checks event status from timing module
+void scienceMemoryHandling() {    
+    if (dataProcessEvent.checkInvoked()) { // checks event status from timing module
         float photodiodeVoltage = dataProcessing();
         updateBuffer(photodiodeVoltage, bufIdx);
 
@@ -101,7 +99,7 @@ void scienceMemoryHandling()
         Serial.println(scienceMode.getMode());
     }
 
-    if (saveBufferEvent.checkInvoked()){
+    if (saveBufferEvent.checkInvoked()) {
         saveBuffer(bufIdx);
     }
 }
@@ -123,10 +121,10 @@ void scienceMemoryHandling()
  * Outputs:
  *  none
  */
-void updateBuffer(float sample, int &index){
+void updateBuffer(float sample, int &index) {
     
     // check that index is valid
-    if (0 <= index && index < BUFFERSIZE){
+    if (0 <= index && index < BUFFERSIZE) {
         dataBuffer[index] = sample;
         index++;
     
@@ -135,7 +133,7 @@ void updateBuffer(float sample, int &index){
         Serial.print("(Science Memory Handling Module - updateBuffer() func)\n");
     }
 
-    if (index == BUFFERSIZE){
+    if (index == BUFFERSIZE) {
         // reset index if we have reached end of buffer
         index = 0; 
     }  
@@ -155,20 +153,20 @@ void updateBuffer(float sample, int &index){
  * Outputs:
  *  file creation status
  */
-bool saveBuffer(int &index){
+bool saveBuffer(int &index) {
     
     // create array to hold data in time ascending order
     float timeSortArray[BUFFERSIZE];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
-    for (int i = index; i < BUFFERSIZE; i++){
+    for (int i = index; i < BUFFERSIZE; i++) {
         timeSortArray[j] = dataBuffer[i];
         j++;
     } 
 
     // loop back to top of array and store remaining values
-    for (int i = 0; i < index; i++){
+    for (int i = 0; i < index; i++) {
         timeSortArray[j] = dataBuffer[i];
         j++;
     }
@@ -184,7 +182,7 @@ bool saveBuffer(int &index){
     char filename[] = "scienceFile0.csv";   // null-terminated char array
     int fileIdxOffset = 11;                 // index of file number in char array
 
-    while (fileFlag){
+    while (fileFlag) {
         if (fileIdx < MAXFILES){ // prevent infinite loop
             filename[fileIdxOffset] += fileIdx; // iterate up from zero
             fileFlag = SerialFlash.exists(filename);
@@ -199,7 +197,7 @@ bool saveBuffer(int &index){
     bool status = true; // track file creation/writing status
     status = SerialFlash.create(filename, FILESIZE);
 
-    if (status){
+    if (status) {
         Serial.print("Found file ");
         Serial.print(filename);
         Serial.print(" on flash chip");
@@ -248,7 +246,7 @@ bool saveBuffer(int &index){
  * Outputs:
  *  relative timestamp
  */
-unsigned long calcTimestamp(){
+unsigned long calcTimestamp() {
     unsigned long currentTimeRelative = millis(); // milliseconds    
 
     // FUTURE TEAMS: offset this relative time by the known time from the bus so that 

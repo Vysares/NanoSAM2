@@ -9,8 +9,7 @@
 // NS2 headers
 
 /* - - - - - - Class Definitions - - - - - - */
-class ScienceMode
-{
+class ScienceMode {
     protected:
         int mode; // according to mode enum
         bool adcsPointingAtSun; // flag from ADCS signaling optic is pointing at sun

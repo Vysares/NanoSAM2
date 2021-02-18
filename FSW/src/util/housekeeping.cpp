@@ -39,8 +39,7 @@ static int hkIndex = 0;
  * Outputs:
  *  None
  */
-void handleHousekeeping()
-{
+void handleHousekeeping() {
     sampleHousekeepingData();
     setHeater();
     hkIndex++;
@@ -61,22 +60,17 @@ void handleHousekeeping()
  * Outputs:
  *  None
  */
-void setHeater()
-{
+void setHeater() {
     // force heater on (if set in config)
-    if (FORCE_HEATER_ON)
-    {
+    if (FORCE_HEATER_ON) {
         digitalWrite(PIN_HEAT, HIGH);
         return;
     }
 
     // toggle heater based on current temperature
-    if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH)
-    {
+    if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH) {
         digitalWrite(PIN_HEAT, LOW); // turn heater off
-    }
-    else if (latestHkSample.opticsTemp <= HEATER_TEMP_LOW)
-    {
+    } else if (latestHkSample.opticsTemp <= HEATER_TEMP_LOW) {
         digitalWrite(PIN_HEAT, HIGH); // turn heater on
     }
 }
@@ -92,8 +86,7 @@ void setHeater()
  * Outputs:
  *  None
  */
-void sampleHousekeepingData()
-{
+void sampleHousekeepingData() {
     // read thermistor voltage values
     float opticsThermVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_OPTICS_THERM);
     float analogThermVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_ANALOG_THERM);
@@ -138,8 +131,7 @@ void sampleHousekeepingData()
  * Outputs:
  *  temperature - celsius, the temperature corresponding to thermistor voltage reading
  */
-float voltageToBoardTemp(float voltage)
-{
+float voltageToBoardTemp(float voltage) {
     int thermLookupSize = sizeof(thermLookup) / sizeof(thermLookup[0]); // size of thermistor lookup table
 
     // find lower adjacent entry
@@ -150,7 +142,7 @@ float voltageToBoardTemp(float voltage)
     float voltageGap = thermLookup[i - 1].voltage - thermLookup[i].voltage; // voltage difference between upper and lower entries
 
     // interpolate temperature
-    float temperature = tempGap*(voltage - thermLookup[i].voltage) / voltageGap + thermLookup[i].temperature;
+    float temperature = tempGap*(voltage - thermLookup[i].voltage) / voltageGap + thermLookup[i].temperature; 
 
     return temperature;
 }
@@ -166,16 +158,15 @@ float voltageToBoardTemp(float voltage)
  * Outputs:
  *  temperature - celsius, the temperature corresponding to thermistor voltage reading
  */
-float voltageToOpticsTemp(float voltage)
-{
+float voltageToOpticsTemp(float voltage) {
     float opticsTemp = ( (voltage - OPTICS_THERM_CAL_VOLTAGE) / OPTICS_THERM_GAIN ) + OPTICS_THERM_CAL_TEMP;
     return opticsTemp;
 }
 
 /* - - - - - - timeSortHkData - - - - - - *
  * Usage:
- *  Sorts housekeepingData in ascending cronological order and resets hkIndex to 0
- *  call before using housekeepingData in another function
+ *  Sorts housekeepingData in ascending cronological order and resets hkIndex to 0.
+ *  Call before using housekeepingData in another function
  * 
  * Inputs:
  *  none
@@ -183,29 +174,25 @@ float voltageToOpticsTemp(float voltage)
  * Outputs:
  *  none
  */
-void timeSortHkData()
-{
+void timeSortHkData() {
     // create array to hold data in time ascending order
     HousekeepingData timeSortHkData[HK_SAMPLES_TO_KEEP];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
-    for (int i = hkIndex; i < HK_SAMPLES_TO_KEEP; i++)
-    {
+    for (int i = hkIndex; i < HK_SAMPLES_TO_KEEP; i++) {
         timeSortHkData[j] = housekeepingData[i];
         j++;
     } 
 
     // loop back to top of array and store remaining values
-    for (int i = 0; i < hkIndex; i++)
-    {
+    for (int i = 0; i < hkIndex; i++) {
         timeSortHkData[j] = housekeepingData[i];
         j++;
     }
 
     // copy sorted array to housekeepingData
-    for (int i = 0; i < HK_SAMPLES_TO_KEEP; i++)
-    {
+    for (int i = 0; i < HK_SAMPLES_TO_KEEP; i++) {
         housekeepingData[i] = timeSortHkData[i];
     }
     hkIndex = 0; // reset index

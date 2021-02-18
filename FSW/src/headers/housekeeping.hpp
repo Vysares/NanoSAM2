@@ -18,8 +18,7 @@ float voltageToBoardTemp(float voltage);
 float voltageToOpticsTemp(float voltage);
 void timeSortHkData();
 
-struct HousekeepingData // stores one point of housekeeping data
-{
+struct HousekeepingData {  // stores one point of housekeeping data
     float opticsTemp;      // optics bench temp, celsius
     float analogTemp;      // analog board temp, celsius
     float digitalTemp;     // digital board temp, celsius

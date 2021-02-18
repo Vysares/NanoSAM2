@@ -16,8 +16,7 @@
 #include "../headers/commandHandling.hpp"
 
 /* - - - - - - Enums - - - - - - - */
-enum Mode // all payload science modes
-{
+enum Mode { // all payload science modes
     SAFE_MODE,      // KEEP FIRST IN ENUM, disable all operations
 
     // add new modes here

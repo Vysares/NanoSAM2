@@ -41,15 +41,11 @@ static bool isPaused = false;               // indicates if command execution is
  * Outputs:
  *  None
  */
-void commandHandling()
-{
+void commandHandling() {
     int newCommand = readCommand(); // read command from serial
-    if (checkMetaCommand(newCommand)) // if new command is a meta command, execute it immediately
-    {
+    if (checkMetaCommand(newCommand)) { // if new command is a meta command, execute it immediately
         executeCommand(newCommand);
-    }
-    else if (newCommand != -1) // if the new command is valid, add it to the queue
-    {
+    } else if (newCommand != -1) { // if the new command is valid, add it to the queue
         queueCommand(newCommand);
     }
     executeAllCommands(); // execute all commands in the queue
@@ -68,19 +64,14 @@ void commandHandling()
  * Outputs:
  *  a single valid command code, or -1 if no valid code is recieved
  */
-int readCommand()
-{
+int readCommand() {
     // read Serial
-    if (Serial.available() > 0) // check if there is serial input
-    {
+    if (Serial.available() > 0) { // check if there is serial input
         int serialInput = Serial.parseInt(); // read the command
-        if ((serialInput <= static_cast<int>(Command::DO_NOTHING)) && (serialInput > 0)) // check if command is valid
-        {
+        if ((serialInput <= static_cast<int>(Command::DO_NOTHING)) && (serialInput > 0)) { // check if command is valid
             //Serial.println("Command Recieved."); // for debugging
             return serialInput;
-        }
-        else
-        {
+        } else {
             // print warning, indicating the invalid command and the range of valid commands
             Serial.print("Invalid command recieved: ");
             Serial.println(serialInput);
@@ -103,15 +94,11 @@ int readCommand()
  * Outputs:
  *  None
  */
-void queueCommand(int command)
-{
-    if (queueIndex < COMMAND_QUEUE_SIZE) // if end of queue has not been reached, add command to queue 
-    {
+void queueCommand(int command) {
+    if (queueIndex < COMMAND_QUEUE_SIZE) { // if end of queue has not been reached, add command to queue 
         commandQueue[queueIndex] = command;
         queueIndex++;
-    }
-    else
-    {
+    } else {
         Serial.println("Command queue full.");
         Serial.println("(Command Handling)");
     }
@@ -129,11 +116,9 @@ void queueCommand(int command)
  *  True if meta command detected
  *  False if no meta command detected
  */
-bool checkMetaCommand(int command)
-{
+bool checkMetaCommand(int command) {
     command = static_cast<Command>(command);
-    switch (command)
-    {
+    switch (command) {
         case PAUSE_EXECUTE_COMMANDS: 
             break;
         case RESUME_EXECUTE_COMMANDS:
@@ -157,12 +142,9 @@ bool checkMetaCommand(int command)
  * Outputs:
  *  None
  */
-void executeAllCommands()
-{
-    if (!isPaused) // if command execution is not paused
-    {
-        for (int i = 0; i < queueIndex; i++) // execute each command in the queue
-        {
+void executeAllCommands() {
+    if (!isPaused) { // if command execution is not paused
+        for (int i = 0; i < queueIndex; i++) { // execute each command in the queue
             executeCommand(commandQueue[i]);
         }
         clearCommandQueue();
@@ -180,10 +162,8 @@ void executeAllCommands()
  * Outputs:
  *  None
  */
-void clearCommandQueue()
-{
-    for (int i = 0; i < COMMAND_QUEUE_SIZE; i++) // execute each command in the queue
-        {
+void clearCommandQueue() {
+    for (int i = 0; i < COMMAND_QUEUE_SIZE; i++) { // execute each command in the queue
             commandQueue[i] = 0;
         }
         queueIndex = 0; // reset queue index
@@ -199,12 +179,10 @@ void clearCommandQueue()
  * Outputs:
  *  None
  */
-void executeCommand(int command)
-{
+void executeCommand(int command) {
     // When adding new commands, make sure to include any relevant headers!
     command = static_cast<Command>(command); // cast command as Command enum
-    switch (command)
-    {
+    switch (command) {
         // Mode change
         case ENTER_SAFE_MODE: 
             scienceMode.setMode(SAFE_MODE);

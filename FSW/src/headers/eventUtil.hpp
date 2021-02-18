@@ -15,8 +15,7 @@
 
 /* - - - - - - Class Definitions - - - - - - */
 
-class Event
-{
+class Event  {
     protected:
         bool isInvoked;
         
@@ -27,8 +26,7 @@ class Event
 };
 
 
-class TimedEvent : public Event
-{
+class TimedEvent : public Event {
     protected:
         unsigned long duration;
         unsigned long currentMillis;
@@ -42,8 +40,7 @@ class TimedEvent : public Event
         void start();
 };
 
-class RecurringEvent : public TimedEvent
-{
+class RecurringEvent : public TimedEvent {
     public:
         RecurringEvent(unsigned long newDuration);
         bool checkInvoked();
