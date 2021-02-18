@@ -13,7 +13,7 @@
 // NS2 headers
 #include "config.hpp"
 #include "../headers/eventUtil.hpp"
-#include "../headers/comUtil.hpp"
+#include "../headers/commandHandling.hpp"
 
 /* - - - - - - Enums - - - - - - - */
 enum Mode // all payload science modes

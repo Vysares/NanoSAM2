@@ -20,7 +20,7 @@
 
 // NS2 headers
 #include "../headers/config.hpp"
-#include "../headers/comUtil.hpp"
+#include "../headers/commandHandling.hpp"
 
 
 /* Module Variable Definitions */

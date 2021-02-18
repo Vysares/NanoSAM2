@@ -17,7 +17,7 @@
 // All libraries are put in memUtil.hpp
 // NS2 headers
 #include "../headers/config.hpp"
-#include "../headers/memUtil.hpp"
+#include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp"
 
 /* Module Variable Definitions */

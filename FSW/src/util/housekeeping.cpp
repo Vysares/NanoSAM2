@@ -18,7 +18,7 @@
 // Other libraries
 
 // NS2 headers
-#include "../headers/hkUtil.hpp"
+#include "../headers/housekeeping.hpp"
 
 
 /* Module Variable Definitions */

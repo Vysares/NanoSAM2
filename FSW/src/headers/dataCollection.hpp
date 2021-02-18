@@ -1,5 +1,5 @@
-#ifndef MEMUTIL_H
-#define MEMUTIL_H 
+#ifndef DATA_H
+#define DATA_H 
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries

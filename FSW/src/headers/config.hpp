@@ -10,6 +10,9 @@
  *      "multiple definitions of <object>" during compilation
  */
 
+//C++ libraries
+#include <Arduino.h>
+
 // NS2 Headers
 #include "eventUtil.hpp"
 #include "timingClass.hpp"
