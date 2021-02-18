@@ -80,11 +80,6 @@ static Event saveBufferEvent;
 static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
 static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
 
-// FUTURE TEAMS: this event is invoked when the ADCS should switch its sweep direction
-//   so link your ADCS module with this event to tell it when to switch direction 
-//      look at checkSweepChange() in timing.cpp for more info
-static Event sweepDirectionChangeEvent; 
-
 
 /* - - - - - - Command Handling Module - - - - - - */
 const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
