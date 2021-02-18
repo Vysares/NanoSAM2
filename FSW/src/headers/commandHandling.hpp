@@ -1,16 +1,15 @@
-#ifndef COMUTIL_H
-#define COMUTIL_H 
+#ifndef COMHANDLING_H
+#define COMHANDLING_H
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
 
 // Other libraries
-#include <Arduino.h>
 
 // NS2 headers
 // (all of them)
 #include "config.hpp"
-#include "memUtil.hpp"
+#include "dataCollection.hpp"
 #include "timing.hpp" //for mode enum
 
 /* - - - - - - Declarations - - - - - - */
@@ -22,8 +21,7 @@ void executeAllCommands();
 void clearCommandQueue();
 void executeCommand(int command);
 
-enum Command // all possible commands
-{
+enum Command { // all possible commands
     // commands are 1 indexed so that the default initializer can be used for the command queue
 
     // Mode change

@@ -28,24 +28,24 @@
  * Usage:
  *  tracks the Science Mode of the payload
  */
-ScienceMode::ScienceMode(){ // constructor
+ScienceMode::ScienceMode() { // constructor
     mode = STANDBY_MODE;
     adcsPointingAtSun = false;
 }
 
-int ScienceMode::getMode(){
+int ScienceMode::getMode() {
     return mode;
 }
 
-void ScienceMode::setMode(int newMode){
+void ScienceMode::setMode(int newMode) {
     mode = newMode;
 }
 
-bool ScienceMode::getPointingAtSun(){
+bool ScienceMode::getPointingAtSun() {
     return adcsPointingAtSun;
 }
 
-void ScienceMode::setPointingAtSun(bool newState){
+void ScienceMode::setPointingAtSun(bool newState) {
     /*FUTURE TEAMS: Flesh out the below if statement with the logic for 
     *   controlling the payload mode based on ADCS outputs 
     * For ground testing this is hardcoded as true in config.hpp,
@@ -54,10 +54,10 @@ void ScienceMode::setPointingAtSun(bool newState){
     adcsPointingAtSun = newState;
 }
 
-void ScienceMode::sweepChange(){
+void ScienceMode::sweepChange() {
     // method to check if the ADCS system has permission to change sweep direction
     // and invoke the sweep change event if so
-    if (!sweepChangeLockout.checkInvoked()){
+    if (!sweepChangeLockout.checkInvoked()) {
         sweepChangeEvent.invoke();
         sweepChangeLockout.start();
     }
@@ -78,25 +78,24 @@ void ScienceMode::sweepChange(){
  * Outputs:
  *  none
  */
-void updatePayloadMode(float buffer[], int bufIdx){
+void updatePayloadMode(float buffer[], int bufIdx) {
 
     int currentMode = scienceMode.getMode();
     
-    if ((currentMode < MODE_NOT_RECOGNIZED) && (currentMode > STANDBY_MODE)){
-        if (scienceMode.getPointingAtSun()){
+    if ((currentMode < MODE_NOT_RECOGNIZED) && (currentMode > STANDBY_MODE)) {
+        if (scienceMode.getPointingAtSun()) {
 
             // smooth data to avoid a single noisy value prematurely ending a window
             float pdVoltageSmooth = voltageRunningMean(buffer, bufIdx); //photodiode voltage
             
-            switch (currentMode) 
-            {
+            switch (currentMode) {
                 case SUNSET_MODE: // gathering data until sun passes behind horizon
-                    if (pdVoltageSmooth < SUN_THRESH_VOLTAGE){ // if the sun is not found
+                    if (pdVoltageSmooth < SUN_THRESH_VOLTAGE) { // if the sun is not found
                         
                         // check if it is time to change sweep direction
                         checkSweepChange(buffer, bufIdx);
 
-                        if (sweepTimeoutEvent.checkInvoked()){
+                        if (sweepTimeoutEvent.checkInvoked()) {
                             // if we have waited long enough for ADCS sweeping
                             saveBufferEvent.invoke();
                             scienceMode.setMode(PRE_SUNRISE_MODE);
@@ -109,7 +108,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
                     break;
                 
                 case PRE_SUNRISE_MODE: // waiting for sun to rise above horizon
-                    if (pdVoltageSmooth >= SUN_THRESH_VOLTAGE){
+                    if (pdVoltageSmooth >= SUN_THRESH_VOLTAGE) {
                         // start sunrise event 
                         sunriseTimerEvent.start();
                         scienceMode.setMode(SUNRISE_MODE);
@@ -123,7 +122,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
 
                     // wait until sunrise data window is complete, save buffer,
                     // and return to standby
-                    if (sunriseTimerEvent.checkInvoked()){
+                    if (sunriseTimerEvent.checkInvoked()) {
                         saveBufferEvent.invoke();
                         scienceMode.setMode(STANDBY_MODE);
                     }
@@ -139,7 +138,7 @@ void updatePayloadMode(float buffer[], int bufIdx){
             scienceMode.setMode(STANDBY_MODE);
         }
 
-    } else if (currentMode == STANDBY_MODE){
+    } else if (currentMode == STANDBY_MODE) {
         // TODO: currently the only way to leave standby is through a command,
         //       do we want some automated way to leave for testing?
         //       it honestly might be best to leave it as having to manually start
@@ -168,10 +167,10 @@ void updatePayloadMode(float buffer[], int bufIdx){
  * Outputs:
  *  smoothVoltage - average of the previous SMOOTH_IDX_COUNT indices of buffer
  */
-float voltageRunningMean(float buffer[], int bufIdx){
+float voltageRunningMean(float buffer[], int bufIdx) {
     float smoothVoltage = 0;
     int i, idx;
-    for (i = bufIdx; i > bufIdx - SMOOTH_IDX_COUNT; i--){ // decrement to move backwards in time
+    for (i = bufIdx; i > bufIdx - SMOOTH_IDX_COUNT; i--) { // decrement to move backwards in time
         
         idx = i; // I am scared to toss the iterator for this loop through wrapBufferIdx
         
@@ -194,10 +193,10 @@ float voltageRunningMean(float buffer[], int bufIdx){
  * Outputs:
  *  idx - equivalent index, but guaranteed to be within buffer array size
  */
-int wrapBufferIdx(int idx){
+int wrapBufferIdx(int idx) {
     const int NUM_TRIES = 10; // max iterations (prevent infinite loop)
 
-    for (int j = 0; j < NUM_TRIES; j++){
+    for (int j = 0; j < NUM_TRIES; j++) {
         if (idx < 0) {                  // wrap index if it is negative
             idx = idx + BUFFERSIZE;     // -1 becomes BUFFERSIZE - 1
         } else if (idx >= BUFFERSIZE) { // wrap index if it is too large
@@ -227,7 +226,7 @@ int wrapBufferIdx(int idx){
  * Outputs:
  *  none
  */
-void checkSweepChange(float buffer[], int bufIdx){
+void checkSweepChange(float buffer[], int bufIdx) {
     // get the most recent smoothed photodiode voltage
     float pdNew = voltageRunningMean(buffer, bufIdx);
 

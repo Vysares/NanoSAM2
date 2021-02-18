@@ -15,11 +15,11 @@
 
 // NS2 headers
 #include "src/headers/config.hpp"
-#include "src/headers/comUtil.hpp"
+#include "src/headers/commandHandling.hpp"
 #include "src/headers/eventUtil.hpp"
 #include "src/headers/timingClass.hpp"
 #include "src/headers/timing.hpp"
-#include "src/headers/memUtil.hpp"
+#include "src/headers/dataCollection.hpp"
 
 /* - - - - - - Functions - - - - - - */
 
@@ -33,8 +33,24 @@
  * Outputs:
  *  initStatus - flag (true if initialization was successful)
  */
-bool init(){
+bool init() {
     Serial.print("Initializing NanoSAM II FSW... ");
+
+    // Set pin modes
+    pinMode(PIN_HEAT, OUTPUT);
+    pinMode(PIN_WD_RESET, OUTPUT);
+    pinMode(PIN_ADC_CS, OUTPUT);
+    pinMode(PIN_AREG_CURR, INPUT);
+    pinMode(PIN_DREG_CURR, INPUT);
+    pinMode(PIN_DREG_PG, INPUT);
+    pinMode(PIN_PHOTO, INPUT);
+    pinMode(PIN_DIGITAL_THERM, INPUT);
+    pinMode(PIN_ANALOG_THERM, INPUT);
+    pinMode(PIN_OPTICS_THERM, INPUT);
+
+    // setup serial
+    Serial.begin(SERIAL_BAUD);
+    Serial.setTimeout(SERIAL_TIMEOUT_MSEC);
 
     scienceMode.setPointingAtSun(true);
     scienceMode.setMode(STANDBY_MODE); // this is done in the class constructor so we may not need it
@@ -43,6 +59,9 @@ bool init(){
     //    set it to the proper macro from config.hpp
     scienceMode.sweepChangeLockout.setDuration(ADCS_SWEEP_CHANGE_DURATION);
 
+    // Begin timers
+    housekeepingTimer.start();
+    
 
     Serial.println("Complete");
     return true;
@@ -58,25 +77,23 @@ bool init(){
  * Outputs:
  *  None
  */
-int main()
-{
+int main() {
     //carry out initializations
-    if (!init()){
+    if (!init()) {
         Serial.println("Initialization failed, exiting main loop");
         return -1;
     }
     
-    while(true) // run main loop until exit command
-    {
+    while(true) { // run main loop until exit command
         // execute commands  
         commandHandling();
 
         // test multiple file structure by calling functions from memUtil.cpp
-        if (scienceMode.getMode() != SAFE_MODE){
+        if (scienceMode.getMode() != SAFE_MODE) {
             scienceMemoryHandling();
         }
 
-        if (scienceMode.exitMainLoopEvent.checkInvoked()){
+        if (scienceMode.exitMainLoopEvent.checkInvoked()) {
             Serial.println("Exiting main loop");
             break;
         }
