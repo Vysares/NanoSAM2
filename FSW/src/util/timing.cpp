@@ -144,7 +144,10 @@ void updatePayloadMode(float buffer[], int bufIdx) {
         //       it honestly might be best to leave it as having to manually start
         //       a data window for testing
         
-
+        // check for downlink
+        if (scienceMode.downlinkEvent.checkInvoked()) {
+            downlink();
+        }
 
         // TODO: memory scrubbing  
 

@@ -30,6 +30,10 @@ static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer element
 static char filename[] = "scienceFile0.csv";   // null-terminated char array 
 static const int FILE_IDX_OFFSET = 11;           // index of file number in char array
 
+// downlink
+static int downlinkFileIdx = 0; // iterator for loop checking file existence
+static int downlinkFileCount = 0; // iterator to track number of files downlinked
+static bool newDownlink = true; // flag to determine if this is a new or continued downlink
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -273,14 +277,14 @@ unsigned long calcTimestamp() {
  */
 void downlink() {
     
-    // check if file exists
-    int fileIdx = 0; // iterator for loop checking file existence
-    int fileCount = 0; // iterator to track number of files downlinked
-    filename[FILE_IDX_OFFSET] = '0'; // reset filename to search all possible files
+    if (newDownlink) { // reset asynchronous variables if it is a new downlink
+        fileName[FILE_IDX_OFFSET] = '0';
+        downlinkFileIdx = 0;
+        downlinkFileCount = 0;
+        newDownlink = false;
+    }
 
-    bool fileFlag = false; // false until a file found
-
-    while (fileIdx < MAXFILES){ // check all science possible filenames
+    if (downlinkFileIdx < MAXFILES){ // check all science possible filenames
  
         if (SerialFlash.exists(filename)) { // check if file exists
             Serial.print("Downlinking ");
@@ -296,7 +300,7 @@ void downlink() {
                 downlinkFile.read(downlinkBuffer, FILESIZE);
                 Serial.println(downlinkBuffer);
                 Serial.println(); // skip a line between files
-                fileCount++;
+                downlinkFileCount++;
             }
 
             // remove file
@@ -305,10 +309,13 @@ void downlink() {
         }
         
         // move to next file;
-        fileIdx++;
+        downlinkFileIdx++;
         filename[FILE_IDX_OFFSET] += 1; // iterate up from zero
+    } else {
+        // cleanup variables for next time downlink command is sent
+        newDownlink = true;
+        Serial.print("Downlink complete - ");
+        Serial.print(downlinkFileCount);
+        Serial.println(" files.");
     }
-    Serial.print("Downlinked ");
-    Serial.print(fileCount);
-    Serial.println(" files.");
 }

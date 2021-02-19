@@ -24,6 +24,9 @@ class ScienceMode {
         void setPointingAtSun(bool newState);
         void sweepChange();
 
+        // event for downlinking data
+        Event downlinkEvent;
+
         // event for exiting main loop
         Event exitMainLoopEvent;
 
