@@ -48,6 +48,9 @@ enum Command { // all possible commands
     ADCS_POINTING_AT_SUN_T,         // sets pointing at sun flag to true
     ADCS_POINTING_AT_SUN_F,         // sets pointing at sun flag to false
 
+    // downlink
+    DOWNLINK_ENABLE,                // start downlink at next available time
+
     // Main Loop Commands
     EXIT_MAIN_LOOP,
 

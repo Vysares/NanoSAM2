@@ -309,6 +309,7 @@ void downlink() {
         }
         
         // move to next file;
+        scienceMode.downlinkEvent.invoke(); // check again on next loop for more files
         downlinkFileIdx++;
         filename[FILE_IDX_OFFSET] += 1; // iterate up from zero
     } else {

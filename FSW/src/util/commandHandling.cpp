@@ -269,6 +269,12 @@ void executeCommand(int command) {
             Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to false.");
             break;
 
+        // Downlink
+        case DOWNLINK_ENABLE:
+            scienceMode.downlinkEvent.invoke();
+            Serial.println("Command Recieved - Downlink will begin when payload enters standby.");
+            break;
+
         // Main Loop
         case EXIT_MAIN_LOOP:
             scienceMode.exitMainLoopEvent.invoke();
