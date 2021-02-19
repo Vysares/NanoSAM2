@@ -278,7 +278,7 @@ unsigned long calcTimestamp() {
 void downlink() {
     
     if (newDownlink) { // reset asynchronous variables if it is a new downlink
-        fileName[FILE_IDX_OFFSET] = '0';
+        filename[FILE_IDX_OFFSET] = '0';
         downlinkFileIdx = 0;
         downlinkFileCount = 0;
         newDownlink = false;
