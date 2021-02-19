@@ -19,5 +19,6 @@ void scienceMemoryHandling();
 void updateBuffer(float sample, int &index);
 bool saveBuffer(int &index);
 unsigned long calcTimestamp(); // currently outputs relative timestamp instead of absolute timestamp
+void downlink();
 
 #endif
