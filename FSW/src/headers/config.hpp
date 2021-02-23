@@ -57,7 +57,7 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
  * = = = = = = Module Constants  = = = = = = =
  * = = = = = = = = = = = = = = = = = = = = = */
 
-/* - - - - - - Memory Handling Module - - - - - - */
+/* - - - - - - Data Collection Module - - - - - - */
 const int SAMPLING_RATE = 50;       // Hz, desired irradiance sampling rate
 const int WINDOW_LENGTH_SEC = 240;  // seconds, length of science data 
 const int MAXFILES = 10;            // maximum number of files in flash storage
@@ -70,7 +70,7 @@ const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store tim
 
 // set number of measurements to store in science data buffer
 const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices in array
-const int FILESIZE = (BUFFERSIZE * sizeof(float)) + TIMESTAMP_SIZE; // bytes in file
+const int FILESIZE = (BUFFERSIZE * sizeof(float)) + TIMESTAMP_SIZE + ; // bytes in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  
@@ -82,6 +82,12 @@ static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that dur
 static Event saveBufferEvent;
 static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
 static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
+
+
+/* - - - - - - EDAC Module - - - - - - */
+const int HAMMING_BITS = 8; // number of parity bits to append to each data block. Must be >= 2
+const int HAMMING_BLOCK_SIZE = pow(2, HAMMING_BITS); // total number of bits in each data block.
+const int MESSAGE_SIZE = HAMMING_BLOCK_SIZE - HAMMING_BITS - 1; // number of useful bits that will fit in each block
 
 
 /* - - - - - - Command Handling Module - - - - - - */
