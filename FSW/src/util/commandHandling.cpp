@@ -55,25 +55,25 @@ void commandHandling() {
 
 /* - - - - - - readCommand - - - - - - *
  * Usage:
- *  Reads serial input for an incoming command, checks if it has recieved a valid command,
+ *  Reads serial input for an incoming command, checks if it has received a valid command,
  *  and returns the new command
  * 
  * Inputs:
  *  none
  * 
  * Outputs:
- *  a single valid command code, or -1 if no valid code is recieved
+ *  a single valid command code, or -1 if no valid code is received
  */
 int readCommand() {
     // read Serial
     if (Serial.available() > 0) { // check if there is serial input
         int serialInput = Serial.parseInt(); // read the command
         if ((serialInput <= static_cast<int>(Command::DO_NOTHING)) && (serialInput > 0)) { // check if command is valid
-            //Serial.println("Command Recieved."); // for debugging
+            //Serial.println("Command Received."); // for debugging
             return serialInput;
         } else {
             // print warning, indicating the invalid command and the range of valid commands
-            Serial.print("Invalid command recieved: ");
+            Serial.print("Invalid command received: ");
             Serial.println(serialInput);
             Serial.print("Valid commands are between 1 and ");
             Serial.println(static_cast<int>(Command::DO_NOTHING));
@@ -186,28 +186,28 @@ void executeCommand(int command) {
         // Mode change
         case ENTER_SAFE_MODE: 
             scienceMode.setMode(SAFE_MODE);
-            Serial.println("Command Recieved - Entering Safe Mode. This mode must be manually exited.");
+            Serial.println("Command Received - Entering Safe Mode. This mode must be manually exited.");
             break;
         
         case ENTER_STANDBY_MODE: 
             scienceMode.setMode(STANDBY_MODE);
-            Serial.println("Command Recieved - Entering Standby Mode. This mode must be manually exited.");
+            Serial.println("Command Received - Entering Standby Mode. This mode must be manually exited.");
             break;
         
         case ENTER_SUNSET_MODE: 
             scienceMode.setMode(SUNSET_MODE);
-            Serial.println("Command Recieved - Entering Sunset Mode.");
+            Serial.println("Command Received - Entering Sunset Mode.");
             break;
         
         case ENTER_PRE_SUNRISE_MODE: 
             scienceMode.setMode(PRE_SUNRISE_MODE);
-            Serial.println("Command Recieved - Entering Pre-Sunrise Mode.");
+            Serial.println("Command Received - Entering Pre-Sunrise Mode.");
             break;
         
         case ENTER_SUNRISE_MODE: 
             sunriseTimerEvent.start(); // sunrise mode will never end w/o this call
             scienceMode.setMode(SUNRISE_MODE);
-            Serial.println("Command Recieved - Entering Sunrise Mode.");
+            Serial.println("Command Received - Entering Sunrise Mode.");
             break;
         
         // Housekeeping
@@ -217,27 +217,27 @@ void executeCommand(int command) {
         
         case HEATER_ON: 
             digitalWrite(PIN_HEAT, HIGH);
-            Serial.println("Command Recieved - Heater ON.");
+            Serial.println("Command Received - Heater ON.");
             break;
         
         case HEATER_OFF: 
             digitalWrite(PIN_HEAT, LOW);
-            Serial.println("Command Recieved - Heater OFF.");
+            Serial.println("Command Received - Heater OFF.");
             break;
         
         case FORCE_HEATER_ON_T:
             FORCE_HEATER_ON = true;
-            Serial.println("Command Recieved - Heater forced ON.");
+            Serial.println("Command Received - Heater forced ON.");
             break;
 
         case FORCE_HEATER_ON_F:
             FORCE_HEATER_ON = false;
-            Serial.println("Command Recieved - Heater forced OFF.");
+            Serial.println("Command Received - Heater forced OFF.");
             break;
 
         case CALIBRATE_OPTICS_THERM:
             OPTICS_THERM_CAL_VOLTAGE = TEENSY_VOLTAGE_RES*analogRead(PIN_OPTICS_THERM);
-            Serial.print("Command Recieved - Optics thermistor calibrated at ");
+            Serial.print("Command Received - Optics thermistor calibrated at ");
             Serial.print(OPTICS_THERM_CAL_TEMP);
             Serial.println(" C");
             break;
@@ -261,18 +261,24 @@ void executeCommand(int command) {
         // ADCS
         case ADCS_POINTING_AT_SUN_T:
             scienceMode.setPointingAtSun(true);
-            Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to true.");
+            Serial.println("Command Received - ADCS_POINTING_AT_SUN set to true.");
             break;
 
         case ADCS_POINTING_AT_SUN_F:
             scienceMode.setPointingAtSun(false);
-            Serial.println("Command Recieved - ADCS_POINTING_AT_SUN set to false.");
+            Serial.println("Command Received - ADCS_POINTING_AT_SUN set to false.");
+            break;
+
+        // Downlink
+        case DOWNLINK_START:
+            scienceMode.downlinkEvent.invoke();
+            Serial.println("Command Received - Downlink will begin when payload enters standby.");
             break;
 
         // Main Loop
         case EXIT_MAIN_LOOP:
             scienceMode.exitMainLoopEvent.invoke();
-            Serial.println("Command Recieved - Exiting main loop at next opportunity.");
+            Serial.println("Command Received - Exiting main loop at next opportunity.");
             break;
 
         // End of list

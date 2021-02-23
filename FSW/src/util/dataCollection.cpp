@@ -23,9 +23,17 @@
 /* Module Variable Definitions */
 
 // declare static variables so that they do not go away when we leave this module
-// whole purpose is to make this into a black-box module of sorts
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
 static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
+
+// file reading/writing
+static char filename[] = "scienceFile0.csv";   // null-terminated char array 
+static const int FILE_IDX_OFFSET = 11;           // index of file number in char array
+
+// downlink
+static int downlinkFileIdx = 0; // iterator for loop checking file existence
+static int downlinkFileCount = 0; // iterator to track number of files downlinked
+static bool newDownlink = true; // flag to determine if this is a new or continued downlink
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -178,13 +186,11 @@ bool saveBuffer(int &index) {
 
     // check if file exists
     int fileIdx = 0; // iterator for loop checking file existence
-    bool fileFlag = true;
-    char filename[] = "scienceFile0.csv";   // null-terminated char array
-    int fileIdxOffset = 11;                 // index of file number in char array
+    bool fileFlag = true; // true until a nonexistent file found
 
     while (fileFlag) {
         if (fileIdx < MAXFILES){ // prevent infinite loop
-            filename[fileIdxOffset] += fileIdx; // iterate up from zero
+            filename[FILE_IDX_OFFSET] += 1; // iterate up from zero
             fileFlag = SerialFlash.exists(filename);
             fileIdx++;
         } else if (fileIdx >= MAXFILES) {
@@ -200,7 +206,7 @@ bool saveBuffer(int &index) {
     if (status) {
         Serial.print("Found file ");
         Serial.print(filename);
-        Serial.print(" on flash chip");
+        Serial.println(" on flash chip");
     }
 
     // write buffer to this new file
@@ -256,4 +262,61 @@ unsigned long calcTimestamp() {
     unsigned long timestamp = currentTimeRelative; 
 
     return timestamp;
+}
+
+/* - - - - - - downlink - - - - - - *
+ *  
+ * Usage:
+ *  downlinks all files on the flash module
+ * 
+ * Inputs:
+ *  none
+ *  
+ * Outputs:
+ *  none
+ */
+void downlink() {
+    
+    if (newDownlink) { // reset asynchronous variables if it is a new downlink
+        filename[FILE_IDX_OFFSET] = '0';
+        downlinkFileIdx = 0;
+        downlinkFileCount = 0;
+        newDownlink = false;
+    }
+
+    if (downlinkFileIdx < MAXFILES){ // check all science possible filenames
+ 
+        if (SerialFlash.exists(filename)) { // check if file exists
+            Serial.print("Downlinking ");
+            Serial.print(filename);
+            Serial.println(":");
+
+            char downlinkBuffer[FILESIZE];
+
+            // read data from file into downlink buffer
+            SerialFlashFile downlinkFile;
+            downlinkFile = SerialFlash.open(filename);
+            if (downlinkFile) {
+                downlinkFile.read(downlinkBuffer, FILESIZE);
+                Serial.println(downlinkBuffer);
+                Serial.println(); // skip a line between files
+                downlinkFileCount++;
+            }
+
+            // remove file
+            // this allows a file of the same name to overwrite this data in the future
+            SerialFlash.remove(filename);
+        }
+        
+        // move to next file;
+        scienceMode.downlinkEvent.invoke(); // check again on next loop for more files
+        downlinkFileIdx++;
+        filename[FILE_IDX_OFFSET] += 1; // iterate up from zero
+    } else {
+        // cleanup variables for next time downlink command is sent
+        newDownlink = true;
+        Serial.print("Downlink complete - ");
+        Serial.print(downlinkFileCount);
+        Serial.println(" files.");
+    }
 }
