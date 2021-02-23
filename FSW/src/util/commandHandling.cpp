@@ -270,7 +270,7 @@ void executeCommand(int command) {
             break;
 
         // Downlink
-        case DOWNLINK_ENABLE:
+        case DOWNLINK_START:
             scienceMode.downlinkEvent.invoke();
             Serial.println("Command Received - Downlink will begin when payload enters standby.");
             break;
