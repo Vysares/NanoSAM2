@@ -11,20 +11,21 @@
  * Additional files needed for compilation:
  *  config.hpp
  *  timing.cpp & timing.hpp
+ *  edac.cpp & edac.hpp
  */
 
 /* - - - - - - Includes - - - - - - */
-// All libraries are put in memUtil.hpp
+// All libraries are put in dataCollection.hpp
 // NS2 headers
-#include "../headers/config.hpp"
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp"
+#include "../headers/edac.hpp"
 
 /* Module Variable Definitions */
 
 // declare static variables so that they do not go away when we leave this module
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
-static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
+static uint16_t dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
 
 // file reading/writing
 static char filename[] = "scienceFile0.csv";   // null-terminated char array 
@@ -46,7 +47,7 @@ static bool newDownlink = true; // flag to determine if this is a new or continu
  *  none
  *  
  * Outputs:
- *  data from the ADC (voltage measurement)
+ *  data from the ADC (bin number)
  */
 float dataProcessing() {
     float voltage;
@@ -57,7 +58,7 @@ float dataProcessing() {
     pinMode(PIN_ADC_CS, OUTPUT); // set ADC chip select pin to output
 
     // access ADC Pin (SPI)
-    uint16_t photodiode16; 
+    uint16_t photodiode16; // 16 bit variable to hold bin number from ADC
     SPI.beginTransaction(SPISettings(ADC_MAX_SPEED, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
     digitalWrite(PIN_ADC_CS, LOW);   // set Slave Select pin to low to select chip
     photodiode16 = SPI.transfer16(0x0000);// transfer data, send 0 to slave, recieve data from ADC
@@ -75,10 +76,8 @@ float dataProcessing() {
      *      lead to more work for future teams trying to retrofit our format
      */
 
-    // convert from Bin number to voltage, assuming board voltage does not fluctuate
-    voltage = (float)photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
-
-    return voltage;
+    // return the bin number
+    return photodiode16;
 }
 
 /* - - - - - - scienceMemoryHandling - - - - - - *
@@ -129,7 +128,7 @@ void scienceMemoryHandling() {
  * Outputs:
  *  none
  */
-void updateBuffer(float sample, int &index) {
+void updateBuffer(uint16_t sample, int &index) {
     
     // check that index is valid
     if (0 <= index && index < BUFFERSIZE) {
@@ -138,7 +137,7 @@ void updateBuffer(float sample, int &index) {
     
     } else {
         Serial.print("WARNING: invalid dataBuffer index ");
-        Serial.print("(Science Memory Handling Module - updateBuffer() func)\n");
+        Serial.println("(Science Memory Handling Module - updateBuffer() func)");
     }
 
     if (index == BUFFERSIZE) {
@@ -155,7 +154,6 @@ void updateBuffer(float sample, int &index) {
  *  appends timestamp to the end of the file
  * 
  * Inputs:
- *  dataBuffer - pointer to first element of data buffer
  *  index - index to store new data at (pass-by-reference)
  *  
  * Outputs:
@@ -164,20 +162,28 @@ void updateBuffer(float sample, int &index) {
 bool saveBuffer(int &index) {
     
     // create array to hold data in time ascending order
-    float timeSortArray[BUFFERSIZE];
+    uint16_t timeSortBuffer[BUFFERSIZE];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
     for (int i = index; i < BUFFERSIZE; i++) {
-        timeSortArray[j] = dataBuffer[i];
+        timeSortBuffer[j] = dataBuffer[i];
         j++;
     } 
 
     // loop back to top of array and store remaining values
     for (int i = 0; i < index; i++) {
-        timeSortArray[j] = dataBuffer[i];
+        timeSortBuffer[j] = dataBuffer[i];
         j++;
     }
+    
+    // compute timestamp
+    unsigned long timestamp = calcTimestamp(); 
+    
+    // Run all the data through EDAC
+    uint8_t encodedData[FILESIZE];
+    encodeScienceData(encodedData, timeSortBuffer, timestamp);
+
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
@@ -212,14 +218,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    status = file.write(dataBuffer, BUFFERSIZE); //write dataBuffer
-    
-    // TODO: may need to seek position to end of file before writing again
-    //file.seek(BUFFERSIZE);  
-
-    // compute and write timestamp
-    unsigned long timestamp = calcTimestamp();
-    file.write(&timestamp, sizeof(timestamp));
+    status = file.write(encodedData, sizeof(encodedData)); //write sorted dataBuffer
 
     index = 0; // reset index to start of array since we have saved the buffer
 

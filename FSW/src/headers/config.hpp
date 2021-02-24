@@ -12,6 +12,7 @@
 
 //C++ libraries
 #include <Arduino.h>
+#include <cstdint>
 
 // NS2 Headers
 #include "eventUtil.hpp"
@@ -38,8 +39,7 @@ const int PIN_OPTICS_THERM = 16;    // optics bench thermistor pin
 const int TEENSY_ADC_BINS = 1023;       // bins, number of bins in Teensy ADC
 const float TEENSY_HIGH_VOLTAGE = 3.3;  // volts, max teensy voltage
 const float TEENSY_LOW_VOLTAGE = 0.0;   // volts, min teensy voltage
-const float TEENSY_VOLTAGE_RANGE = TEENSY_HIGH_VOLTAGE - TEENSY_LOW_VOLTAGE; // volts, Teensy ADC voltage range
-const float TEENSY_VOLTAGE_RES = TEENSY_VOLTAGE_RANGE / TEENSY_ADC_BINS;     // volts per bin
+const float TEENSY_VOLTAGE_RES = (TEENSY_HIGH_VOLTAGE - TEENSY_LOW_VOLTAGE) / TEENSY_ADC_BINS; // volts per Teensy ADC bin
 
 /* - - - - - - SPI - - - - - - */
 const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
@@ -56,6 +56,11 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
 /* = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Module Constants  = = = = = = =
  * = = = = = = = = = = = = = = = = = = = = = */
+/* - - - - - - EDAC Module - - - - - - */
+// do not change these.
+const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits
+const int MESSAGE_BLOCK_SIZE = 8;     // bytes of non-redundant data in a block
+
 
 /* - - - - - - Data Collection Module - - - - - - */
 const int SAMPLING_RATE = 50;       // Hz, desired irradiance sampling rate
@@ -64,13 +69,14 @@ const int MAXFILES = 10;            // maximum number of files in flash storage
 const float ADC_BINS = 65536;       // bins, number of bins in ADC (2^16)
 const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
 const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
+const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; // volts per ADC bin
 
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
 
 // set number of measurements to store in science data buffer
 const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices in array
-const int FILESIZE = (BUFFERSIZE * sizeof(float)) + TIMESTAMP_SIZE + ; // bytes in file
+const int FILESIZE = ( (BUFFERSIZE + TIMESTAMP_SIZE) / MESSAGE_BLOCK_SIZE + 1 )* HAMMING_BLOCK_SIZE ; // bytes in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  
@@ -82,12 +88,6 @@ static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that dur
 static Event saveBufferEvent;
 static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
 static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
-
-
-/* - - - - - - EDAC Module - - - - - - */
-const int HAMMING_BITS = 8; // number of parity bits to append to each data block. Must be >= 2
-const int HAMMING_BLOCK_SIZE = pow(2, HAMMING_BITS); // total number of bits in each data block.
-const int MESSAGE_SIZE = HAMMING_BLOCK_SIZE - HAMMING_BITS - 1; // number of useful bits that will fit in each block
 
 
 /* - - - - - - Command Handling Module - - - - - - */

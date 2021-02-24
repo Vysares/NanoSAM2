@@ -18,8 +18,10 @@
 /* - - - - - - Includes - - - - - - */
 // All libraries are put in timing.hpp
 // NS2 headers
-#include "../headers/config.hpp"
 #include "../headers/timing.hpp"
+#include "../headers/eventUtil.hpp"
+#include "../headers/commandHandling.hpp"
+#include "../headers/dataCollection.hpp"
 
 /* Module Variable Definitions */
 
@@ -78,7 +80,7 @@ void ScienceMode::sweepChange() {
  * Outputs:
  *  none
  */
-void updatePayloadMode(float buffer[], int bufIdx) {
+void updatePayloadMode(uint16_t buffer[], int bufIdx) {
 
     int currentMode = scienceMode.getMode();
     
@@ -170,7 +172,7 @@ void updatePayloadMode(float buffer[], int bufIdx) {
  * Outputs:
  *  smoothVoltage - average of the previous SMOOTH_IDX_COUNT indices of buffer
  */
-float voltageRunningMean(float buffer[], int bufIdx) {
+float voltageRunningMean(uint16_t buffer[], int bufIdx) {
     float smoothVoltage = 0;
     int i, idx;
     for (i = bufIdx; i > bufIdx - SMOOTH_IDX_COUNT; i--) { // decrement to move backwards in time
@@ -181,7 +183,7 @@ float voltageRunningMean(float buffer[], int bufIdx) {
         // (i.e. starting with i=0 would throw error if we didn't wrap the index)
         idx = wrapBufferIdx(idx); 
 
-        smoothVoltage += buffer[idx]; // sum voltages
+        smoothVoltage += static_cast<float>(buffer[idx]) * ADC_VOLTAGE_RES; // sum voltages
     }
     return smoothVoltage / (float)SMOOTH_IDX_COUNT; // return mean
 }
@@ -229,7 +231,7 @@ int wrapBufferIdx(int idx) {
  * Outputs:
  *  none
  */
-void checkSweepChange(float buffer[], int bufIdx) {
+void checkSweepChange(uint16_t buffer[], int bufIdx) {
     // get the most recent smoothed photodiode voltage
     float pdNew = voltageRunningMean(buffer, bufIdx);
 
