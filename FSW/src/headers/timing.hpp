@@ -12,8 +12,6 @@
 
 // NS2 headers
 #include "config.hpp"
-#include "../headers/eventUtil.hpp"
-#include "../headers/commandHandling.hpp"
 
 /* - - - - - - Enums - - - - - - - */
 enum Mode { // all payload science modes

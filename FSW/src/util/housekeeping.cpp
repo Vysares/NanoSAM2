@@ -13,10 +13,7 @@
  */
 
 /* - - - - - - Includes - - - - - - */
-// C++ libraries
-
-// Other libraries
-
+// All libraries are put in housekeeping.hpp
 // NS2 headers
 #include "../headers/housekeeping.hpp"
 

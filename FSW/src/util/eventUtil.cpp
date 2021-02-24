@@ -8,10 +8,7 @@
  */
 
 /* - - - - - - Includes - - - - - - */
-// C++ libraries
-
-// Other libraries
-
+// All libraries are put in eventUtil.hpp
 // NS2 headers
 #include "../headers/eventUtil.hpp"
 

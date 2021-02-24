@@ -7,10 +7,7 @@
 // Other libraries
 
 // NS2 headers
-// (all of them)
 #include "config.hpp"
-#include "dataCollection.hpp"
-#include "timing.hpp" //for mode enum
 
 /* - - - - - - Declarations - - - - - - */
 void commandHandling();

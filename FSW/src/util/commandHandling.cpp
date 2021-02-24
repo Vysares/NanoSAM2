@@ -14,13 +14,11 @@
  */
 
 /* - - - - - - Includes - - - - - - */
-// C++ libraries
-
-// Other libraries
-
+// All libraries are put in commandHandling.hpp
 // NS2 headers
-#include "../headers/config.hpp"
 #include "../headers/commandHandling.hpp"
+#include "../headers/dataCollection.hpp"
+#include "../headers/timing.hpp" //for mode enum
 
 
 /* Module Variable Definitions */
