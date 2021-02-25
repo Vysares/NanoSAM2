@@ -14,18 +14,13 @@
 
 /* - - - - - - Class Implementations - - - - - - */
 
-/* - - - - - - Event - - - - - - *
- * Usage:
- * Events are used for communication between modules without direct function calls.
- *  To invoke an event call invoke().
- *  To check if an event is invoked call checkInvoked().
- *      If the event is invoked, checkInvoked() will return true and de-invoke the event, 
- *      so it is ready to be invoked again.
- */
-Event::Event() { // constructor
+/* - - - - - - Event - - - - - - */
+// constructor
+Event::Event() {
     isInvoked = false;
 }
 
+// checks if the event is invoked
 bool Event::checkInvoked() {
     // will only return true once
     bool returnVal = isInvoked;
@@ -33,28 +28,23 @@ bool Event::checkInvoked() {
     return returnVal;
 }
 
+// invokes the event
 void Event::invoke() {
     isInvoked = true;
 }
 
 
-/* - - - - - - TimedEvent - - - - - - *
- * Usage:
- * A TimedEvent is invoked automatically after a set duration.
- *  To start the TimedEvent, call start().
- *  To change the duration of a TimedEvent call setDuration(newDuration).
- *  To check if the TimedEvent is invoked call checkInvoked().
- *      If the time has elapsed, checkInvoked() will return true and invoke the event.
- *      checkInvoked() will only return true one time. Call start() again to restart the timer.
- */
-TimedEvent::TimedEvent(unsigned long newDuration) { // constructor
+/* - - - - - - TimedEvent - - - - - - */
+// constructor
+TimedEvent::TimedEvent(unsigned long newDuration) {
     duration = newDuration; 
     currentMillis = millis();
     nextInvokeMillis = 0;
     isInvoked = true;  // A timed event will not invoke itself unless start() is first called
 }
 
-TimedEvent::TimedEvent() { // overloaded constructor to set default duration
+// overloaded constructor to set default duration
+TimedEvent::TimedEvent() {
     unsigned long defaultDuration = 1000; // milliseconds
     duration = defaultDuration; 
     currentMillis = millis();
@@ -62,10 +52,12 @@ TimedEvent::TimedEvent() { // overloaded constructor to set default duration
     isInvoked = true;  // A timed event will not invoke itself unless start() is first called
 }
 
-void TimedEvent::setDuration(unsigned long newDuration) { // sets new duration
+// sets new duration
+void TimedEvent::setDuration(unsigned long newDuration) { 
     duration = newDuration;
 }
 
+// checks if the event is invoked
 bool TimedEvent::checkInvoked() {
     // will only return true once
     if (!isInvoked && (millis() >= nextInvokeMillis)) {
@@ -75,20 +67,16 @@ bool TimedEvent::checkInvoked() {
     return false;
 }
 
-void TimedEvent::start() { // starts the timed event
+// starts the timed event
+void TimedEvent::start() { 
     isInvoked = false;
     nextInvokeMillis = millis() + duration;
 }
 
-/* - - - - - - RecurringEvent - - - - - - *
- * Usage:
- * A RecurringEvent is a TimedEvent that automatically restarts when invoked.
- *  To start the RecurringEvent, call start().
- *  To change the duration of a RecurringEvent call setDuration(newDuration).
- *  To check if the RecurringEvent is invoked call checkInvoked().
- *      If the time has elapsed, checkInvoked() will return true and automatically restart itself.
- */
-RecurringEvent::RecurringEvent(unsigned long newDuration) : TimedEvent(newDuration) { }; // constructor
+
+/* - - - - - - RecurringEvent - - - - - - */
+// constructor
+RecurringEvent::RecurringEvent(unsigned long newDuration) : TimedEvent(newDuration) { }; 
 
 bool RecurringEvent::checkInvoked() {
     // will return true once and automatically restart
@@ -97,4 +85,47 @@ bool RecurringEvent::checkInvoked() {
         return true;
     }
     return false;
+}
+
+
+/* - - - - - - AsyncEvent - - - - - - */
+ // default constructor
+AsyncEvent::AsyncEvent() : Event() {
+    maxIterations = -1; // will not trigger automatic stop
+}
+
+// overloaded constructor to set max iterations
+AsyncEvent::AsyncEvent(int maxIter) : Event() { 
+    maxIterations = maxIter;
+}
+
+// sets new max number of iterations
+void AsyncEvent::setMaxIter(int maxIter) { 
+    maxIterations = maxIter;
+}
+
+// checks if the event is invoked
+bool AsyncEvent::checkInvoked() { 
+    if (maxIterations > 0 && iteration >= maxIterations) {
+        this->stop();
+    } else {
+        iteration++;
+    }
+    return isInvoked;
+}
+
+// returns current iteration
+int AsyncEvent::getIter() {
+    return iteration;
+}
+
+// de-invokes the event and resets current iteration to 0
+void AsyncEvent::stop() {
+    isInvoked = false;
+    iteration = 0;
+}
+
+// de-invokes the event, current iteration will carry over to next call of invoke()
+void AsyncEvent::pause() {
+    isInvoked = false;
 }

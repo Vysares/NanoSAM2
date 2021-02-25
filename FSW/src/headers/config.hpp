@@ -59,7 +59,7 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
 /* - - - - - - EDAC Module - - - - - - */
 // do not change these.
 const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits
-const int MESSAGE_BLOCK_SIZE = 8;     // bytes of non-redundant data in a block
+const int MESSAGE_SIZE = 8;        // bytes of non-redundant data in a block
 
 
 /* - - - - - - Data Collection Module - - - - - - */
@@ -76,7 +76,10 @@ const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store tim
 
 // set number of measurements to store in science data buffer
 const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices in array
-const int FILESIZE = ( (BUFFERSIZE + TIMESTAMP_SIZE) / MESSAGE_BLOCK_SIZE + 1 )* HAMMING_BLOCK_SIZE ; // bytes in file
+const int RAW_DATA_SIZE = BUFFERSIZE * sizeof(uint16_t) + TIMESTAMP_SIZE; // bytes, combined size of science data
+const int MESSAGE_COUNT = (RAW_DATA_SIZE / MESSAGE_SIZE) + !!(RAW_DATA_SIZE % MESSAGE_SIZE); // number of message blocks per file
+const int DECODED_DATA_SIZE = MESSAGE_COUNT * MESSAGE_SIZE; // bytes, size of all unencoded messages
+const int FILESIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE; // bytes, size of encoded data in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  

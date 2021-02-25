@@ -39,25 +39,25 @@ struct ScrubReport {
     int uncorrected = 0;    // number of errors detected but not corrected
 };
 
-/* - DecodedFile -
+/* - DecodedData -
 *   Holds readable science data and scrub report from decoded file.
 *   Members: photdiode16, timestamp, scrubInfo 
 */
-struct DecodedFile { 
-    uint16_t photdiode16[BUFFERSIZE] = {};  // array of photodiode ADC bin numbers
+struct DecodedData { 
+    uint16_t photoData[BUFFERSIZE] = {};  // array of photodiode ADC bin numbers
     unsigned long timestamp = 0UL;          // timestamp
     ScrubReport scrubInfo;                  // contains info on errors
 };
 
 
 /* - - - - - - Declarations - - - - - - */
-void encodeFile(uint8_t *destination, uint16_t *buffer, unsigned long &timestamp);
-DecodedFile decodeFile(uint8_t *encodedData);
+void encodeFile(uint8_t *destination, uint16_t *buffer, unsigned long timestamp);
+DecodedData decodeFile(uint8_t *encodedData);
 void encodeHamming_72_64(uint8_t *hammingBlock, uint8_t *messageBlock);
 void decodeHamming_72_64(uint8_t *hammingBlock, uint8_t *messageBlock);
+ScrubReport scrubFile(uint8_t *encodedData);
 ErrorReport scanBlock(uint8_t *hammingBlock);
 ErrorReport correctBlock(uint8_t *hammingBlock);
-ScrubReport scrubFile(uint8_t *encodedData);
 void printBlock(uint8_t *hammingBlock);
 bool checkBit(uint8_t *byteArray, int index);
 void assignBit(uint8_t *byteArray, int index, bool val);

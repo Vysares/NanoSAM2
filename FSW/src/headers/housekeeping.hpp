@@ -18,23 +18,19 @@ float voltageToBoardTemp(float voltage);
 float voltageToOpticsTemp(float voltage);
 void timeSortHkData();
 
-/* HousekeepingData members: 
-*   float opticsTemp - optics bench temp, celsius
-*   float analogTemp - analog board temp, celsius
-*   float digitalTemp - digital board temp, celsius
-*   float analogCurrent - analog board current, amps
-*   float digitalCurrent - digital board current, amps
-*   float digitalRegPG - digital regulator "power good" signal, volts
-*   float timeMillis - time that sample was taken, milliseconds
+/* - HousekeepingData -
+*   Holds a single point of housekeeping data.
+*   Members: opticsTemp, analogTemp, digitalTemp,
+*   analogCurrent, digitalCurrent, digitalRegPG, timeMillis 
 */
-struct HousekeepingData {  // stores one point of housekeeping data
-    float opticsTemp;     
-    float analogTemp;     
-    float digitalTemp;    
-    float analogCurrent;  
-    float digitalCurrent;  
-    float digitalRegPG;    
-    float timeMillis;    
+struct HousekeepingData {
+    float opticsTemp;      // optics bench temp, celsius
+    float analogTemp;      // analog board temp, celsius
+    float digitalTemp;     // digital board temp, celsius
+    float analogCurrent;   // analog board current, amps
+    float digitalCurrent;  // digital board current, amps
+    float digitalRegPG;    // digital regulator "power good" signal, volts
+    float timeMillis;      // time that sample was taken, milliseconds
 };
 
 static HousekeepingData latestHkSample;                 // latest point of housekeeping data
