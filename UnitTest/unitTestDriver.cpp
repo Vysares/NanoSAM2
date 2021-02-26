@@ -30,13 +30,12 @@ int main(){
     testFailCount += timingTestMain();
 
 
-
     // print summary of test results
     Serial.println("\n - - - - Unit Test Summary - - - - -");
     Serial.print("|     ");
     Serial.print(testFailCount);
     Serial.println(" test(s) failed in total     |");
     Serial.println(" - - - - - - - - - - - - - - - - - -");
-    return 1;
 
+    return 1;
 }
