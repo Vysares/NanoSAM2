@@ -29,9 +29,9 @@ int testWrapBufferIdx() {
     int key[] = {0, BUFFERSIZE-1, BUFFERSIZE-1, 0, 1, 0};
     int testVal[] = {0, -1, BUFFERSIZE-1, BUFFERSIZE, 2*BUFFERSIZE + 1, -BUFFERSIZE};
 
-    for (int i=0, i++, i<6) {
+    for (int i=0; i<6; i++) {
         if (key[i] != wrapBufferIdx(testVal[i])) {
-            Serial.println("wrapBufferIdx() Unit Test Failed (timing module)")
+            Serial.println("wrapBufferIdx() Unit Test Failed (timing module)");
             return 1;
         }
     }
@@ -63,6 +63,7 @@ int testVoltageRunningMean() {
  * Usage:
  * runs the timing module unit tests, prints results over serial
  *  must be kept last in file since we are not using header structure for testing
+ *  (or if you would rather use prototypes be my guest)
  * 
  * Inputs:
  *  none

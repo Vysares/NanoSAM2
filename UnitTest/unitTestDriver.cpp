@@ -5,6 +5,11 @@
  *
  */
 
+/* function prototypes */
+// since we are not using the header format for unit testing
+
+int timingTestMain();
+
 
 /* - - - - - - main - - - - - - *
  * Usage:
@@ -24,14 +29,14 @@ int main(){
     // testing functions 
     testFailCount += timingTestMain();
 
-    
+
 
     // print summary of test results
-    Serial.println("- - - - - - - Summary - - - - - - -");
+    Serial.println("\n - - - - Unit Test Summary - - - - -");
     Serial.print("|     ");
     Serial.print(testFailCount);
-    Serial.println(" test(s) failed in total    |");
-    Serial.println("- - - - - - - - - - - - - - - - - -");
+    Serial.println(" test(s) failed in total     |");
+    Serial.println(" - - - - - - - - - - - - - - - - - -");
     return 1;
 
 }
