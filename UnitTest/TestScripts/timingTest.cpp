@@ -1,4 +1,4 @@
-/* unitTestDriver.cpp is the main script for the NanoSAM II Unit Testing 
+/* timingTest.cpp tests the timing module non-void functions
  * Usage:
  *  part of NS2 unit testing suite
  *  to be called in unitTestDriver.cpp
@@ -8,7 +8,6 @@
 
 // NS2 includes
 #include "../headers/config.hpp"
-//#include "../headers/timingClass.hpp"
 #include "../headers/timing.hpp"
 
 /* - - - - - - testWrapBufferIdx - - - - - - *
@@ -96,7 +95,7 @@ int testVoltageRunningMean() {
  * Outputs:
  *  number of tests that failed in module
  */
-int timingTestMain(){
+int timingTestMain() {
     int testsFailed = 0; // iterator to track how many tests have failed
 
     testsFailed += testWrapBufferIdx();

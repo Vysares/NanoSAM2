@@ -9,6 +9,7 @@
 // since we are not using the header format for unit testing
 
 int timingTestMain();
+int commandTestMain();
 
 
 /* - - - - - - main - - - - - - *
@@ -22,12 +23,13 @@ int timingTestMain();
  * Outputs:
  *  None
  */
-int main(){
+int main() {
 
     int testFailCount = 0; // track how many total tests failed
 
     // testing functions 
     testFailCount += timingTestMain();
+    testFailCount += commandTestMain();
 
 
     // print summary of test results
