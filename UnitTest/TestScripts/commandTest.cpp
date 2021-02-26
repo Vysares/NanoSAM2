@@ -32,7 +32,6 @@ int testCheckMetaCommand() {
     for (int i = 1; i <= 19; i++) { // Command enum is 1-indexed
         
         if (true) { // guard to enable/disable debug prints
-            Serial.println("Debugging checkMetaCommand()")
             Serial.print("key[");
             Serial.print(i);
             Serial.print("] = ");

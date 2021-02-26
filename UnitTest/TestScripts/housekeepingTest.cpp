@@ -53,7 +53,7 @@ int testVoltageToOpticsTemp() {
  * Outputs:
  *  number of tests that failed in module
  */
-int commandTestMain() {
+int housekeepingTestMain() {
     int testsFailed = 0; // iterator to track how many tests have failed
 
     testsFailed += testVoltageToBoardTemp();
