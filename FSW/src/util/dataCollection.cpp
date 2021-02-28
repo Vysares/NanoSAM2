@@ -19,7 +19,7 @@
 // NS2 headers
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp"
-#include "../headers/edac.hpp"
+#include "../headers/encodedFile.hpp"
 
 /* Module Variable Definitions */
 
@@ -181,8 +181,8 @@ bool saveBuffer(int &index) {
     unsigned long timestamp = calcTimestamp(); 
     
     // Run all the data through EDAC
-    uint8_t encodedFile[FILESIZE] = {};
-    encodeFile(encodedFile, timeSortBuffer, timestamp);
+    // uint8_t encodedFile[ENCODED_FILE_SIZE];
+    // encodeFile(encodedFile, timeSortBuffer, timestamp);
 
 
     /* send sorted array to file on flash memory along with timestamp 
@@ -207,7 +207,7 @@ bool saveBuffer(int &index) {
 
     // create new file (non-erasable, delete file after downlink)
     bool status = true; // track file creation/writing status
-    status = SerialFlash.create(filename, FILESIZE);
+    status = SerialFlash.create(filename, ENCODED_FILE_SIZE);
 
     if (status) {
         Serial.print("Found file ");
@@ -218,7 +218,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    status = file.write(encodedFile, sizeof(encodedFile)); //write sorted dataBuffer
+    //status = file.write(encodedFile, sizeof(encodedFile)); //write sorted dataBuffer
 
     index = 0; // reset index to start of array since we have saved the buffer
 
@@ -290,13 +290,13 @@ void downlink() {
             Serial.print(filename);
             Serial.println(":");
 
-            char downlinkBuffer[FILESIZE];
+            char downlinkBuffer[ENCODED_FILE_SIZE];
 
             // read data from file into downlink buffer
             SerialFlashFile downlinkFile;
             downlinkFile = SerialFlash.open(filename);
             if (downlinkFile) {
-                downlinkFile.read(downlinkBuffer, FILESIZE);
+                downlinkFile.read(downlinkBuffer, ENCODED_FILE_SIZE);
                 Serial.println(downlinkBuffer);
                 Serial.println(); // skip a line between files
                 downlinkFileCount++;

@@ -56,7 +56,8 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
 /* = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Module Constants  = = = = = = =
  * = = = = = = = = = = = = = = = = = = = = = */
-/* - - - - - - EDAC Module - - - - - - */
+
+/* - - - - - - Error Detection and Correction (EDAC) Module - - - - - - */
 // do not change these.
 const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits
 const int MESSAGE_SIZE = 8;        // bytes of non-redundant data in a block
@@ -74,12 +75,13 @@ const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; //
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
 
-// set number of measurements to store in science data buffer
-const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // indices in array
-const int RAW_DATA_SIZE = BUFFERSIZE * sizeof(uint16_t) + TIMESTAMP_SIZE; // bytes, combined size of science data
+// data size parameters, derived from other constants
+const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // number of samples to keep in science buffer
+const int BUFFER_MEMSIZE = BUFFERSIZE * sizeof(uint16_t); // bytes, size of data buffer
+const int RAW_DATA_SIZE = BUFFER_MEMSIZE + TIMESTAMP_SIZE; // bytes, combined size of science data
 const int MESSAGE_COUNT = (RAW_DATA_SIZE / MESSAGE_SIZE) + !!(RAW_DATA_SIZE % MESSAGE_SIZE); // number of message blocks per file
-const int DECODED_DATA_SIZE = MESSAGE_COUNT * MESSAGE_SIZE; // bytes, size of all unencoded messages
-const int FILESIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE; // bytes, size of encoded data in file
+const int DECODED_FILE_SIZE = MESSAGE_COUNT * MESSAGE_SIZE; // bytes, size of all unencoded messages
+const int ENCODED_FILE_SIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE; // bytes, size of encoded data in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  
