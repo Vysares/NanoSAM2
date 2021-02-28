@@ -46,7 +46,7 @@ void HammingBlock::encodeMessage(void *message) {
     
     /* copy message into hamming block */
     int messageIdx = 0;
-    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 0b1000; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
 
         if (( hammingIdx & (hammingIdx - 1) ) != 0) { // if current index is not power of 2...
             // copy bit from message block to hamming block
@@ -88,7 +88,7 @@ uint8_t *HammingBlock::getMessage() {
     memset(m_message, 0, MESSAGE_SIZE); // clear last known message
     // Extract message from block
     int messageIdx = 0;
-    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 0b1000; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
         if (( hammingIdx & (hammingIdx - 1) ) != 0) { // if current index is not power of 2, and thus not a parity bit...
             // copy bit from hamming block to destination message block
             assignBit(m_message, messageIdx, checkBit(m_block, hammingIdx));
@@ -122,9 +122,9 @@ ErrorReport HammingBlock::scanBlock() {
     }
     // calculate block parity
     bool blockParity = !!(totalSetBits % 2);
-
+    
     // determine error type
-    if (!!m_block[0] == blockParity) {
+    if (checkBit(m_block, 0) == blockParity) {
         if (indexParity == 0) {
             // no error detected
         } else {
@@ -135,6 +135,27 @@ ErrorReport HammingBlock::scanBlock() {
         // single bit error detected
         errorInfo.size = 1;
         errorInfo.position = indexParity; // The parity tells us the index of the error!!!
+    }
+    return errorInfo;
+}
+
+/* - - - - - - correctBlock - - - - - - *
+ * Usage:
+ *  Scans the block for errors and corrects single bit errors
+ * 
+ * Inputs:
+ *  None
+ *  
+ * Outputs:
+ *  ErrorReport struct with size of detected error and error position. Returns a position of -1 for errors not of size 1
+ */
+ErrorReport HammingBlock::correctBlock() {
+    // scan the block for errors
+    ErrorReport errorInfo;
+    errorInfo = scanBlock(); 
+    // correct single bit errors
+    if (errorInfo.size == 1) {
+        flipBit(m_block, errorInfo.position);
     }
     return errorInfo;
 }
@@ -164,27 +185,6 @@ void HammingBlock::fill(void *newData) {
  */
 void HammingBlock::clear() {
     memset(m_block, 0, HAMMING_BLOCK_SIZE);
-}
-
-/* - - - - - - correctBlock - - - - - - *
- * Usage:
- *  Scans the block for errors and corrects single bit errors
- * 
- * Inputs:
- *  None
- *  
- * Outputs:
- *  ErrorReport struct with size of detected error and error position. Returns a position of -1 for errors not of size 1
- */
-ErrorReport HammingBlock::correctBlock() {
-    // scan the block for errors
-    ErrorReport errorInfo;
-    errorInfo = scanBlock(); 
-    // correct single bit errors
-    if (errorInfo.size == 1) {
-        flipBit(m_block, errorInfo.position);
-    }
-    return errorInfo;
 }
 
 /* - - - - - - checkBit (private) - - - - - - *
@@ -247,6 +247,7 @@ void HammingBlock::flipBit(void *dst, int index) {
 /* For Debugging: */
 
 void HammingBlock::printBlock() {
+    // for (int i = 0; i < HAMMING_BLOCK_SIZE; i ++) { Serial.println(m_block[i]); }
     for (int idx = 0; idx < HAMMING_BLOCK_SIZE * 0b1000; idx++) {
         if (idx % 0b1000 == 0 && idx != 0) {
             Serial.println();

@@ -181,9 +181,7 @@ bool saveBuffer(int &index) {
     unsigned long timestamp = calcTimestamp(); 
     
     // Run all the data through EDAC
-    // uint8_t encodedFile[ENCODED_FILE_SIZE];
-    // encodeFile(encodedFile, timeSortBuffer, timestamp);
-
+    EncodedFile fileData = EncodedFile(dataBuffer, timestamp); // this one line cost 50+ hours of my life
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
@@ -218,7 +216,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    //status = file.write(encodedFile, sizeof(encodedFile)); //write sorted dataBuffer
+    status = file.write(fileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
 
     index = 0; // reset index to start of array since we have saved the buffer
 

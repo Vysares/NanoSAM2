@@ -57,6 +57,10 @@ class EncodedFile {
         uint8_t *getData();
         uint16_t *getBuffer();
         unsigned long getTimestamp();
+
+        // for debugging
+        void printBlock(int index);
+        void injectError(int blockNum, int index);
 };
 
 #endif

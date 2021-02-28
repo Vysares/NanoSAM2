@@ -25,7 +25,7 @@
  *  None
  */
 EncodedFile::EncodedFile() {
-    //m_blocks.resize(MESSAGE_COUNT);
+    m_timestamp = 0;
 }
 
 /* - - - - - - Constructor (science data) - - - - - - *
@@ -66,7 +66,7 @@ void EncodedFile::encodeData(uint16_t *buffer, unsigned long &timestamp) {
     
     memset(m_data, 0, ENCODED_FILE_SIZE); // clear the data array
     memcpy(m_data, buffer, BUFFER_MEMSIZE); // copy buffer to data array
-    memcpy(m_data + BUFFER_MEMSIZE, timestamp, TIMESTAMP_SIZE); // copy timestamp to data array
+    memcpy(m_data + BUFFER_MEMSIZE, &timestamp, TIMESTAMP_SIZE); // copy timestamp to data array
 
     /* encode the data */ 
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
@@ -116,7 +116,7 @@ ScrubReport EncodedFile::scrub() {
         ErrorReport errorInfo = m_blocks[blockNum].correctBlock();
 
         // if uncorrectable error detected, clear the block
-        if (errorInfo.size > 1) {
+        if (errorInfo.size >= 2) {
             m_blocks[blockNum].clear();
         } 
         // update scrub report with latest error report
@@ -165,7 +165,7 @@ void EncodedFile::decode() {
     }
     // extract the buffer and timestamp
     memcpy(m_buffer, m_data, BUFFER_MEMSIZE);
-    memcpy(m_timestamp, m_data + BUFFER_MEMSIZE, TIMESTAMP_SIZE);
+    memcpy(&m_timestamp, m_data + BUFFER_MEMSIZE, TIMESTAMP_SIZE);
 }
 
 /* - - - - - - getBuffer - - - - - - *
@@ -196,4 +196,15 @@ uint16_t *EncodedFile::getBuffer() {
 unsigned long EncodedFile::getTimestamp() {
     decode(); // decode the file contents
     return m_timestamp;
+}
+
+
+/* For debugging: */
+
+void EncodedFile::printBlock(int blockNum) {
+    m_blocks[blockNum].printBlock();
+}
+
+void EncodedFile::injectError(int blockNum, int index) {
+    m_blocks[blockNum].injectError(index);
 }
