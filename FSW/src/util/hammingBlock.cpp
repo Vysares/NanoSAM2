@@ -28,7 +28,7 @@ HammingBlock::HammingBlock() {
 }
 
 
-/* - - - - - - encodeBlock - - - - - - *
+/* - - - - - - encodeMessage - - - - - - *
  * Usage:
  *  Encodes an 8 byte message into the block
  * 
@@ -74,7 +74,7 @@ void HammingBlock::encodeMessage(void *message) {
     assignBit(m_block, 0, blockParity);
 } 
 
-/* - - - - - - decodeBlock - - - - - - *
+/* - - - - - - getMessage - - - - - - *
  * Usage:
  *  Retrieves and returns the decoded message
  * 

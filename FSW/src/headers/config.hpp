@@ -60,6 +60,7 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
 /* - - - - - - Main - - - - - - */
 static Event exitMainLoopEvent; // event to trigger main loop exit
 
+
 /* - - - - - - Error Detection and Correction (EDAC) Module - - - - - - */
 // do not change these. It will break everything.
 const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits, 9
