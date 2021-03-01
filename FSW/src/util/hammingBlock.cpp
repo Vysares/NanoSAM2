@@ -1,6 +1,8 @@
-/* edac.cpp handles error detection and correction of NS2 science and program data
+/* hammingBlock.cpp defines the HammingBlock class
  * Usage:
- *  
+ *  A HammingBlock object is a container for an 8 byte message, which is encoded into a 9 byte
+ *  block using a (72,64) Hamming code.
+ *  A HammingBlock can encode/decode itself, scan its contetns for errors, and correct single bit errors.
  * 
  * Modules encompassed:
  *  Memory Scrubbing

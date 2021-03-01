@@ -1,14 +1,12 @@
-/* edac.cpp handles error detection and correction of NS2 science and program data
+/* encodedFile.cpp defines the EncodedFile class
  * Usage:
- *  
+ *  An EncodedFile object is used to encode and decode science data.
  * 
  * Modules encompassed:
  *  Memory Scrubbing
- *  Program EDAC
  *
  * Additional files needed for compilation:
  *  config.hpp
- *  
  */
 
 /* - - - - - - Includes - - - - - - */

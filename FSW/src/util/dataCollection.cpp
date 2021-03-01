@@ -1,4 +1,4 @@
-/* memUtil.cpp handles NS2 payload memory allocation and assignment 
+/* dataCollection.cpp handles NS2 payload memory allocation and assignment 
  * Usage:
  *  module functionality
  *  function definitions
