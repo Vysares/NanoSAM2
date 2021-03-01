@@ -21,6 +21,8 @@
 #define BIT_CHECK(a,bit) ( !!((a) & (1ULL<<(bit))) )  // returns bit value, 0 or 1
 
 
+/* - - - - - - Class Definitions - - - - - - */
+
 /* - ErrorReport -
 *   Holds error info for a single hamming block.
 *   Members: size, position
@@ -29,6 +31,7 @@ struct ErrorReport {
     int size = 0;      // size of detected error, 0 for no detected error
     int position = -1; // position of error if errorSize is 1, -1 otherwise
 };
+
 
 /* - HammingBlock -
 *   Container object for a single encoded hamming block */

@@ -17,8 +17,6 @@
 #include "../headers/hammingBlock.hpp"
 
 
-/* - - - - - - Method Definitions - - - - - - */
-
 /* - - - - - - HammingBlock Constructor - - - - - - *
 * Inputs:
 *   None

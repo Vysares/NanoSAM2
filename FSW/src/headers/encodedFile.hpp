@@ -15,9 +15,7 @@
 #include "hammingBlock.hpp"
 
 
-/* - - - - - - Structs - - - - - - */
-
-
+/* - - - - - - Class Definitions - - - - - - */
 
 /* - ScrubReport -
 *   Holds results of file scrub.
@@ -30,7 +28,9 @@ struct ScrubReport {
 };
 
 
-/* - - - - - - EncodedFile Class - - - - - - */
+/* - EncodedFile -
+*   Container for encoded file contents
+*/
 class EncodedFile {
     private:
         // member variables
