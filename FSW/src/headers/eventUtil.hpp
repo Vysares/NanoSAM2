@@ -29,6 +29,7 @@ class Event {
         
     public:
         Event();
+
         bool checkInvoked();
         void invoke();
 };
@@ -51,6 +52,7 @@ class TimedEvent : public Event {
     public:
         TimedEvent(unsigned long newDuration);
         TimedEvent(); // overloaded constructor to set default duration
+
         void setDuration(unsigned long newDuration);
         bool checkInvoked();
         void start();
@@ -67,6 +69,7 @@ class TimedEvent : public Event {
 class RecurringEvent : public TimedEvent {
     public:
         RecurringEvent(unsigned long newDuration);
+        
         bool checkInvoked();
 };
 
@@ -76,7 +79,7 @@ class RecurringEvent : public TimedEvent {
  * Use an AsyncEvent when you want to stagger a task over multiple loop iterations.
  *  To invoke the AsyncEvent call invoke()
  *  To change the maximum number of iterations call setMaxIter(). 
- *  To get the current iteration call getIter().
+ *  To get the current iteration call iter().
  *  To de-invoke the AsyncEvent and reset the iteration count call stop().
  *  To de-invoke the AsyncEvent without resetting the iteration count, call pause().
  *  To check if the AsyncEvent is invoked call checkInvoked().
@@ -92,11 +95,14 @@ class AsyncEvent : public Event {
     public:
         AsyncEvent();
         AsyncEvent(int maxIter);
+
         void setMaxIter(int maxIter);
+        void invoke();
         bool checkInvoked();
-        int getIter();
+        int iter();
         void stop();
         void pause();
+        bool over();
 };
 
 #endif

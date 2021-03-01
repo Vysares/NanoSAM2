@@ -25,7 +25,7 @@ class ScienceMode {
         void sweepChange();
 
         // event for downlinking data
-        Event downlinkEvent;
+        AsyncEvent downlinkEvent;
 
         // event for exiting main loop
         Event exitMainLoopEvent;

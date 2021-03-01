@@ -61,7 +61,7 @@ void TimedEvent::setDuration(unsigned long newDuration) {
 bool TimedEvent::checkInvoked() {
     // will only return true once
     if (!isInvoked && (millis() >= nextInvokeMillis)) {
-        this->invoke();
+        invoke();
         return true;
     }
     return false;
@@ -81,7 +81,7 @@ RecurringEvent::RecurringEvent(unsigned long newDuration) : TimedEvent(newDurati
 bool RecurringEvent::checkInvoked() {
     // will return true once and automatically restart
     if (!isInvoked && millis() >= nextInvokeMillis) {
-        this->start();
+        start();
         return true;
     }
     return false;
@@ -104,19 +104,25 @@ void AsyncEvent::setMaxIter(int maxIter) {
     maxIterations = maxIter;
 }
 
+
+void AsyncEvent::invoke() {
+    iteration = 0;
+    isInvoked = true;
+}
+
 // checks if the event is invoked
 bool AsyncEvent::checkInvoked() { 
     if (maxIterations > 0 && iteration >= maxIterations) {
-        this->stop();
+        stop();
     } else {
         iteration++;
     }
     return isInvoked;
 }
 
-// returns current iteration
-int AsyncEvent::getIter() {
-    return iteration;
+// returns the current iteration
+int AsyncEvent::iter() {
+    return (iteration - 1); // will return zero after checkInvoked is called for the first time
 }
 
 // de-invokes the event and resets current iteration to 0
@@ -128,4 +134,8 @@ void AsyncEvent::stop() {
 // de-invokes the event, current iteration will carry over to next call of invoke()
 void AsyncEvent::pause() {
     isInvoked = false;
+}
+
+bool AsyncEvent::over() {
+    return (iteration == maxIterations)
 }

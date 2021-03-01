@@ -93,6 +93,7 @@ static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that dur
 static Event saveBufferEvent;
 static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
 static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
+static AsyncEvent scrubEvent(MAXFILES);
 
 
 /* - - - - - - Command Handling Module - - - - - - */

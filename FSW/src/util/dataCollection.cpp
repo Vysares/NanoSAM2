@@ -31,11 +31,6 @@ static uint16_t dataBuffer[BUFFERSIZE]; // create array to hold data buffer elem
 static char filename[] = "scienceFile0.csv";   // null-terminated char array 
 static const int FILE_IDX_OFFSET = 11;           // index of file number in char array
 
-// downlink
-static int downlinkFileIdx = 0; // iterator for loop checking file existence
-static int downlinkFileCount = 0; // iterator to track number of files downlinked
-static bool newDownlink = true; // flag to determine if this is a new or continued downlink
-
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - dataProcessing - - - - - - *
@@ -109,6 +104,10 @@ void scienceMemoryHandling() {
     if (saveBufferEvent.checkInvoked()) {
         saveBuffer(bufIdx);
     }
+
+    if(scrubEvent.checkInvoked()) {
+        scrubFlash();
+    }
 }
 
 /* - - - - - - Helper Functions - - - - - - */
@@ -181,7 +180,7 @@ bool saveBuffer(int &index) {
     unsigned long timestamp = calcTimestamp(); 
     
     // Run all the data through EDAC
-    EncodedFile fileData = EncodedFile(dataBuffer, timestamp); // this one line cost 50+ hours of my life
+    EncodedFile encodedFileData = EncodedFile(dataBuffer, timestamp); // this one line cost 50+ hours of my life
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
@@ -216,7 +215,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    status = file.write(fileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
+    status = file.write(encodedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
 
     index = 0; // reset index to start of array since we have saved the buffer
 
@@ -273,47 +272,105 @@ unsigned long calcTimestamp() {
  *  none
  */
 void downlink() {
-    
-    if (newDownlink) { // reset asynchronous variables if it is a new downlink
-        filename[FILE_IDX_OFFSET] = '0';
-        downlinkFileIdx = 0;
-        downlinkFileCount = 0;
-        newDownlink = false;
+    static char downlinkFileName[] = "scienceFile0.csv";
+    static int downlinkFileCount = 0;
+
+    /* downlink a single file */
+    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scienceMode.downlinkEvent.iter()); // update file name 
+    if (SerialFlash.exists(filename)) { // check if file exists
+        Serial.print("Downlinking ");
+        Serial.print(downlinkFileName);
+        Serial.println(":");
+
+
+        // read data from file into downlink buffer
+        SerialFlashFile file;
+        file = SerialFlash.open(downlinkFileName);
+        if (file) {
+            char downlinkBuffer[ENCODED_FILE_SIZE];
+            file.read(downlinkBuffer, ENCODED_FILE_SIZE);
+            Serial.println(downlinkBuffer);
+            Serial.println(); // skip a line between files
+            downlinkFileCount++;
+        }
+        // remove file
+        // this allows a file of the same name to overwrite this data in the future
+        SerialFlash.remove(downlinkFileName);
     }
 
-    if (downlinkFileIdx < MAXFILES){ // check all science possible filenames
- 
-        if (SerialFlash.exists(filename)) { // check if file exists
-            Serial.print("Downlinking ");
-            Serial.print(filename);
-            Serial.println(":");
-
-            char downlinkBuffer[ENCODED_FILE_SIZE];
-
-            // read data from file into downlink buffer
-            SerialFlashFile downlinkFile;
-            downlinkFile = SerialFlash.open(filename);
-            if (downlinkFile) {
-                downlinkFile.read(downlinkBuffer, ENCODED_FILE_SIZE);
-                Serial.println(downlinkBuffer);
-                Serial.println(); // skip a line between files
-                downlinkFileCount++;
-            }
-
-            // remove file
-            // this allows a file of the same name to overwrite this data in the future
-            SerialFlash.remove(filename);
-        }
-        
-        // move to next file;
-        scienceMode.downlinkEvent.invoke(); // check again on next loop for more files
-        downlinkFileIdx++;
-        filename[FILE_IDX_OFFSET] += 1; // iterate up from zero
-    } else {
-        // cleanup variables for next time downlink command is sent
-        newDownlink = true;
+    // print report and reset static variables at end of event
+    if (scienceMode.downlinkEvent.over()) { 
         Serial.print("Downlink complete - ");
         Serial.print(downlinkFileCount);
-        Serial.println(" files.");
+        Serial.println(" file(s).");
+        
+        downlinkFileCount = 0;
+    }
+}
+
+/* - - - - - - scrubFlash - - - - - - *
+ *  
+ * Usage:
+ *  Scrubs all files in flash memory.
+ *  This function should only be called when scrubEvent is invoked
+ * 
+ * Inputs:
+ *  None
+ * Outputs:
+ *  None
+ */
+void scrubFlash() {
+    // local static variables are only initialized once
+    static char scrubFilename[] = "scienceFile0.csv"; 
+    static ScrubReport totalScrubInfo;
+
+    EncodedFile correctedFileData;
+    ScrubReport scrubInfo;
+    
+    /* scrub a single file */
+    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scrubEvent.iter()); // update file name 
+    if (SerialFlash.exists(scrubFilename)) { // check if file exists
+        // read data from file and scrub it
+        SerialFlashFile file;
+        file = SerialFlash.open(scrubFilename);
+        if (file) {
+            uint8_t fileContents[ENCODED_FILE_SIZE];
+            file.read(fileContents, ENCODED_FILE_SIZE);
+            correctedFileData.fill(fileContents);
+            scrubInfo = correctedFileData.scrub(); // scrub it
+
+            // update total scrub info
+            totalScrubInfo.corrected += scrubInfo.corrected;
+            totalScrubInfo.numErrors += scrubInfo.numErrors;
+            totalScrubInfo.uncorrected += scrubInfo.uncorrected;
+        }
+        
+        // replace corrupted file with corrected file
+        if (scrubInfo.numErrors > 0) {
+            SerialFlash.remove(scrubFilename); // remove corrupted file
+            
+            // create new file
+            bool status = true; 
+            status = SerialFlash.create(scrubFilename, ENCODED_FILE_SIZE);
+            
+            // write corrected data to new file
+            file = SerialFlash.open(scrubFilename);
+            status = file.write(correctedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
+        }
+    }
+
+    // print report and reset static variables at end of event
+    if (scrubEvent.over()) { 
+        Serial.print("Scrub complete - found errors in ");
+        Serial.print(totalScrubInfo.numErrors);
+        Serial.print(" block(s), ");
+        Serial.print(totalScrubInfo.corrected);
+        Serial.print(" corrected, ");
+        Serial.print(totalScrubInfo.uncorrected);
+        Serial.println(" cleared.");
+
+        totalScrubInfo.numErrors = 0;
+        totalScrubInfo.corrected =0;
+        totalScrubInfo.uncorrected = 0;
     }
 }
