@@ -45,8 +45,9 @@ enum Command { // all possible commands
     ADCS_POINTING_AT_SUN_T,         // sets pointing at sun flag to true
     ADCS_POINTING_AT_SUN_F,         // sets pointing at sun flag to false
 
-    // downlink
+    // Memory
     DOWNLINK_START,                // start downlink at next available time
+    SCRUB_FLASH,                   // start scrubbing the flash memory for errors
 
     // Main Loop Commands
     EXIT_MAIN_LOOP,

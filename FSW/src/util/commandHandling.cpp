@@ -267,10 +267,15 @@ void executeCommand(int command) {
             Serial.println("Command Received - ADCS_POINTING_AT_SUN set to false.");
             break;
 
-        // Downlink
+        // Memory
         case DOWNLINK_START:
             scienceMode.downlinkEvent.invoke();
             Serial.println("Command Received - Downlink will begin when payload enters standby.");
+            break;
+
+        case SCRUB_FLASH:
+            scrubEvent.invoke();
+            Serial.println("Command Received - Scrub initiated.");
             break;
 
         // Main Loop
