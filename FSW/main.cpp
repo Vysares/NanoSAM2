@@ -16,6 +16,7 @@
 // NS2 headers
 #include "src/headers/config.hpp"
 #include "src/headers/commandHandling.hpp"
+#include "src/headers/housekeeping.hpp"
 #include "src/headers/eventUtil.hpp"
 #include "src/headers/timingClass.hpp"
 #include "src/headers/timing.hpp"
@@ -83,18 +84,44 @@ int main() {
         Serial.println("Initialization failed, exiting main loop");
         return -1;
     }
+    static unsigned long long mainLoopIterations = 0; // unecessarily huge counter for loop iterations
     
+    /* = = = = = = = = = = = = = = = = =
+     * = = = = = = Main Loop = = = = = = 
+     * = = = = = = = = = = = = = = = = = */
     while(true) { // run main loop until exit command
-        // execute commands  
+        
+        /* - ALWAYS EXECUTE - */
+        // handle commands
         commandHandling();
+        
+        // handle housekeeping
+        if (housekeepingTimer.checkInvoked()) {
+            handleHousekeeping();
+        }  
 
-        // test multiple file structure by calling functions from memUtil.cpp
+
+        /* - ONLY EXECTUTE DURING NORMAL OPERATION - */
         if (scienceMode.getMode() != SAFE_MODE) {
             scienceMemoryHandling();
         }
 
-        if (scienceMode.exitMainLoopEvent.checkInvoked()) {
-            Serial.println("Exiting main loop");
+
+         /* - ONLY EXECUTE IN STANDBY MODE - */
+        if (scienceMode.getMode() == STANDBY_MODE) {
+            // scrub flash
+            if (scrubEvent.checkInvoked()) {
+                scrubFlash();
+            }
+            // downlink data
+            if (downlinkEvent.checkInvoked()) {
+                downlink;
+            }
+        }
+
+        if (exitMainLoopEvent.checkInvoked()) {
+            Serial.print("Exiting main loop at iteration ");
+            Serial.println(mainLoopIterations);
             break;
         }
     }
