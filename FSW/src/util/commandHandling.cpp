@@ -269,7 +269,7 @@ void executeCommand(int command) {
 
         // Memory
         case DOWNLINK_START:
-            scienceMode.downlinkEvent.invoke();
+            downlinkEvent.invoke();
             Serial.println("Command Received - Downlink will begin when payload enters standby.");
             break;
 
@@ -280,7 +280,7 @@ void executeCommand(int command) {
 
         // Main Loop
         case EXIT_MAIN_LOOP:
-            scienceMode.exitMainLoopEvent.invoke();
+            exitMainLoopEvent.invoke();
             Serial.println("Command Received - Exiting main loop at next opportunity.");
             break;
 

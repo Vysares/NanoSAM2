@@ -139,9 +139,8 @@ ScrubReport EncodedFile::scrub() {
  */
 uint8_t *EncodedFile::getData() {
     memset(m_data, 0, ENCODED_FILE_SIZE); // clear the data array
-    // decode the data to the data array
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
-        // copy the decoded message to the data array
+        // copy the encoded block contents to the data array
         memcpy(m_data + blockNum * HAMMING_BLOCK_SIZE, m_blocks[blockNum].getBlock(), HAMMING_BLOCK_SIZE);
     }
     return m_data;

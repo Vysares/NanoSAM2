@@ -136,6 +136,7 @@ void AsyncEvent::pause() {
     isInvoked = false;
 }
 
+// returns whether the current iteration is the last
 bool AsyncEvent::over() {
-    return (iteration == maxIterations)
+    return (iteration == maxIterations);
 }

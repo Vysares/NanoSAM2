@@ -281,7 +281,7 @@ void downlink() {
     }
 
     /* downlink a single file */
-    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scienceMode.downlinkEvent.iter()); // update file name 
+    downlinkFileName[FILE_IDX_OFFSET] = static_cast<char>(downlinkEvent.iter()); // update file name 
     if (SerialFlash.exists(filename)) { // check if file exists
         Serial.print("Downlinking ");
         Serial.print(downlinkFileName);
@@ -304,7 +304,7 @@ void downlink() {
     }
 
     // print report at end of event
-    if (scienceMode.downlinkEvent.over()) { 
+    if (downlinkEvent.over()) { 
         Serial.print("Downlink complete - ");
         Serial.print(downlinkFileCount);
         Serial.println(" file(s).");
@@ -365,7 +365,7 @@ void scrubFlash() {
             status = file.write(correctedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
         }
     }
-    
+
     // print report at end of event
     if (scrubEvent.over()) { 
         Serial.print("Scrub complete - found errors in ");
