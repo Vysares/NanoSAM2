@@ -146,12 +146,6 @@ void updatePayloadMode(uint16_t buffer[], int bufIdx) {
         //       it honestly might be best to leave it as having to manually start
         //       a data window for testing
         
-        // check for downlink
-        if (scienceMode.downlinkEvent.checkInvoked()) {
-            downlink();
-        }
-
-        // TODO: memory scrubbing  
 
     } else { // mode was not recognized, this should not happen
         Serial.println("Payload Mode not recognized (Timing Module) - Defaulting to Safe Mode");

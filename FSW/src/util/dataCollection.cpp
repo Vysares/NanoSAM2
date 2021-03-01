@@ -275,6 +275,11 @@ void downlink() {
     static char downlinkFileName[] = "scienceFile0.csv";
     static int downlinkFileCount = 0;
 
+    // reset static variables at start of new event
+    if (downlinkEvent.iter() == 0) {
+        downlinkFileCount = 0;
+    }
+
     /* downlink a single file */
     scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scienceMode.downlinkEvent.iter()); // update file name 
     if (SerialFlash.exists(filename)) { // check if file exists
@@ -298,13 +303,11 @@ void downlink() {
         SerialFlash.remove(downlinkFileName);
     }
 
-    // print report and reset static variables at end of event
+    // print report at end of event
     if (scienceMode.downlinkEvent.over()) { 
         Serial.print("Downlink complete - ");
         Serial.print(downlinkFileCount);
         Serial.println(" file(s).");
-        
-        downlinkFileCount = 0;
     }
 }
 
@@ -326,6 +329,13 @@ void scrubFlash() {
 
     EncodedFile correctedFileData;
     ScrubReport scrubInfo;
+    
+    // reset static variables at start of new event
+    if (scrubEvent.iter() == 0) {
+        totalScrubInfo.numErrors = 0;
+        totalScrubInfo.corrected =0;
+        totalScrubInfo.uncorrected = 0;
+    }
     
     /* scrub a single file */
     scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scrubEvent.iter()); // update file name 
@@ -349,17 +359,14 @@ void scrubFlash() {
         if (scrubInfo.numErrors > 0) {
             SerialFlash.remove(scrubFilename); // remove corrupted file
             
-            // create new file
-            bool status = true; 
-            status = SerialFlash.create(scrubFilename, ENCODED_FILE_SIZE);
-            
-            // write corrected data to new file
+            // create new file and write corrected data
+            bool status = SerialFlash.create(scrubFilename, ENCODED_FILE_SIZE);
             file = SerialFlash.open(scrubFilename);
             status = file.write(correctedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
         }
     }
-
-    // print report and reset static variables at end of event
+    
+    // print report at end of event
     if (scrubEvent.over()) { 
         Serial.print("Scrub complete - found errors in ");
         Serial.print(totalScrubInfo.numErrors);
@@ -368,9 +375,5 @@ void scrubFlash() {
         Serial.print(" corrected, ");
         Serial.print(totalScrubInfo.uncorrected);
         Serial.println(" cleared.");
-
-        totalScrubInfo.numErrors = 0;
-        totalScrubInfo.corrected =0;
-        totalScrubInfo.uncorrected = 0;
     }
 }

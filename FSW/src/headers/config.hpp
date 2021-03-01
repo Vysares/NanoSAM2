@@ -57,10 +57,13 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
  * = = = = = = Module Constants  = = = = = = =
  * = = = = = = = = = = = = = = = = = = = = = */
 
+/* - - - - - - Main - - - - - - */
+static Event exitMainLoopEvent; // event to trigger main loop exit
+
 /* - - - - - - Error Detection and Correction (EDAC) Module - - - - - - */
-// do not change these.
-const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits
-const int MESSAGE_SIZE = 8;        // bytes of non-redundant data in a block
+// do not change these. It will break everything.
+const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits, 9
+const int MESSAGE_SIZE = 8;        // bytes of non-redundant data in a block, 8
 
 
 /* - - - - - - Data Collection Module - - - - - - */
@@ -93,6 +96,7 @@ static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that dur
 static Event saveBufferEvent;
 static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
 static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
+static AsyncEvent downlinkEvent(MAXFILES);
 static AsyncEvent scrubEvent(MAXFILES);
 
 
