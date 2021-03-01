@@ -104,10 +104,6 @@ void scienceMemoryHandling() {
     if (saveBufferEvent.checkInvoked()) {
         saveBuffer(bufIdx);
     }
-
-    if(scrubEvent.checkInvoked()) {
-        scrubFlash();
-    }
 }
 
 /* - - - - - - Helper Functions - - - - - - */
@@ -276,12 +272,12 @@ void downlink() {
     static int downlinkFileCount = 0;
 
     // reset static variables at start of new event
-    if (downlinkEvent.iter() == 0) {
+    if (downlinkEvent.first()) {
         downlinkFileCount = 0;
     }
 
     /* downlink a single file */
-    downlinkFileName[FILE_IDX_OFFSET] = static_cast<char>(downlinkEvent.iter()); // update file name 
+    downlinkFileName[FILE_IDX_OFFSET] = static_cast<char>(downlinkEvent.iter() - 1); // update file name 
     if (SerialFlash.exists(filename)) { // check if file exists
         Serial.print("Downlinking ");
         Serial.print(downlinkFileName);
@@ -331,14 +327,14 @@ void scrubFlash() {
     ScrubReport scrubInfo;
     
     // reset static variables at start of new event
-    if (scrubEvent.iter() == 0) {
+    if (scrubEvent.first()) {
         totalScrubInfo.numErrors = 0;
         totalScrubInfo.corrected =0;
         totalScrubInfo.uncorrected = 0;
     }
     
     /* scrub a single file */
-    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scrubEvent.iter()); // update file name 
+    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scrubEvent.iter() - 1); // update file name
     if (SerialFlash.exists(scrubFilename)) { // check if file exists
         // read data from file and scrub it
         SerialFlashFile file;

@@ -84,7 +84,7 @@ int main() {
         Serial.println("Initialization failed, exiting main loop");
         return -1;
     }
-    static unsigned long long mainLoopIterations = 0; // unecessarily huge counter for loop iterations
+    static unsigned long mainLoopIterations = 0; // counter for loop iterations
     
     /* = = = = = = = = = = = = = = = = =
      * = = = = = = Main Loop = = = = = = 

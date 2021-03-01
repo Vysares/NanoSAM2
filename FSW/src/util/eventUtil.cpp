@@ -92,11 +92,13 @@ bool RecurringEvent::checkInvoked() {
  // default constructor
 AsyncEvent::AsyncEvent() : Event() {
     maxIterations = -1; // will not trigger automatic stop
+    iteration = 0;
 }
 
 // overloaded constructor to set max iterations
 AsyncEvent::AsyncEvent(int maxIter) : Event() { 
     maxIterations = maxIter;
+    iteration = 0;
 }
 
 // sets new max number of iterations
@@ -104,9 +106,8 @@ void AsyncEvent::setMaxIter(int maxIter) {
     maxIterations = maxIter;
 }
 
-
+// invokes the event
 void AsyncEvent::invoke() {
-    iteration = 0;
     isInvoked = true;
 }
 
@@ -114,7 +115,7 @@ void AsyncEvent::invoke() {
 bool AsyncEvent::checkInvoked() { 
     if (maxIterations > 0 && iteration >= maxIterations) {
         stop();
-    } else {
+    } else if (isInvoked) {
         iteration++;
     }
     return isInvoked;
@@ -122,7 +123,7 @@ bool AsyncEvent::checkInvoked() {
 
 // returns the current iteration
 int AsyncEvent::iter() {
-    return (iteration - 1); // will return zero after checkInvoked is called for the first time
+    return iteration; // will return 1 after first call of checkInvoked()
 }
 
 // de-invokes the event and resets current iteration to 0
@@ -134,6 +135,11 @@ void AsyncEvent::stop() {
 // de-invokes the event, current iteration will carry over to next call of invoke()
 void AsyncEvent::pause() {
     isInvoked = false;
+}
+
+// returns whether the current iteration is the first
+bool AsyncEvent::first() {
+    return (iteration == 1);
 }
 
 // returns whether the current iteration is the last

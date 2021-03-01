@@ -102,6 +102,7 @@ class AsyncEvent : public Event {
         int iter();
         void stop();
         void pause();
+        bool first();
         bool over();
 };
 
