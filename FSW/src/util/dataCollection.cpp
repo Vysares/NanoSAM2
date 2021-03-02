@@ -329,7 +329,7 @@ void scrubFlash() {
     // reset static variables at start of new event
     if (scrubEvent.first()) {
         totalScrubInfo.numErrors = 0;
-        totalScrubInfo.corrected =0;
+        totalScrubInfo.corrected = 0;
         totalScrubInfo.uncorrected = 0;
     }
     

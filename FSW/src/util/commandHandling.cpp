@@ -275,7 +275,7 @@ void executeCommand(int command) {
 
         case SCRUB_FLASH:
             scrubEvent.invoke();
-            Serial.println("Command Received - Scrub initiated.");
+            Serial.println("Command Received - Flash scrub initiated.");
             break;
 
         // Main Loop

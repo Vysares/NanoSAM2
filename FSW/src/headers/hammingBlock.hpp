@@ -14,11 +14,11 @@
 #include "config.hpp"
 
 /* - - - - - - Bit Operation Macros - - - - - - */
-// a = target variable, bit = bit number to act on (0 indexed)
-#define BIT_SET(a,bit) ( (a) |= (1ULL<<(bit)) )       // sets bit to 1
-#define BIT_CLEAR(a,bit) ( (a) &= ~(1ULL<<(bit)) )    // clears bit to 0
-#define BIT_FLIP(a,bit) ( (a) ^= (1ULL<<(bit)) )      // flips bit
-#define BIT_CHECK(a,bit) ( !!((a) & (1ULL<<(bit))) )  // returns bit value, 0 or 1
+// trgt = target variable, bit = bit number to act on (0 indexed)
+#define BIT_SET(trgt,bit) ( (trgt) |= (1ULL<<(bit)) )       // sets bit to 1
+#define BIT_CLEAR(trgt,bit) ( (trgt) &= ~(1ULL<<(bit)) )    // clears bit to 0
+#define BIT_FLIP(trgt,bit) ( (trgt) ^= (1ULL<<(bit)) )      // flips bit
+#define BIT_CHECK(trgt,bit) ( !!((trgt) & (1ULL<<(bit))) )  // returns bit value, 0 or 1
 
 
 /* - - - - - - Class Definitions - - - - - - */
