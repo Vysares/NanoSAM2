@@ -9,16 +9,14 @@
 // NS2 headers
 #include "config.hpp"
 
+/* - - - - - - Structs - - - - - - */
 
-/* - - - - - - Declarations - - - - - - */
-void handleHousekeeping();
-void setHeater();
-void sampleHousekeepingData();
-float voltageToBoardTemp(float voltage);
-float voltageToOpticsTemp(float voltage);
-void timeSortHkData();
-
-struct HousekeepingData {  // stores one point of housekeeping data
+/* - HousekeepingData -
+*   Holds a single point of housekeeping data.
+*   Members: opticsTemp, analogTemp, digitalTemp,
+*   analogCurrent, digitalCurrent, digitalRegPG, timeMillis 
+*/
+struct HousekeepingData {
     float opticsTemp;      // optics bench temp, celsius
     float analogTemp;      // analog board temp, celsius
     float digitalTemp;     // digital board temp, celsius
@@ -28,7 +26,6 @@ struct HousekeepingData {  // stores one point of housekeeping data
     float timeMillis;      // time that sample was taken, milliseconds
 };
 
-static HousekeepingData latestHkSample;                 // latest point of housekeeping data
 struct TempVoltagePair { float temperature, voltage; }; // used for entries in thermistor lookup table
 
 // Thermistor lookup table for board thermistors, temperature (deg C) / voltage (Volts).
@@ -47,5 +44,13 @@ const TempVoltagePair thermLookup[] = { { -40.000F, 2.999F },
                                         { 80.000F, 0.102F },
                                         { 90.000F, 0.076F } };
 // End thermistor lookup table
+
+/* - - - - - - Declarations - - - - - - */
+void handleHousekeeping();
+void setHeater();
+void sampleHousekeepingData();
+float voltageToBoardTemp(float voltage);
+float voltageToOpticsTemp(float voltage);
+HousekeepingData *getHkData();
 
 #endif

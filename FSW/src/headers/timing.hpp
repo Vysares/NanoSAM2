@@ -12,8 +12,6 @@
 
 // NS2 headers
 #include "config.hpp"
-#include "../headers/eventUtil.hpp"
-#include "../headers/commandHandling.hpp"
 
 /* - - - - - - Enums - - - - - - - */
 enum Mode { // all payload science modes
@@ -31,8 +29,8 @@ enum Mode { // all payload science modes
 };
 
 /* - - - - - - Declarations - - - - - - */
-void updatePayloadMode(float buffer[BUFFERSIZE], int bufIdx);
-float voltageRunningMean(float buffer[BUFFERSIZE], int bufIdx);
-void checkSweepChange(float buffer[BUFFERSIZE], int bufIdx);
+void updatePayloadMode(uint16_t buffer[BUFFERSIZE], int bufIdx);
+float voltageRunningMean(uint16_t buffer[BUFFERSIZE], int bufIdx);
+void checkSweepChange(uint16_t buffer[BUFFERSIZE], int bufIdx);
 int wrapBufferIdx(int idx);
 #endif

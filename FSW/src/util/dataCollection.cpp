@@ -1,4 +1,4 @@
-/* memUtil.cpp handles NS2 payload memory allocation and assignment 
+/* dataCollection.cpp handles NS2 payload memory allocation and assignment 
  * Usage:
  *  module functionality
  *  function definitions
@@ -11,29 +11,25 @@
  * Additional files needed for compilation:
  *  config.hpp
  *  timing.cpp & timing.hpp
+ *  edac.cpp & edac.hpp
  */
 
 /* - - - - - - Includes - - - - - - */
-// All libraries are put in memUtil.hpp
+// All libraries are put in dataCollection.hpp
 // NS2 headers
-#include "../headers/config.hpp"
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp"
+#include "../headers/encodedFile.hpp"
 
 /* Module Variable Definitions */
 
 // declare static variables so that they do not go away when we leave this module
 static int bufIdx = 0;               // index of next dataBuffer element to overwrite
-static float dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
+static uint16_t dataBuffer[BUFFERSIZE]; // create array to hold data buffer elements
 
 // file reading/writing
 static char filename[] = "scienceFile0.csv";   // null-terminated char array 
 static const int FILE_IDX_OFFSET = 11;           // index of file number in char array
-
-// downlink
-static int downlinkFileIdx = 0; // iterator for loop checking file existence
-static int downlinkFileCount = 0; // iterator to track number of files downlinked
-static bool newDownlink = true; // flag to determine if this is a new or continued downlink
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -46,7 +42,7 @@ static bool newDownlink = true; // flag to determine if this is a new or continu
  *  none
  *  
  * Outputs:
- *  data from the ADC (voltage measurement)
+ *  data from the ADC (bin number)
  */
 float dataProcessing() {
     float voltage;
@@ -57,7 +53,7 @@ float dataProcessing() {
     pinMode(PIN_ADC_CS, OUTPUT); // set ADC chip select pin to output
 
     // access ADC Pin (SPI)
-    uint16_t photodiode16; 
+    uint16_t photodiode16; // 16 bit variable to hold bin number from ADC
     SPI.beginTransaction(SPISettings(ADC_MAX_SPEED, MSBFIRST, SPI_MODE3)); //SPISettings(maxSpeed,dataOrder,dataMode)
     digitalWrite(PIN_ADC_CS, LOW);   // set Slave Select pin to low to select chip
     photodiode16 = SPI.transfer16(0x0000);// transfer data, send 0 to slave, recieve data from ADC
@@ -75,10 +71,8 @@ float dataProcessing() {
      *      lead to more work for future teams trying to retrofit our format
      */
 
-    // convert from Bin number to voltage, assuming board voltage does not fluctuate
-    voltage = (float)photodiode16 / ADC_BINS * (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE);
-
-    return voltage;
+    // return the bin number
+    return photodiode16;
 }
 
 /* - - - - - - scienceMemoryHandling - - - - - - *
@@ -129,7 +123,7 @@ void scienceMemoryHandling() {
  * Outputs:
  *  none
  */
-void updateBuffer(float sample, int &index) {
+void updateBuffer(uint16_t sample, int &index) {
     
     // check that index is valid
     if (0 <= index && index < BUFFERSIZE) {
@@ -138,7 +132,7 @@ void updateBuffer(float sample, int &index) {
     
     } else {
         Serial.print("WARNING: invalid dataBuffer index ");
-        Serial.print("(Science Memory Handling Module - updateBuffer() func)\n");
+        Serial.println("(Science Memory Handling Module - updateBuffer() func)");
     }
 
     if (index == BUFFERSIZE) {
@@ -155,7 +149,6 @@ void updateBuffer(float sample, int &index) {
  *  appends timestamp to the end of the file
  * 
  * Inputs:
- *  dataBuffer - pointer to first element of data buffer
  *  index - index to store new data at (pass-by-reference)
  *  
  * Outputs:
@@ -164,20 +157,26 @@ void updateBuffer(float sample, int &index) {
 bool saveBuffer(int &index) {
     
     // create array to hold data in time ascending order
-    float timeSortArray[BUFFERSIZE];
+    uint16_t timeSortBuffer[BUFFERSIZE];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
     for (int i = index; i < BUFFERSIZE; i++) {
-        timeSortArray[j] = dataBuffer[i];
+        timeSortBuffer[j] = dataBuffer[i];
         j++;
     } 
 
     // loop back to top of array and store remaining values
     for (int i = 0; i < index; i++) {
-        timeSortArray[j] = dataBuffer[i];
+        timeSortBuffer[j] = dataBuffer[i];
         j++;
     }
+    
+    // compute timestamp
+    unsigned long timestamp = calcTimestamp(); 
+    
+    // Run all the data through EDAC
+    EncodedFile encodedFileData = EncodedFile(dataBuffer, timestamp); // this one line cost 50+ hours of my life
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
@@ -201,7 +200,7 @@ bool saveBuffer(int &index) {
 
     // create new file (non-erasable, delete file after downlink)
     bool status = true; // track file creation/writing status
-    status = SerialFlash.create(filename, FILESIZE);
+    status = SerialFlash.create(filename, ENCODED_FILE_SIZE);
 
     if (status) {
         Serial.print("Found file ");
@@ -212,14 +211,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    status = file.write(dataBuffer, BUFFERSIZE); //write dataBuffer
-    
-    // TODO: may need to seek position to end of file before writing again
-    //file.seek(BUFFERSIZE);  
-
-    // compute and write timestamp
-    unsigned long timestamp = calcTimestamp();
-    file.write(&timestamp, sizeof(timestamp));
+    status = file.write(encodedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
 
     index = 0; // reset index to start of array since we have saved the buffer
 
@@ -276,47 +268,108 @@ unsigned long calcTimestamp() {
  *  none
  */
 void downlink() {
-    
-    if (newDownlink) { // reset asynchronous variables if it is a new downlink
-        filename[FILE_IDX_OFFSET] = '0';
-        downlinkFileIdx = 0;
+    static char downlinkFileName[] = "scienceFile0.csv";
+    static int downlinkFileCount = 0;
+
+    // reset static variables at start of new event
+    if (downlinkEvent.first()) {
         downlinkFileCount = 0;
-        newDownlink = false;
     }
 
-    if (downlinkFileIdx < MAXFILES){ // check all science possible filenames
- 
-        if (SerialFlash.exists(filename)) { // check if file exists
-            Serial.print("Downlinking ");
-            Serial.print(filename);
-            Serial.println(":");
+    /* downlink a single file */
+    downlinkFileName[FILE_IDX_OFFSET] = static_cast<char>(downlinkEvent.iter() - 1); // update file name 
+    if (SerialFlash.exists(filename)) { // check if file exists
+        Serial.print("Downlinking ");
+        Serial.print(downlinkFileName);
+        Serial.println(":");
 
-            char downlinkBuffer[FILESIZE];
 
-            // read data from file into downlink buffer
-            SerialFlashFile downlinkFile;
-            downlinkFile = SerialFlash.open(filename);
-            if (downlinkFile) {
-                downlinkFile.read(downlinkBuffer, FILESIZE);
-                Serial.println(downlinkBuffer);
-                Serial.println(); // skip a line between files
-                downlinkFileCount++;
-            }
-
-            // remove file
-            // this allows a file of the same name to overwrite this data in the future
-            SerialFlash.remove(filename);
+        // read data from file into downlink buffer
+        SerialFlashFile file;
+        file = SerialFlash.open(downlinkFileName);
+        if (file) {
+            char downlinkBuffer[ENCODED_FILE_SIZE];
+            file.read(downlinkBuffer, ENCODED_FILE_SIZE);
+            Serial.println(downlinkBuffer);
+            Serial.println(); // skip a line between files
+            downlinkFileCount++;
         }
-        
-        // move to next file;
-        scienceMode.downlinkEvent.invoke(); // check again on next loop for more files
-        downlinkFileIdx++;
-        filename[FILE_IDX_OFFSET] += 1; // iterate up from zero
-    } else {
-        // cleanup variables for next time downlink command is sent
-        newDownlink = true;
+        // remove file
+        // this allows a file of the same name to overwrite this data in the future
+        SerialFlash.remove(downlinkFileName);
+    }
+
+    // print report at end of event
+    if (downlinkEvent.over()) { 
         Serial.print("Downlink complete - ");
         Serial.print(downlinkFileCount);
-        Serial.println(" files.");
+        Serial.println(" file(s).");
+    }
+}
+
+/* - - - - - - scrubFlash - - - - - - *
+ *  
+ * Usage:
+ *  Scrubs all files in flash memory.
+ *  This function should only be called when scrubEvent is invoked
+ * 
+ * Inputs:
+ *  None
+ * Outputs:
+ *  None
+ */
+void scrubFlash() {
+    // local static variables are only initialized once
+    static char scrubFilename[] = "scienceFile0.csv"; 
+    static ScrubReport totalScrubInfo;
+
+    EncodedFile correctedFileData;
+    ScrubReport scrubInfo;
+    
+    // reset static variables at start of new event
+    if (scrubEvent.first()) {
+        totalScrubInfo.numErrors = 0;
+        totalScrubInfo.corrected = 0;
+        totalScrubInfo.uncorrected = 0;
+    }
+    
+    /* scrub a single file */
+    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scrubEvent.iter() - 1); // update file name
+    if (SerialFlash.exists(scrubFilename)) { // check if file exists
+        // read data from file and scrub it
+        SerialFlashFile file;
+        file = SerialFlash.open(scrubFilename);
+        if (file) {
+            uint8_t fileContents[ENCODED_FILE_SIZE];
+            file.read(fileContents, ENCODED_FILE_SIZE);
+            correctedFileData.fill(fileContents);
+            scrubInfo = correctedFileData.scrub(); // scrub it
+
+            // update total scrub info
+            totalScrubInfo.corrected += scrubInfo.corrected;
+            totalScrubInfo.numErrors += scrubInfo.numErrors;
+            totalScrubInfo.uncorrected += scrubInfo.uncorrected;
+        }
+        
+        // replace corrupted file with corrected file
+        if (scrubInfo.numErrors > 0) {
+            SerialFlash.remove(scrubFilename); // remove corrupted file
+            
+            // create new file and write corrected data
+            bool status = SerialFlash.create(scrubFilename, ENCODED_FILE_SIZE);
+            file = SerialFlash.open(scrubFilename);
+            status = file.write(correctedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
+        }
+    }
+
+    // print report at end of event
+    if (scrubEvent.over()) { 
+        Serial.print("Scrub complete - found errors in ");
+        Serial.print(totalScrubInfo.numErrors);
+        Serial.print(" block(s), ");
+        Serial.print(totalScrubInfo.corrected);
+        Serial.print(" corrected, ");
+        Serial.print(totalScrubInfo.uncorrected);
+        Serial.println(" cleared.");
     }
 }

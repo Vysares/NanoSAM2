@@ -14,13 +14,11 @@
  */
 
 /* - - - - - - Includes - - - - - - */
-// C++ libraries
-
-// Other libraries
-
+// All libraries are put in commandHandling.hpp
 // NS2 headers
-#include "../headers/config.hpp"
 #include "../headers/commandHandling.hpp"
+#include "../headers/dataCollection.hpp"
+#include "../headers/timing.hpp" //for mode enum
 
 
 /* Module Variable Definitions */
@@ -269,15 +267,20 @@ void executeCommand(int command) {
             Serial.println("Command Received - ADCS_POINTING_AT_SUN set to false.");
             break;
 
-        // Downlink
+        // Memory
         case DOWNLINK_START:
-            scienceMode.downlinkEvent.invoke();
+            downlinkEvent.invoke();
             Serial.println("Command Received - Downlink will begin when payload enters standby.");
+            break;
+
+        case SCRUB_FLASH:
+            scrubEvent.invoke();
+            Serial.println("Command Received - Flash scrub initiated.");
             break;
 
         // Main Loop
         case EXIT_MAIN_LOOP:
-            scienceMode.exitMainLoopEvent.invoke();
+            exitMainLoopEvent.invoke();
             Serial.println("Command Received - Exiting main loop at next opportunity.");
             break;
 

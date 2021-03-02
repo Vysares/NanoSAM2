@@ -13,15 +13,13 @@
  */
 
 /* - - - - - - Includes - - - - - - */
-// C++ libraries
-
-// Other libraries
-
+// All libraries are put in housekeeping.hpp
 // NS2 headers
 #include "../headers/housekeeping.hpp"
 
 
 /* Module Variable Definitions */
+static HousekeepingData latestHkSample; // latest point of housekeeping data
 static HousekeepingData housekeepingData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
 static int hkIndex = 0;
 
@@ -163,20 +161,19 @@ float voltageToOpticsTemp(float voltage) {
     return opticsTemp;
 }
 
-/* - - - - - - timeSortHkData - - - - - - *
+/* - - - - - - getHkData - - - - - - *
  * Usage:
- *  Sorts housekeepingData in ascending cronological order and resets hkIndex to 0.
- *  Call before using housekeepingData in another function
+ *  Returns pointer to array of housekeeping data, sorted in ascending cronological order
  * 
  * Inputs:
  *  none
  *  
  * Outputs:
- *  none
+ *  Pointer to array of sorted housekeeping data, type HousekeepingData*
  */
-void timeSortHkData() {
-    // create array to hold data in time ascending order
-    HousekeepingData timeSortHkData[HK_SAMPLES_TO_KEEP];
+HousekeepingData *getHkData() {
+    // static array to hold data in time ascending order
+    static HousekeepingData timeSortHkData[HK_SAMPLES_TO_KEEP];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
@@ -184,16 +181,11 @@ void timeSortHkData() {
         timeSortHkData[j] = housekeepingData[i];
         j++;
     } 
-
     // loop back to top of array and store remaining values
     for (int i = 0; i < hkIndex; i++) {
         timeSortHkData[j] = housekeepingData[i];
         j++;
     }
-
-    // copy sorted array to housekeepingData
-    for (int i = 0; i < HK_SAMPLES_TO_KEEP; i++) {
-        housekeepingData[i] = timeSortHkData[i];
-    }
-    hkIndex = 0; // reset index
+    // return pointer to sorted array
+    return timeSortHkData;
 }
