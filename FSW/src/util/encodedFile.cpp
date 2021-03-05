@@ -89,8 +89,19 @@ void EncodedFile::encodeData(uint16_t *buffer, unsigned long &timestamp) {
  */
 void EncodedFile::fill(void *encodedData) {
     // overwrite each block
+    // for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
+    //     m_blocks[blockNum].fill(encodedData + blockNum * HAMMING_BLOCK_SIZE); // overwrite the block with new data
+    // }
+
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
-        m_blocks[blockNum].fill(encodedData + blockNum * HAMMING_BLOCK_SIZE); // overwrite the block with new data
+        uint8_t unlacedBlockData[HAMMING_BLOCK_SIZE]; // temporary array to store block data
+        // de-interlace the encoded data
+        for (int blockBit = 0; blockBit < HAMMING_BLOCK_SIZE * 8; blockBit++) {
+            int bitIdx = blockNum + (blockBit * MESSAGE_COUNT); // bit index of encoded data belonging to block
+            bool val = HammingBlock::checkBit(encodedData, bitIdx); // get bit value
+            HammingBlock::assignBit(unlacedBlockData, blockBit, val); // assign bit to temporary block
+        }
+        m_blocks[blockNum].fill(unlacedBlockData); // fill block with unlaced data
     }
 }
 
@@ -138,8 +149,13 @@ ScrubReport EncodedFile::scrub() {
 uint8_t *EncodedFile::getData() {
     memset(m_data, 0, ENCODED_FILE_SIZE); // clear the data array
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
-        // copy the encoded block contents to the data array
-        memcpy(m_data + blockNum * HAMMING_BLOCK_SIZE, m_blocks[blockNum].getBlock(), HAMMING_BLOCK_SIZE);
+        // Interlace each block, so that burst errors span several blocks
+        for (int blockBit = 0; blockBit < HAMMING_BLOCK_SIZE * 8; blockBit++) {
+
+            int bitIdx = blockNum + (blockBit * MESSAGE_COUNT); // index of data array to place encoded bit
+            bool val = HammingBlock::checkBit(m_blocks[blockNum].getBlock(), blockBit); // value of bit to copy
+            HammingBlock::assignBit(m_data, bitIdx, val); // assign bit to data array
+        }
     }
     return m_data;
 }

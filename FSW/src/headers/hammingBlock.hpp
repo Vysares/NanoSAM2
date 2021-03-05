@@ -41,10 +41,6 @@ class HammingBlock {
         uint8_t m_block[HAMMING_BLOCK_SIZE];
         uint8_t m_message[MESSAGE_SIZE];
         
-        // helper methods
-        bool checkBit(void *dst, int index);
-        void assignBit(void *dst, int index, bool val);
-        void flipBit(void *dst, int index);
 
     public:
         HammingBlock();
@@ -55,6 +51,11 @@ class HammingBlock {
         ErrorReport correctBlock();
         void fill(void *newData);
         void clear();
+        
+        // static helper methods
+        static bool checkBit(void *dst, int index);
+        static void assignBit(void *dst, int index, bool val);
+        static void flipBit(void *dst, int index);
         
         // getters
         uint8_t *getBlock() { return m_block; };
