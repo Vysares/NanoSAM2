@@ -198,7 +198,7 @@ void HammingBlock::clear() {
  * Outputs:
  *  true if the bit is 1, false if the bit is 0
  */
-bool HammingBlock::checkBit(void *dst, int index) {
+static bool HammingBlock::checkBit(void *dst, int index) {
     uint8_t *byteArray = static_cast<uint8_t *>(dst);
     int byteIdx = index / 0b1000;
     int subBit = index % 0b1000;
@@ -217,7 +217,7 @@ bool HammingBlock::checkBit(void *dst, int index) {
  * Outputs:
  *  None
  */
-void HammingBlock::assignBit(void *dst, int index, bool val) {
+static void HammingBlock::assignBit(void *dst, int index, bool val) {
     uint8_t *byteArray = static_cast<uint8_t *>(dst);
     int byteIdx = index / 0b1000;
     int subBit = index % 0b1000;
@@ -238,7 +238,7 @@ void HammingBlock::assignBit(void *dst, int index, bool val) {
  * Outputs:
  *  None
  */
-void HammingBlock::flipBit(void *dst, int index) {
+static void HammingBlock::flipBit(void *dst, int index) {
     assignBit(dst, index, !checkBit(dst, index));
 }
 
