@@ -1,15 +1,17 @@
-#ifndef FAULT_MITI_H
-#define FAULT_MITI_H
+#ifndef FAULT_H
+#define FAULT_H
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
 
 // Other libraries
-#include <EEPROM.h>
 
 // NS2 headers
 #include "config.hpp"
 #include "hammingBlock.hpp"
+
+
+/* - - - - - - Class Declaration - - - - - - */
 
 namespace faultCode { 
     // fault codes are wrapped in a namespace so they are not global
@@ -30,7 +32,6 @@ namespace faultCode {
     };
 };
 
-
 class Fault {
     private:
         uint8_t m_code; // single byte int to store fault code
@@ -42,29 +43,7 @@ class Fault {
         Fault();
         Fault(uint8_t code);
         unsigned int getCode() { return m_code; }
-        void writeToEEPROM();
         void resolve(); // remove self from list
 };
-        
-
-class FaultManager {
-    private:
-        Fault m_faultList[MAX_FAULTS];
-        uint8_t m_encodedData[FAULT_LOG_MEMSIZE];
-        unsigned int m_nextRootAddress;
-    public:
-        FaultManager();
-        void log(uint8_t code);
-        void saveEEPROM();
-        void loadEEPROM();
-        void clearLog();
-        
-};
-
-
-
-
-/* - - - - - - Declarations - - - - - - */
-void clearResetCount();
 
 #endif

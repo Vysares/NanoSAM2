@@ -1,4 +1,4 @@
-/* faultMitigation.cpp handles NS2 payload fault mitigation
+/* faultManager.cpp defines the faultManager class, which handles NS2 payload fault mitigation
  * Usage:
  *  module functionality
  *  function definitions
@@ -17,7 +17,7 @@
 /* - - - - - - Includes - - - - - - */
 // All libraries are put in dataCollection.hpp
 // NS2 headers
-#include "../headers/faultMitigation.hpp"
+#include "../headers/faultManager.hpp"
 
 
 void clearResetCount() {
@@ -34,6 +34,7 @@ Fault::Fault(uint8_t code) {
     memcpy(faultData + sizeof(m_code), &m_timestamp, sizeof(m_timestamp));
     encodedBlock.encodeMessage(faultData);
 }
+
 
 FaultManager::FaultManager() { }
 
