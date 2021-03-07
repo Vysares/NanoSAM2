@@ -19,7 +19,7 @@
 #include "../headers/commandHandling.hpp"
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp" //for mode enum
-#include "../headers/faultMitigation.hpp"
+#include "../headers/faultManager.hpp"
 
 
 /* Module Variable Definitions */

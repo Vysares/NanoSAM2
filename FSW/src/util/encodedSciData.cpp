@@ -43,7 +43,7 @@ void EncodedSciData::encodeData(uint16_t *buffer, unsigned long &timestamp) {
     uint8_t rawData[DECODED_MEMSIZE];
     memcpy(rawData, buffer, BUFFER_MEMSIZE); // copy buffer to data array
     memcpy(rawData + BUFFER_MEMSIZE, &timestamp, TIMESTAMP_SIZE); // copy timestamp to data array
-    EncodedFile<SCIDATA_MESSAGE_COUNT>::encodeData(rawData);
+    EncodedFile<SCIDATA_RAW_MEMSIZE>::encodeData(rawData);
 }
 
 /* - - - - - - getBuffer - - - - - - *

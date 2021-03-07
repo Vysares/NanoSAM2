@@ -11,7 +11,7 @@
 #include "hammingBlock.hpp"
 
 
-/* - - - - - - Class Declarations - - - - - - */
+/* - - - - - - Class Declaration - - - - - - */
 
 /* - ScrubReport -
 *   Holds results of file scrub.
@@ -25,16 +25,14 @@ struct ScrubReport {
 
 /* - EncodedFile -
 *   Container for encoded data. 
-*   Note, this class is defined in the header because it is a template.
-*   There is no EncodedFile.cpp
 */
-template <size_t TMessageCount> 
+template <size_t TDecodedSize> 
 class EncodedFile {
     protected:
         // member variables
-        static const size_t MESSAGE_COUNT = TMessageCount;
-        static const size_t MEMSIZE = TMessageCount * HAMMING_BLOCK_SIZE;
-        static const size_t DECODED_MEMSIZE = TMessageCount * MESSAGE_SIZE;
+        static const int DECODED_MEMSIZE =TDecodedSize;
+        static const int MESSAGE_COUNT = (DECODED_MEMSIZE / MESSAGE_SIZE) + !!(DECODED_MEMSIZE % MESSAGE_SIZE);
+        static const int MEMSIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE;
         HammingBlock m_blocks[MESSAGE_COUNT]; // vector of encoded hamming blocks
         uint8_t m_data[MEMSIZE];  // array to hold encoded/decoded data
 
@@ -53,13 +51,19 @@ class EncodedFile {
 
         // getters
         uint8_t *getData();
+        size_t getMessageCount() { return MESSAGE_COUNT; }
+        size_t getMemsize() { return MEMSIZE; }
         
         // for debugging
         void printBlock(int index);
         void injectError(int blockNum, int index);
 };
 
-/* - - - - - - Class Definition - - - - - - */
+
+/* = = = = = = = = = = = = = = = = = = = = =
+ * = = = = = = Class Definition  = = = = = = 
+ * = = = = = = = = = = = = = = = = = = = = = */
+// The class definition is in the header file because EncodedFile is a template class
 
 /* - - - - - - Constructor (unencoded data) - - - - - - *
  * Usage:
@@ -68,8 +72,8 @@ class EncodedFile {
  * Inputs:
  *  encodedData - pointer to encoded file data, typecast to void*
  */
-template <size_t TMessageCount>
-EncodedFile<TMessageCount>::EncodedFile(void *src) {
+template <size_t TDecodedSize>
+EncodedFile<TDecodedSize>::EncodedFile(void *src) {
     fill(src);
 }
 
@@ -83,8 +87,8 @@ EncodedFile<TMessageCount>::EncodedFile(void *src) {
  * Outputs:
  *  None
  */
-template <size_t TMessageCount>
-void EncodedFile<TMessageCount>::encodeData(void *src) {
+template <size_t TDecodedSize>
+void EncodedFile<TDecodedSize>::encodeData(void *src) {
     memset(m_data, 0, MEMSIZE); // clear the data array
     memcpy(m_data, src, DECODED_MEMSIZE); // copy buffer to data array
 
@@ -109,12 +113,8 @@ void EncodedFile<TMessageCount>::encodeData(void *src) {
  * Outputs:
  *  None
  */
-template <size_t TMessageCount>
-void EncodedFile<TMessageCount>::fill(void *encodedData) {
-    // overwrite each block
-    // for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
-    //     m_blocks[blockNum].fill(encodedData + blockNum * HAMMING_BLOCK_SIZE); // overwrite the block with new data
-    // }
+template <size_t TDecodedSize>
+void EncodedFile<TDecodedSize>::fill(void *encodedData) {
 
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         uint8_t unlacedBlockData[HAMMING_BLOCK_SIZE]; // temporary array to store block data
@@ -139,8 +139,8 @@ void EncodedFile<TMessageCount>::fill(void *encodedData) {
  * Outputs:
  *  A ScrubReport struct containing counts of found and corrected errors
  */
-template <size_t TMessageCount>
-ScrubReport EncodedFile<TMessageCount>::scrub() {
+template <size_t TDecodedSize>
+ScrubReport EncodedFile<TDecodedSize>::scrub() {
     ScrubReport scrubInfo;
 
     /* scan and correct each block */
@@ -170,8 +170,8 @@ ScrubReport EncodedFile<TMessageCount>::scrub() {
  * Outputs:
  *  Pointer to encoded data, type uint8_t*
  */
-template <size_t TMessageCount>
-uint8_t *EncodedFile<TMessageCount>::getData() {
+template <size_t TDecodedSize>
+uint8_t *EncodedFile<TDecodedSize>::getData() {
     memset(m_data, 0, MEMSIZE); // clear the data array
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         // Interlace each block, so that burst errors span several blocks
@@ -194,8 +194,8 @@ uint8_t *EncodedFile<TMessageCount>::getData() {
  * Outputs:
  *  None
  */
-template <size_t TMessageCount>
-void EncodedFile<TMessageCount>::decode() { 
+template <size_t TDecodedSize>
+void EncodedFile<TDecodedSize>::decode() { 
     memset(m_data, 0, MEMSIZE); // clear the data array
     
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
@@ -206,13 +206,13 @@ void EncodedFile<TMessageCount>::decode() {
 
 
 /* For debugging: */
-template <size_t TMessageCount>
-void EncodedFile<TMessageCount>::printBlock(int blockNum) {
+template <size_t TDecodedSize>
+void EncodedFile<TDecodedSize>::printBlock(int blockNum) {
     m_blocks[blockNum].printBlock();
 }
 
-template <size_t TMessageCount>
-void EncodedFile<TMessageCount>::injectError(int blockNum, int index) {
+template <size_t TDecodedSize>
+void EncodedFile<TDecodedSize>::injectError(int blockNum, int index) {
     m_blocks[blockNum].injectError(index);
 }
 

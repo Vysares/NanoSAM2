@@ -19,7 +19,7 @@
 // NS2 headers
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp"
-#include "../headers/encodedFile.hpp"
+#include "../headers/encodedSciData.hpp"
 
 /* Module Variable Definitions */
 
@@ -200,7 +200,7 @@ bool saveBuffer(int &index) {
 
     // create new file (non-erasable, delete file after downlink)
     bool status = true; // track file creation/writing status
-    status = SerialFlash.create(filename, SCIDATA_ENCODED_MEMSIZE);
+    status = SerialFlash.create(filename, encodedFileData.getMemsize());
 
     if (status) {
         Serial.print("Found file ");
@@ -211,7 +211,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    status = file.write(encodedFileData.getData(), SCIDATA_ENCODED_MEMSIZE); // write encoded science data to file
+    status = file.write(encodedFileData.getData(), encodedFileData.getMemsize()); // write encoded science data to file
 
     index = 0; // reset index to start of array since we have saved the buffer
 

@@ -10,9 +10,10 @@
 #include "config.hpp"
 #include "encodedFile.hpp"
 
+
 /* - - - - - - Class Declaration - - - - - - */
 
-class EncodedSciData : public EncodedFile<SCIDATA_MESSAGE_COUNT> {
+class EncodedSciData : public EncodedFile<SCIDATA_RAW_MEMSIZE> {
     private:
         // member variables
         uint16_t m_buffer[BUFFERSIZE];      // array to hold decoded buffer
