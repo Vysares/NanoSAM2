@@ -55,7 +55,6 @@ void HammingBlock::encodeMessage(void *message) {
             // if message bit is 1, include in calculation of indexParity
             if (checkBit(message, messageIdx)) {
                 indexParity ^= hammingIdx;
-                totalSetBits++;
             }
             messageIdx++;
         }
@@ -68,8 +67,13 @@ void HammingBlock::encodeMessage(void *message) {
         int idx = pow(2, n); // find corresponding index in hamming block
         assignBit(m_block, idx, BIT_CHECK(indexParity, n)); // set parity bit in hamming block
     }
-    
-    // find total block parity and put it in index 0
+
+    // find the total block parity and put it in index 0
+    for (int hammingIdx = 1; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
+        if (checkBit(m_block, hammingIdx)) {
+                totalSetBits++;
+        }
+    }
     bool blockParity = !!(totalSetBits % 2);
     assignBit(m_block, 0, blockParity);
 } 
@@ -114,7 +118,7 @@ ErrorReport HammingBlock::scanBlock() {
     int totalSetBits = 0;
 
     // calculate index parity
-    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 0b1000; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 1; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
         if (checkBit(m_block, hammingIdx)) {
                 indexParity ^= hammingIdx;
                 totalSetBits++;
@@ -122,7 +126,10 @@ ErrorReport HammingBlock::scanBlock() {
     }
     // calculate block parity
     bool blockParity = !!(totalSetBits % 2);
-    
+    Serial.println(totalSetBits);
+    Serial.println(checkBit(m_block, 0));
+    Serial.println(blockParity);
+    Serial.println(checkBit(m_block, 0) == blockParity);
     // determine error type
     if (checkBit(m_block, 0) == blockParity) {
         if (indexParity == 0) {
