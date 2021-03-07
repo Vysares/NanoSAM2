@@ -12,19 +12,8 @@
 /* - - - - - - Includes - - - - - - */
 // All libraries are put in edac.hpp
 // NS2 headers
-#include "../headers/encodedFile.hpp"
+#include "../headers/encodedSciData.hpp"
 
-
-/* - - - - - - Default Constructor - - - - - - *
- * Usage:
- *  Constructs an empty EncodedSciData
- *  
- * Inputs:
- *  None
- */
-EncodedSciData::EncodedSciData() {
-    m_timestamp = 0;
-}
 
 /* - - - - - - Constructor (science data) - - - - - - *
  * Usage:
@@ -34,19 +23,8 @@ EncodedSciData::EncodedSciData() {
  *  buffer - pointer to buffer of photodiode data
  *  timestamp - file timestamp
  */
-EncodedSciData::EncodedSciData(uint16_t *buffer, unsigned long &timestamp) : EncodedSciData::EncodedSciData() {
+EncodedSciData::EncodedSciData(uint16_t *buffer, unsigned long &timestamp) {
     encodeData(buffer, timestamp);
-}
-
-/* - - - - - - Constructor (encoded data) - - - - - - *
- * Usage:
- *  Constructs an EncodedSciData and fills it with already-encoded data
- *  
- * Inputs:
- *  encodedData - pointer to encoded file data, typecast to void*
- */
-EncodedSciData::EncodedSciData(void *encodedData) : EncodedSciData::EncodedSciData() {
-    fill(encodedData);
 }
 
 /* - - - - - - encodeData - - - - - - *

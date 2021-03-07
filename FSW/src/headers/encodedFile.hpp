@@ -3,10 +3,6 @@
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
-#include <algorithm>
-#include <cstring>
-#include <vector>
-#include <memory>
 
 // Other libraries
 
@@ -15,7 +11,7 @@
 #include "hammingBlock.hpp"
 
 
-/* - - - - - - Class Definitions - - - - - - */
+/* - - - - - - Class Declarations - - - - - - */
 
 /* - ScrubReport -
 *   Holds results of file scrub.
@@ -27,9 +23,10 @@ struct ScrubReport {
     int uncorrected = 0;    // number of errors detected but not corrected
 };
 
-
 /* - EncodedFile -
-*   Container for encoded file contents
+*   Container for encoded data. 
+*   Note, this class is defined in the header because it is a template.
+*   There is no EncodedFile.cpp
 */
 template <size_t TMessageCount> 
 class EncodedFile {
@@ -46,8 +43,8 @@ class EncodedFile {
     
     public:
         // constructors
-        EncodedFile();
-        EncodedFile(void *encodedData);
+        EncodedFile() { }
+        EncodedFile(void *src);
         
         // methods
         void encodeData(void *src);
@@ -62,18 +59,9 @@ class EncodedFile {
         void injectError(int blockNum, int index);
 };
 
+/* - - - - - - Class Definition - - - - - - */
 
-/* - - - - - - Default Constructor - - - - - - *
- * Usage:
- *  Constructs an empty EncodedFile
- *  
- * Inputs:
- *  None
- */
-template <size_t TMessageCount>
-EncodedFile<TMessageCount>::EncodedFile() { }
-
-/* - - - - - - Constructor (encoded data) - - - - - - *
+/* - - - - - - Constructor (unencoded data) - - - - - - *
  * Usage:
  *  Constructs an EncodedFile and fills it with already-encoded data
  *  
@@ -81,10 +69,20 @@ EncodedFile<TMessageCount>::EncodedFile() { }
  *  encodedData - pointer to encoded file data, typecast to void*
  */
 template <size_t TMessageCount>
-EncodedFile<TMessageCount>::EncodedFile(void *encodedData) {
-    fill(encodedData);
+EncodedFile<TMessageCount>::EncodedFile(void *src) {
+    fill(src);
 }
 
+/* - - - - - - encodeData - - - - - - *
+ * Usage:
+ *  Fills the file with science data and encodes the file
+ *  
+ * Inputs:
+ *  src - pointer to data to encode, typecast to void*
+ * 
+ * Outputs:
+ *  None
+ */
 template <size_t TMessageCount>
 void EncodedFile<TMessageCount>::encodeData(void *src) {
     memset(m_data, 0, MEMSIZE); // clear the data array
@@ -217,27 +215,5 @@ template <size_t TMessageCount>
 void EncodedFile<TMessageCount>::injectError(int blockNum, int index) {
     m_blocks[blockNum].injectError(index);
 }
-
-
-
-
-
-
-class EncodedSciData : public EncodedFile<SCIDATA_MESSAGE_COUNT> {
-    private:
-        
-        uint16_t m_buffer[BUFFERSIZE];      // array to hold decoded buffer
-        unsigned long m_timestamp = MEMSIZE;         // file timestamp
-
-    public:
-        EncodedSciData();
-        EncodedSciData(uint16_t *buffer, unsigned long &timestamp);
-        EncodedSciData(void *encodedData);
-
-        void encodeData(uint16_t *buffer, unsigned long &timestamp);
-        uint16_t *getBuffer();
-        unsigned long getTimestamp();
-};
-
 
 #endif

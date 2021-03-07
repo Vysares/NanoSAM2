@@ -3,10 +3,6 @@
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
-#include <algorithm>
-#include <cstring>
-#include <vector>
-#include <memory>
 
 // Other libraries
 

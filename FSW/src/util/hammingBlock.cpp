@@ -27,7 +27,6 @@ HammingBlock::HammingBlock() {
     memset(m_block, 0, HAMMING_BLOCK_SIZE);
 }
 
-
 /* - - - - - - encodeMessage - - - - - - *
  * Usage:
  *  Encodes an 8 byte message into the block
