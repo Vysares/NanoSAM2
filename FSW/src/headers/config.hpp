@@ -82,10 +82,9 @@ const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store tim
 // data size parameters, derived from other constants
 const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // number of samples to keep in science buffer
 const int BUFFER_MEMSIZE = BUFFERSIZE * sizeof(uint16_t); // bytes, size of data buffer
-const int RAW_DATA_SIZE = BUFFER_MEMSIZE + TIMESTAMP_SIZE; // bytes, combined size of science data
-const int MESSAGE_COUNT = (RAW_DATA_SIZE / MESSAGE_SIZE) + !!(RAW_DATA_SIZE % MESSAGE_SIZE); // number of message blocks per file
-const int DECODED_FILE_SIZE = MESSAGE_COUNT * MESSAGE_SIZE; // bytes, size of all unencoded messages
-const int ENCODED_FILE_SIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE; // bytes, size of encoded data in file
+const int SCIDATA_RAW_MEMSIZE = BUFFER_MEMSIZE + TIMESTAMP_SIZE; // bytes, combined size of science data
+const int SCIDATA_MESSAGE_COUNT = (SCIDATA_RAW_MEMSIZE / MESSAGE_SIZE) + !!(SCIDATA_RAW_MEMSIZE % MESSAGE_SIZE); // number of message blocks per file
+const int SCIDATA_ENCODED_MEMSIZE = SCIDATA_MESSAGE_COUNT * HAMMING_BLOCK_SIZE; // bytes, size of encoded data in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  
@@ -106,8 +105,17 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
+const int RESET_COUNT_ADDR = 0; // memory address in EEPROM of unexpected reset counter
+const int FAULT_LOG_ADDR = 10;
+const int MAX_FAULTS = 50; // maximum number of faults to keep, must be less than ~100 to fit in EEPROM
+const int FAULT_LOG_MEMSIZE = MAX_FAULTS * HAMMING_BLOCK_SIZE;
+
+// watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
 const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset signal duration
+
+// Events
+static TimedEvent wdTimer(WD_RESET_INTERVAL_MSEC);
 
 
 /* - - - - - - Housekeeping Module - - - - - - */

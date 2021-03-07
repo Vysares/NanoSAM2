@@ -176,7 +176,7 @@ bool saveBuffer(int &index) {
     unsigned long timestamp = calcTimestamp(); 
     
     // Run all the data through EDAC
-    EncodedFile encodedFileData = EncodedFile(dataBuffer, timestamp); // this one line cost 50+ hours of my life
+    EncodedSciData encodedFileData = EncodedSciData(dataBuffer, timestamp); // this one line cost 50+ hours of my life
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
@@ -200,7 +200,7 @@ bool saveBuffer(int &index) {
 
     // create new file (non-erasable, delete file after downlink)
     bool status = true; // track file creation/writing status
-    status = SerialFlash.create(filename, ENCODED_FILE_SIZE);
+    status = SerialFlash.create(filename, SCIDATA_ENCODED_MEMSIZE);
 
     if (status) {
         Serial.print("Found file ");
@@ -211,7 +211,7 @@ bool saveBuffer(int &index) {
     // write buffer to this new file
     SerialFlashFile file;
     file = SerialFlash.open(filename);
-    status = file.write(encodedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
+    status = file.write(encodedFileData.getData(), SCIDATA_ENCODED_MEMSIZE); // write encoded science data to file
 
     index = 0; // reset index to start of array since we have saved the buffer
 
@@ -288,8 +288,8 @@ void downlink() {
         SerialFlashFile file;
         file = SerialFlash.open(downlinkFileName);
         if (file) {
-            char downlinkBuffer[ENCODED_FILE_SIZE];
-            file.read(downlinkBuffer, ENCODED_FILE_SIZE);
+            char downlinkBuffer[SCIDATA_ENCODED_MEMSIZE];
+            file.read(downlinkBuffer, SCIDATA_ENCODED_MEMSIZE);
             Serial.println(downlinkBuffer);
             Serial.println(); // skip a line between files
             downlinkFileCount++;
@@ -323,7 +323,7 @@ void scrubFlash() {
     static char scrubFilename[] = "scienceFile0.csv"; 
     static ScrubReport totalScrubInfo;
 
-    EncodedFile correctedFileData;
+    EncodedSciData correctedFileData;
     ScrubReport scrubInfo;
     
     // reset static variables at start of new event
@@ -340,8 +340,8 @@ void scrubFlash() {
         SerialFlashFile file;
         file = SerialFlash.open(scrubFilename);
         if (file) {
-            uint8_t fileContents[ENCODED_FILE_SIZE];
-            file.read(fileContents, ENCODED_FILE_SIZE);
+            uint8_t fileContents[SCIDATA_ENCODED_MEMSIZE];
+            file.read(fileContents, SCIDATA_ENCODED_MEMSIZE);
             correctedFileData.fill(fileContents);
             scrubInfo = correctedFileData.scrub(); // scrub it
 
@@ -356,9 +356,9 @@ void scrubFlash() {
             SerialFlash.remove(scrubFilename); // remove corrupted file
             
             // create new file and write corrected data
-            bool status = SerialFlash.create(scrubFilename, ENCODED_FILE_SIZE);
+            bool status = SerialFlash.create(scrubFilename, SCIDATA_ENCODED_MEMSIZE);
             file = SerialFlash.open(scrubFilename);
-            status = file.write(correctedFileData.getData(), ENCODED_FILE_SIZE); // write encoded science data to file
+            status = file.write(correctedFileData.getData(), SCIDATA_ENCODED_MEMSIZE); // write encoded science data to file
         }
     }
 
