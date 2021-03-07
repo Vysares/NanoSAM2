@@ -11,7 +11,7 @@
 // NS2 headers
 
 
-/* - - - - - - Class Definitions - - - - - - */
+/* - - - - - - Class Declarations - - - - - - */
 
 /* - - - - - - Event - - - - - - *
  * Usage:

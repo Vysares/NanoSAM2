@@ -12,7 +12,7 @@
 // NS2 headers
 #include "../headers/eventUtil.hpp"
 
-/* - - - - - - Class Implementations - - - - - - */
+/* - - - - - - Class Definitions - - - - - - */
 
 /* - - - - - - Event - - - - - - */
 // constructor

@@ -25,7 +25,7 @@
 
 /* Module Variable Definitions */
 
-/* - - - - - - Class Implementations - - - - - - */
+/* - - - - - - Class Definitions - - - - - - */
 /* - - - - - - ScienceMode - - - - - - *
  * Usage:
  *  tracks the Science Mode of the payload

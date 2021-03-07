@@ -61,4 +61,5 @@ namespace commandCode {
         DO_NOTHING                    // do nothing. KEEP THIS LAST IN THE ENUM, it is used for indexing.
     };
 };
+
 #endif
