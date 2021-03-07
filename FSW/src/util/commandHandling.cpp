@@ -19,6 +19,7 @@
 #include "../headers/commandHandling.hpp"
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp" //for mode enum
+#include "../headers/faultMitigation.hpp"
 
 
 /* Module Variable Definitions */
@@ -66,15 +67,16 @@ int readCommand() {
     // read Serial
     if (Serial.available() > 0) { // check if there is serial input
         int serialInput = Serial.parseInt(); // read the command
-        if ((serialInput <= static_cast<int>(Command::DO_NOTHING)) && (serialInput > 0)) { // check if command is valid
-            //Serial.println("Command Received."); // for debugging
+        if ((serialInput <= commandCode::DO_NOTHING) && (serialInput > 0)) { // check if command is valid
+            Serial.print("Command Received via Serial - code: ");
+            Serial.println(serialInput);
             return serialInput;
         } else {
             // print warning, indicating the invalid command and the range of valid commands
             Serial.print("Invalid command received: ");
             Serial.println(serialInput);
             Serial.print("Valid commands are between 1 and ");
-            Serial.println(static_cast<int>(Command::DO_NOTHING));
+            Serial.println(commandCode::DO_NOTHING);
             Serial.println("(Command Handling)");
         }
     }
@@ -115,13 +117,12 @@ void queueCommand(int command) {
  *  False if no meta command detected
  */
 bool checkMetaCommand(int command) {
-    command = static_cast<Command>(command);
     switch (command) {
-        case PAUSE_EXECUTE_COMMANDS: 
+        case commandCode::PAUSE_EXECUTE_COMMANDS: 
             break;
-        case RESUME_EXECUTE_COMMANDS:
+        case commandCode::RESUME_EXECUTE_COMMANDS:
             break;
-        case CLEAR_COMMAND_QUEUE:
+        case commandCode::CLEAR_COMMAND_QUEUE:
             break;
         default:
             return false; // no meta command detected
@@ -179,114 +180,119 @@ void clearCommandQueue() {
  */
 void executeCommand(int command) {
     // When adding new commands, make sure to include any relevant headers!
-    command = static_cast<Command>(command); // cast command as Command enum
     switch (command) {
         // Mode change
-        case ENTER_SAFE_MODE: 
+        case commandCode::ENTER_SAFE_MODE: 
             scienceMode.setMode(SAFE_MODE);
-            Serial.println("Command Received - Entering Safe Mode. This mode must be manually exited.");
+            Serial.println("Command Executed - Entering Safe Mode. This mode must be manually exited.");
             break;
         
-        case ENTER_STANDBY_MODE: 
+        case commandCode::ENTER_STANDBY_MODE: 
             scienceMode.setMode(STANDBY_MODE);
-            Serial.println("Command Received - Entering Standby Mode. This mode must be manually exited.");
+            Serial.println("Command Executed - Entering Standby Mode. This mode must be manually exited.");
             break;
         
-        case ENTER_SUNSET_MODE: 
+        case commandCode::ENTER_SUNSET_MODE: 
             scienceMode.setMode(SUNSET_MODE);
-            Serial.println("Command Received - Entering Sunset Mode.");
+            Serial.println("Command Executed - Entering Sunset Mode.");
             break;
         
-        case ENTER_PRE_SUNRISE_MODE: 
+        case commandCode::ENTER_PRE_SUNRISE_MODE: 
             scienceMode.setMode(PRE_SUNRISE_MODE);
-            Serial.println("Command Received - Entering Pre-Sunrise Mode.");
+            Serial.println("Command Executed - Entering Pre-Sunrise Mode.");
             break;
         
-        case ENTER_SUNRISE_MODE: 
+        case commandCode::ENTER_SUNRISE_MODE: 
             sunriseTimerEvent.start(); // sunrise mode will never end w/o this call
             scienceMode.setMode(SUNRISE_MODE);
-            Serial.println("Command Received - Entering Sunrise Mode.");
+            Serial.println("Command Executed - Entering Sunrise Mode.");
             break;
         
         // Housekeeping
-        case DISABLE_WD_RESET: 
+        case commandCode::DISABLE_WD_RESET: 
             // TODO: change wd timer duration by calling setDuration()
             break;
         
-        case HEATER_ON: 
+        case commandCode::HEATER_ON: 
             digitalWrite(PIN_HEAT, HIGH);
-            Serial.println("Command Received - Heater ON.");
+            Serial.println("Command Executed - Heater turned ON. Automatic heater control still has priority.");
             break;
         
-        case HEATER_OFF: 
+        case commandCode::HEATER_OFF: 
             digitalWrite(PIN_HEAT, LOW);
-            Serial.println("Command Received - Heater OFF.");
+            Serial.println("Command Executed - Heater turned OFF. Automatic heater control still has priority.");
             break;
         
-        case FORCE_HEATER_ON_T:
+        case commandCode::FORCE_HEATER_ON_T:
             FORCE_HEATER_ON = true;
-            Serial.println("Command Received - Heater forced ON.");
+            Serial.println("Command Executed - Heater is now forced ON. Automatic heater control has been disabled.");
             break;
 
-        case FORCE_HEATER_ON_F:
+        case commandCode::FORCE_HEATER_ON_F:
             FORCE_HEATER_ON = false;
-            Serial.println("Command Received - Heater forced OFF.");
+            Serial.println("Command Executed - Automatic heater control enabled.");
             break;
 
-        case CALIBRATE_OPTICS_THERM:
+        case commandCode::CALIBRATE_OPTICS_THERM:
             OPTICS_THERM_CAL_VOLTAGE = TEENSY_VOLTAGE_RES*analogRead(PIN_OPTICS_THERM);
-            Serial.print("Command Received - Optics thermistor calibrated at ");
+            Serial.print("Command Executed - Optics thermistor calibrated at ");
             Serial.print(OPTICS_THERM_CAL_TEMP);
             Serial.println(" C");
             break;
 
         // Command Handling
-        case PAUSE_EXECUTE_COMMANDS: 
+        case commandCode::PAUSE_EXECUTE_COMMANDS: 
             isPaused = true;
-            Serial.println("Command execution paused.");
+            Serial.println("Command Executed - Command execution paused.");
             break;
         
-        case RESUME_EXECUTE_COMMANDS: 
+        case commandCode::RESUME_EXECUTE_COMMANDS: 
             isPaused = false;
-            Serial.println("Command execution resumed.");
+            Serial.println("Command Executed - Command execution resumed.");
             break;
         
-        case CLEAR_COMMAND_QUEUE: 
+        case commandCode::CLEAR_COMMAND_QUEUE: 
             clearCommandQueue();
-            Serial.println("Command queue cleared.");
+            Serial.println("Command Executed - Command queue cleared.");
             break;
 
         // ADCS
-        case ADCS_POINTING_AT_SUN_T:
+        case commandCode::ADCS_POINTING_AT_SUN_T:
             scienceMode.setPointingAtSun(true);
-            Serial.println("Command Received - ADCS_POINTING_AT_SUN set to true.");
+            Serial.println("Command Executed - ADCS_POINTING_AT_SUN set to true.");
             break;
 
-        case ADCS_POINTING_AT_SUN_F:
+        case commandCode::ADCS_POINTING_AT_SUN_F:
             scienceMode.setPointingAtSun(false);
-            Serial.println("Command Received - ADCS_POINTING_AT_SUN set to false.");
+            Serial.println("Command Executed - ADCS_POINTING_AT_SUN set to false.");
             break;
 
         // Memory
-        case DOWNLINK_START:
+        case commandCode::DOWNLINK_START:
             downlinkEvent.invoke();
-            Serial.println("Command Received - Downlink will begin when payload enters standby.");
+            Serial.println("Command Executed - Downlink will begin when payload enters standby.");
             break;
 
-        case SCRUB_FLASH:
+        case commandCode::SCRUB_FLASH:
             scrubEvent.invoke();
-            Serial.println("Command Received - Flash scrub initiated.");
+            Serial.println("Command Executed - Flash scrub initiated.");
+            break;
+
+        // Fault Mitigation
+        case commandCode::CLEAR_RESET_COUNT:
+            clearResetCount();
+            Serial.println("Command Executed - Unexpected reset counter set to 0.");
             break;
 
         // Main Loop
-        case EXIT_MAIN_LOOP:
+        case commandCode::EXIT_MAIN_LOOP:
             exitMainLoopEvent.invoke();
-            Serial.println("Command Received - Exiting main loop at next opportunity.");
+            Serial.println("Command Executed - Exiting main loop at next opportunity.");
             break;
 
         // End of list
-        case DO_NOTHING: 
-            Serial.println("Doing nothing.");
+        case commandCode::DO_NOTHING: 
+            Serial.println("Command Executed - Do nothing.");
             break;
         
         default: 
