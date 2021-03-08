@@ -28,18 +28,11 @@ struct ScrubReport {
 */
 template <size_t TDecodedSize> 
 class EncodedFile {
-    protected:
-        // member variables
-        static const int DECODED_MEMSIZE =TDecodedSize;
+    public:
+        static const int DECODED_MEMSIZE = TDecodedSize;
         static const int MESSAGE_COUNT = (DECODED_MEMSIZE / MESSAGE_SIZE) + !!(DECODED_MEMSIZE % MESSAGE_SIZE);
         static const int MEMSIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE;
-        HammingBlock m_blocks[MESSAGE_COUNT]; // vector of encoded hamming blocks
-        uint8_t m_data[MEMSIZE];  // array to hold encoded/decoded data
-
-        // helper methods
-        void decode();
-    
-    public:
+        
         // constructors
         EncodedFile() { }
         EncodedFile(void *src);
@@ -51,30 +44,37 @@ class EncodedFile {
 
         // getters
         uint8_t *getData();
-        size_t getMessageCount() { return MESSAGE_COUNT; }
-        size_t getMemsize() { return MEMSIZE; }
+        uint8_t *decode();
+        int getMessageCount() { return MESSAGE_COUNT; }
+        int getMemsize() { return MEMSIZE; }
         
         // for debugging
         void printBlock(int index);
         void injectError(int blockNum, int index);
+
+    protected:
+        // member variables
+        HammingBlock m_blocks[MESSAGE_COUNT]; // vector of encoded hamming blocks
+        uint8_t m_data[MEMSIZE];  // array to hold encoded/decoded data
+
 };
 
 
 /* = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Class Definition  = = = = = = 
  * = = = = = = = = = = = = = = = = = = = = = */
-// The class definition is in the header file because EncodedFile is a template class
+// The class definition must be in the header file since EncodedFile is a template class
 
 /* - - - - - - Constructor (unencoded data) - - - - - - *
  * Usage:
- *  Constructs an EncodedFile and fills it with already-encoded data
+ *  Constructs an EncodedFile and encodes it with data
  *  
  * Inputs:
- *  encodedData - pointer to encoded file data, typecast to void*
+ *  src - pointer to data to encode, typecast to void*
  */
 template <size_t TDecodedSize>
 EncodedFile<TDecodedSize>::EncodedFile(void *src) {
-    fill(src);
+    encodeData(src);
 }
 
 /* - - - - - - encodeData - - - - - - *
@@ -185,22 +185,24 @@ uint8_t *EncodedFile<TDecodedSize>::getData() {
     return m_data;
 }
 
-/* - - - - - - decode (private) - - - - - - *
+/* - - - - - - decode - - - - - - *
  * Usage:
- *  Extracts readable science data from the file
+ *  Extracts all decoded messages from encoded file
  *  
  * Inputs:
  *  None
+ * 
  * Outputs:
- *  None
+ *  pointer to decoded data, type uint8_t*
  */
 template <size_t TDecodedSize>
-void EncodedFile<TDecodedSize>::decode() { 
-    memset(m_data, 0, MEMSIZE); // clear the data array
+uint8_t *EncodedFile<TDecodedSize>::decode() { 
+    static uint8_t decodedData[DECODED_MEMSIZE];
+    memset(decodedData, 0, DECODED_MEMSIZE); // clear the data array
     
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         // copy the decoded message to the data array
-        memcpy(m_data + blockNum * MESSAGE_SIZE, m_blocks[blockNum].getMessage(), MESSAGE_SIZE);
+        memcpy(decodedData + blockNum * MESSAGE_SIZE, m_blocks[blockNum].getMessage(), MESSAGE_SIZE);
     }
 }
 
