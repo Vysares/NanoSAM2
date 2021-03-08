@@ -3,6 +3,7 @@
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
+#include <cstring>
 
 // Other libraries
 
@@ -48,11 +49,6 @@ class HammingBlock {
         void fill(void *newData);
         void clear();
         
-        // static helper methods
-        static bool checkBit(void *dst, int index);
-        static void assignBit(void *dst, int index, bool val);
-        static void flipBit(void *dst, int index);
-        
         // getters
         uint8_t *getBlock() { return m_block; };
         uint8_t *getMessage();
@@ -61,5 +57,12 @@ class HammingBlock {
         void printBlock();
         void injectError(int index);
 };
+
+// Global helper functions
+bool checkBit(void *dst, int index);
+void assignBit(void *dst, int index, bool val);
+void flipBit(void *dst, int index);
+void memAppend(void *dst, void *src, size_t size, size_t &bytesCopied);
+void memExtract(void *dst, void *src, size_t size, size_t &bytesCopied)
 
 #endif

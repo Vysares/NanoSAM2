@@ -18,6 +18,7 @@
 // NS2 headers
 #include "../headers/hammingBlock.hpp"
 
+/* - - - - - - Class Definition - - - - - - */
 
 /* - - - - - - HammingBlock Constructor - - - - - - *
 * Inputs:
@@ -193,7 +194,10 @@ void HammingBlock::clear() {
     memset(m_block, 0, HAMMING_BLOCK_SIZE);
 }
 
-/* - - - - - - checkBit (private) - - - - - - *
+
+/* - - - - - - Global Helper Functions - - - - - - */
+
+/* - - - - - - checkBit - - - - - - *
  * Usage:
  *  Returns the value of a single bit in at the specified index
  * 
@@ -204,14 +208,14 @@ void HammingBlock::clear() {
  * Outputs:
  *  true if the bit is 1, false if the bit is 0
  */
-bool HammingBlock::checkBit(void *dst, int index) {
+bool checkBit(void *dst, int index) {
     uint8_t *byteArray = static_cast<uint8_t *>(dst);
     int byteIdx = index / 0b1000;
     int subBit = index % 0b1000;
     return BIT_CHECK(byteArray[byteIdx], subBit);
 }
 
-/* - - - - - - assignBit (private) - - - - - - *
+/* - - - - - - assignBit - - - - - - *
  * Usage:
  *  Assigns a single bit to the specified value
  * 
@@ -223,7 +227,7 @@ bool HammingBlock::checkBit(void *dst, int index) {
  * Outputs:
  *  None
  */
-void HammingBlock::assignBit(void *dst, int index, bool val) {
+void assignBit(void *dst, int index, bool val) {
     uint8_t *byteArray = static_cast<uint8_t *>(dst);
     int byteIdx = index / 0b1000;
     int subBit = index % 0b1000;
@@ -233,7 +237,7 @@ void HammingBlock::assignBit(void *dst, int index, bool val) {
     }
 }
 
-/* - - - - - - flipBit (private) - - - - - - *
+/* - - - - - - flipBit - - - - - - *
  * Usage:
  *  Flips a single bit at the specified index
  * 
@@ -244,11 +248,47 @@ void HammingBlock::assignBit(void *dst, int index, bool val) {
  * Outputs:
  *  None
  */
-void HammingBlock::flipBit(void *dst, int index) {
+void flipBit(void *dst, int index) {
     assignBit(dst, index, !checkBit(dst, index));
 }
 
+/* - - - - - - memAppend - - - - - - *
+ * Usage:
+ *  Copies the specified number of bytes from one address to another
+ *  Can be called multiple times to copy data sequentially to the same destination
+ * 
+ * Inputs:
+ *  dst - destination, typecast to void*
+ *  src - data to copy, typecast to void*
+ *  size - number of bytes to copy
+ *  bytesCopied - integer to track total number of bytes copied
+ *  
+ * Outputs:
+ *  None
+ */
+void memAppend(void *dst, void *src, size_t size, size_t &bytesCopied) {
+    memcpy(dst + bytesCopied, src, size);
+    bytesCopied += size;
+}
 
+/* - - - - - - memExtract - - - - - - *
+ * Usage:
+ *  Copies the specified number of bytes from one address to another
+ *  Can be called multiple times to copy data sequentially from the same source
+ * 
+ * Inputs:
+ *  dst - destination, typecast to void*
+ *  src - data to copy, typecast to void*
+ *  size - number of bytes to copy
+ *  bytesCopied - integer to track total number of bytes copied
+ *  
+ * Outputs:
+ *  None
+ */
+void memExtract(void *dst, void *src, size_t size, size_t &bytesCopied) {
+    memcpy(dst, src + bytesCopied, size);
+    bytesCopied += size;
+}
 
 /* For Debugging: */
 
