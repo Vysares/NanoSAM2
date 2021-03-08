@@ -5,23 +5,34 @@
 // C++ libraries
 
 // Other libraries
-#include <EEPROM.h>
 
 // NS2 headers
 #include "config.hpp"
-#include "hammingBlock.hpp"
 #include "fault.hpp"
 
 
 /* - - - - - - Class Declaration - - - - - - */
 class FaultManager {
-    private:
+    protected:
+        static const int FAULT_LOG_MEMSIZE = MAX_FAULTS * HAMMING_BLOCK_SIZE;
+        int m_logIdx;
+
+        // fault log
         Fault m_faultList[MAX_FAULTS];
-        uint8_t m_encodedData[FAULT_LOG_MEMSIZE];
-        unsigned int m_nextRootAddress;
+
+        // system data
+        EncodedFile<PERSIST_DATA_MEMSIZE> m_encodedData;
+        uint8_t m_recoveredMode;
+        uint16_t m_startCount;
+        uint16_t m_unexpectedRestartCount;
+        uint32_t m_eepromWriteCount;
+
     public:
         FaultManager();
+
         void log(uint8_t code);
+        
+
         void saveEEPROM();
         void loadEEPROM();
         void clearLog();

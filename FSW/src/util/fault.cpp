@@ -20,3 +20,9 @@
 #include "../headers/fault.hpp"
 
 
+Fault::Fault() {
+    m_code = faultCode::ERR_CODE;
+    m_timestamp = 0;
+    m_occurences = 0;
+    m_rootAddr = 0;
+}

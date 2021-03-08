@@ -35,8 +35,10 @@ namespace faultCode {
 class Fault {
     private:
         uint8_t m_code; // single byte int to store fault code
-        unsigned long m_timestamp;
-        unsigned int m_rootAddr;
+        uint16_t m_occurences;
+        uint16_t m_startNum;
+        uint32_t m_timestamp;
+
         HammingBlock encodedBlock;
 
     public:

@@ -18,32 +18,72 @@
 // All libraries are put in dataCollection.hpp
 // NS2 headers
 #include "../headers/faultManager.hpp"
+#include "../headers/encodedFile.hpp"
 
 
-void clearResetCount() {
-    EEPROM.write(RESET_COUNT_ADDR, 0);
-}
-
-Fault::Fault(uint8_t code) {
-    m_code = code;
-    m_timestamp = millis();
-
-    // encode fault data in a single Hamming block
-    uint8_t faultData[MESSAGE_SIZE] = {};
-    memcpy(faultData, &m_code, sizeof(m_code));
-    memcpy(faultData + sizeof(m_code), &m_timestamp, sizeof(m_timestamp));
-    encodedBlock.encodeMessage(faultData);
-}
 
 
-FaultManager::FaultManager() { }
+FaultManager::FaultManager() {
+    m_logIdx = 0;
+    m_startCount = 0;
+    m_unexpectedRestartCount = 0;
+    m_eepromWriteCount = 0;
+ }
+
+
 
 void FaultManager::log(uint8_t code) {
     if (code >= faultCode::ERR_CODE) {
         Serial.println("Warning, tried to log a fault with invalid fault code (Fault Manager)");
         return;
     }
-    
-    m_faultList[0] = Fault(code);
+    m_faultList[m_logIdx] = Fault(code);
+    m_logIdx++;
+    saveEEPROM();
 }
 
+
+
+FaultManager::saveEEPROM() {
+    m_eepromWriteCount++; // one more write to EEPROM
+    uint8_t rawData[m_encodedData.DECODED_MEMSIZE] = {}; // contiguous array to store unencoded data
+
+    // copy data to rawData array
+    int bytesCopied = 0;
+    memAppend(rawData, &m_eepromWriteCount, sizeof(m_eepromWriteCount), bytesCopied);
+    memAppend(rawData, &m_startCount, sizeof(m_startCount), bytesCopied);
+    memAppend(rawData, &m_unexpectedRestartCount, sizeof(m_unexpectedRestartCount), bytesCopied);
+
+    // encode the data
+    m_encodedData.encodeData(rawData);
+    uint8_t encodedData[m_encodedData.MEMSIZE] = encodedFile.getData();
+
+    // write to EEPROM
+    for (int byteNum = 0; byteNum < m_encodedData.MEMSIZE; byteNum++) {
+        int eepromAddress = PERSIST_DATA_ADDR + byteNum;
+        EEPROM.write(eepromAddress, encodedData[byteNum]);
+    }
+}
+
+
+
+FaultManager::loadEEPROM() {
+    uint8_t eepromData[PERSIST_DATA_MEMSIZE] = {}; // array to store EEPROM contents
+
+    // read EEPROM
+    for (int byteNum = 0; byteNum < m_encodedData.MEMSIZE; byteNum++) {
+        int eepromAddress = PERSIST_DATA_ADDR + byteNum;
+        eepromData[byteNum] = EPROM.read(eepromAddress);
+    }
+    
+    // decode the EEPROM data
+    m_encodedData.fill(eepromData);
+    uint8_t decodedData[m_encodedData.DECODED_MEMSIZE] = m_encodedData.decode();
+
+    // extract system data 
+    int bytesCopied = 0;
+    memExtract(&m_eepromWriteCount, decodedData, sizeof(m_eepromWriteCount), bytesCopied);
+    memExtract(&m_startCount, decodedData, sizeof(m_startCount), bytesCopied);
+    memExtract(&m_unexpectedRestartCount, decodedData, sizeof(m_unexpectedRestartCount), bytesCopied);
+
+}
