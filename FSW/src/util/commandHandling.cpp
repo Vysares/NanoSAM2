@@ -280,7 +280,7 @@ void executeCommand(int command) {
 
         // Fault Mitigation
         case commandCode::CLEAR_RESET_COUNT:
-            clearResetCount();
+            
             Serial.println("Command Executed - Unexpected reset counter set to 0.");
             break;
 

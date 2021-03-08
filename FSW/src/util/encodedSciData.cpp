@@ -57,8 +57,8 @@ void EncodedSciData::encodeData(uint16_t *buffer, unsigned long &timestamp) {
  *  Pointer to readable array containing buffer data, type uint16_t*
  */
 uint16_t *EncodedSciData::getBuffer() {
-    decode(); // decode the file contents
-    memcpy(m_buffer, m_data, BUFFER_MEMSIZE);
+    uint8_t *decodedData = decode();
+    memcpy(m_buffer, decodedData, BUFFER_MEMSIZE);
     return m_buffer;
 }
 
@@ -73,8 +73,8 @@ uint16_t *EncodedSciData::getBuffer() {
  *  timestamp
  */
 unsigned long EncodedSciData::getTimestamp() {
-    decode(); // decode the file contents
-    memcpy(&m_timestamp, m_data + BUFFER_MEMSIZE, TIMESTAMP_SIZE);
+    uint8_t *decodedData = decode();
+    memcpy(&m_timestamp, decodedData + BUFFER_MEMSIZE, TIMESTAMP_SIZE);
     return m_timestamp;
 }
 

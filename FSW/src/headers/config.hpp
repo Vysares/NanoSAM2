@@ -105,18 +105,17 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
-const int RESET_COUNT_ADDR = 0; // memory address in EEPROM of unexpected reset counter
-const int FAULT_LOG_ADDR = 10;
+const int NEW_UPLOAD_FLAG_ADDR = 0;
+const int PERSIST_DATA_ADDR = 1; // memory address in EEPROM of unexpected reset counter
+const int PERSIST_DATA_MEMSIZE = 32;
+const uint8_t NEW_UPLOAD_FLAG = 0xAA;
 const int MAX_FAULTS = 50; // maximum number of faults to keep, must be less than ~100 to fit in EEPROM
-const int FAULT_LOG_MEMSIZE = MAX_FAULTS * HAMMING_BLOCK_SIZE;
+
 
 // watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
 const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset signal duration
-
-// Events
-static TimedEvent wdTimer(WD_RESET_INTERVAL_MSEC);
-
+RecurrentEvent wdTimer(WD_RESET_INTERVAL_MSEC);
 
 /* - - - - - - Housekeeping Module - - - - - - */
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
