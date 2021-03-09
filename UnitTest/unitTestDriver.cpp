@@ -10,7 +10,7 @@
 
 int timingTestMain();
 int commandTestMain();
-
+int encodedSciDataTestMain();
 
 /* - - - - - - main - - - - - - *
  * Usage:
@@ -30,7 +30,7 @@ int main() {
     // testing functions 
     testFailCount += timingTestMain();
     testFailCount += commandTestMain();
-
+    testFailCount += encodedSciDataTestMain();
 
     // print summary of test results
     Serial.println("\n - - - - Unit Test Summary - - - - -");
