@@ -66,6 +66,7 @@ class TimedEvent : public Event {
  */
 class RecurringEvent : public TimedEvent {
     public:
+        RecurringEvent() { }
         RecurringEvent(unsigned long newDuration);
 
         bool checkInvoked();

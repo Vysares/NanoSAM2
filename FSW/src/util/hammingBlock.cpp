@@ -266,9 +266,9 @@ void flipBit(void *dst, int index) {
  * Outputs:
  *  None
  */
-void memAppend(void *dst, void *src, size_t size, size_t &bytesCopied) {
-    memcpy(dst + bytesCopied, src, size);
-    bytesCopied += size;
+void memAppend(void *dst, void *src, size_t size, size_t *bytesCopied) {
+    memcpy(static_cast<uint8_t*>(dst) + *bytesCopied, src, size);
+    *bytesCopied += size;
 }
 
 /* - - - - - - memExtract - - - - - - *
@@ -285,9 +285,9 @@ void memAppend(void *dst, void *src, size_t size, size_t &bytesCopied) {
  * Outputs:
  *  None
  */
-void memExtract(void *dst, void *src, size_t size, size_t &bytesCopied) {
-    memcpy(dst, src + bytesCopied, size);
-    bytesCopied += size;
+void memExtract(void *dst, void *src, size_t size, size_t *bytesCopied) {
+    memcpy(dst, static_cast<uint8_t*>(src) + *bytesCopied, size);
+    *bytesCopied += size;
 }
 
 /* For Debugging: */

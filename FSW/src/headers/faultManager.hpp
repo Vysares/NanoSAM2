@@ -9,6 +9,7 @@
 // NS2 headers
 #include "config.hpp"
 #include "fault.hpp"
+#include "encodedFile.hpp"
 
 
 /* - - - - - - Class Declaration - - - - - - */

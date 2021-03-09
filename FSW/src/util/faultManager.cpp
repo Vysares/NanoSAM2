@@ -44,46 +44,45 @@ void FaultManager::log(uint8_t code) {
 
 
 
-FaultManager::saveEEPROM() {
+void FaultManager::saveEEPROM() {
     m_eepromWriteCount++; // one more write to EEPROM
     uint8_t rawData[m_encodedData.DECODED_MEMSIZE] = {}; // contiguous array to store unencoded data
 
     // copy data to rawData array
-    int bytesCopied = 0;
-    memAppend(rawData, &m_eepromWriteCount, sizeof(m_eepromWriteCount), bytesCopied);
-    memAppend(rawData, &m_startCount, sizeof(m_startCount), bytesCopied);
-    memAppend(rawData, &m_unexpectedRestartCount, sizeof(m_unexpectedRestartCount), bytesCopied);
+    size_t bytesCopied = 0;
+    memAppend(rawData, &m_eepromWriteCount, sizeof(m_eepromWriteCount), &bytesCopied);
+    memAppend(rawData, &m_startCount, sizeof(m_startCount), &bytesCopied);
+    memAppend(rawData, &m_unexpectedRestartCount, sizeof(m_unexpectedRestartCount), &bytesCopied);
 
     // encode the data
     m_encodedData.encodeData(rawData);
-    uint8_t encodedData[m_encodedData.MEMSIZE] = encodedFile.getData();
 
     // write to EEPROM
     for (int byteNum = 0; byteNum < m_encodedData.MEMSIZE; byteNum++) {
         int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        EEPROM.write(eepromAddress, encodedData[byteNum]);
+        //EEPROM.write(eepromAddress, encodedData[byteNum]);
     }
 }
 
 
 
-FaultManager::loadEEPROM() {
+void FaultManager::loadEEPROM() {
     uint8_t eepromData[PERSIST_DATA_MEMSIZE] = {}; // array to store EEPROM contents
 
     // read EEPROM
     for (int byteNum = 0; byteNum < m_encodedData.MEMSIZE; byteNum++) {
         int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        eepromData[byteNum] = EPROM.read(eepromAddress);
+        //eepromData[byteNum] = EPROM.read(eepromAddress);
     }
-    
+
     // decode the EEPROM data
     m_encodedData.fill(eepromData);
-    uint8_t decodedData[m_encodedData.DECODED_MEMSIZE] = m_encodedData.decode();
+    uint8_t *decodedData = m_encodedData.decode();
 
     // extract system data 
-    int bytesCopied = 0;
-    memExtract(&m_eepromWriteCount, decodedData, sizeof(m_eepromWriteCount), bytesCopied);
-    memExtract(&m_startCount, decodedData, sizeof(m_startCount), bytesCopied);
-    memExtract(&m_unexpectedRestartCount, decodedData, sizeof(m_unexpectedRestartCount), bytesCopied);
+    size_t bytesCopied = 0;
+    memExtract(&m_eepromWriteCount, decodedData, sizeof(m_eepromWriteCount), &bytesCopied);
+    memExtract(&m_startCount, decodedData, sizeof(m_startCount), &bytesCopied);
+    memExtract(&m_unexpectedRestartCount, decodedData, sizeof(m_unexpectedRestartCount), &bytesCopied);
 
 }

@@ -115,7 +115,7 @@ const int MAX_FAULTS = 50; // maximum number of faults to keep, must be less tha
 // watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
 const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset signal duration
-RecurrentEvent wdTimer(WD_RESET_INTERVAL_MSEC);
+static RecurringEvent wdTimer(WD_RESET_INTERVAL_MSEC);
 
 /* - - - - - - Housekeeping Module - - - - - - */
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep

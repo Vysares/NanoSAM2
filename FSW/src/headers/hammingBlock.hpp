@@ -62,7 +62,7 @@ class HammingBlock {
 bool checkBit(void *dst, int index);
 void assignBit(void *dst, int index, bool val);
 void flipBit(void *dst, int index);
-void memAppend(void *dst, void *src, size_t size, size_t &bytesCopied);
-void memExtract(void *dst, void *src, size_t size, size_t &bytesCopied)
+void memAppend(void *dst, void *src, size_t size, size_t *bytesCopied);
+void memExtract(void *dst, void *src, size_t size, size_t *bytesCopied);
 
 #endif
