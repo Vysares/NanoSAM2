@@ -97,7 +97,7 @@ int encodedSciDataTestMain() {
         // instantiate object of EncodedSciData class with test buffer and timestamp
         EncodedSciData encodedSciData(buffer, timestamp); 
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 72; i++) {
             // inject errors
             encodedSciData.injectError(i,i);
         }
