@@ -30,8 +30,8 @@ template <size_t N>
 class EncodedFile {
     public:
         static const int DECODED_MEMSIZE = N;
-        static const int MESSAGE_COUNT = (DECODED_MEMSIZE / MESSAGE_SIZE) + !!(DECODED_MEMSIZE % MESSAGE_SIZE);
-        static const int MEMSIZE = MESSAGE_COUNT * HAMMING_BLOCK_SIZE;
+        static const int MESSAGE_COUNT = (DECODED_MEMSIZE / HammingBlock::MSG_SIZE) + !!(DECODED_MEMSIZE % HammingBlock::MSG_SIZE);
+        static const int MEMSIZE = MESSAGE_COUNT * HammingBlock::BLOCK_SIZE;
         
         // constructors
         EncodedFile() { }
@@ -93,8 +93,8 @@ void EncodedFile<N>::encodeData(void *src) {
     /* encode the data in blocks */ 
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         // copy a chunk of unencoded data into a temporary message block
-        uint8_t message[MESSAGE_SIZE]; 
-        memcpy(message, static_cast<uint8_t*>(src) + blockNum * MESSAGE_SIZE, MESSAGE_SIZE);
+        uint8_t message[HammingBlock::MSG_SIZE]; 
+        memcpy(message, static_cast<uint8_t*>(src) + blockNum * HammingBlock::MSG_SIZE, HammingBlock::MSG_SIZE);
 
         // encode the message
         m_blocks[blockNum].encodeMessage(message);
@@ -103,7 +103,7 @@ void EncodedFile<N>::encodeData(void *src) {
     /* interleave each block */
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         // Interlace each block, so that burst errors span several blocks
-        for (int blockBit = 0; blockBit < HAMMING_BLOCK_SIZE * 8; blockBit++) {
+        for (int blockBit = 0; blockBit < HammingBlock::BLOCK_SIZE * 8; blockBit++) {
 
             int bitIdx = blockNum + (blockBit * MESSAGE_COUNT); // index of data array to place encoded bit
             bool val = checkBit(m_blocks[blockNum].getBlock(), blockBit); // value of bit to copy
@@ -126,9 +126,9 @@ template <size_t N>
 void EncodedFile<N>::fill(void *encodedData) {
 
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
-        uint8_t unlacedBlockData[HAMMING_BLOCK_SIZE]; // temporary array to store block data
+        uint8_t unlacedBlockData[HammingBlock::BLOCK_SIZE]; // temporary array to store block data
         // de-interlace the encoded data
-        for (int blockBit = 0; blockBit < HAMMING_BLOCK_SIZE * 8; blockBit++) {
+        for (int blockBit = 0; blockBit < HammingBlock::BLOCK_SIZE * 8; blockBit++) {
             int bitIdx = blockNum + (blockBit * MESSAGE_COUNT); // bit index of encoded data belonging to block
             bool val = checkBit(encodedData, bitIdx); // get bit value
             assignBit(unlacedBlockData, blockBit, val); // assign bit to temporary block
@@ -187,7 +187,7 @@ uint8_t *EncodedFile<N>::decode() {
     
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         // copy the decoded message to the data array
-        memcpy(decodedData + blockNum * MESSAGE_SIZE, m_blocks[blockNum].getMessage(), MESSAGE_SIZE);
+        memcpy(decodedData + blockNum * HammingBlock::MSG_SIZE, m_blocks[blockNum].getMessage(), HammingBlock::MSG_SIZE);
     }
     return decodedData;
 }

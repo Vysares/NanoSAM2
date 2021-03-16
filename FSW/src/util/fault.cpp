@@ -20,21 +20,38 @@
 #include "../headers/fault.hpp"
 
 
-Fault::Fault(uint8_t code) {
-    m_code = code;
-    m_timestamp = millis();
-
-    // encode fault data in a single Hamming block
-    uint8_t faultData[MESSAGE_SIZE] = {};
-    memcpy(faultData, &m_code, sizeof(m_code));
-    memcpy(faultData + sizeof(m_code), &m_timestamp, sizeof(m_timestamp));
-    encodedBlock.encodeMessage(faultData);
+FaultReport::FaultReport() {
+    m_code = faultCode::ERR_CODE;
+    m_timestamp = 0;
+    m_startNum = 1;
+    m_occurences = 0;
+    m_active = false;
 }
 
 
-Fault::Fault() {
-    m_code = faultCode::ERR_CODE;
-    m_timestamp = 0;
-    m_occurences = 0;
+FaultReport::FaultReport(uint8_t coden uint16_t startNum) : FaultReport::FaultReport() {
+    m_code = code;
+    m_timestamp = millis();
+    m_startNum = startNum;
+    
+
+    // encode fault data in a single Hamming block
+    
+}
+
+
+
+uint8_t *FaultReport::getData() {
+    static uint8_t faultData[MESSAGE_SIZE] = {};
+    int bytesCopied = 0;
+    memAppend(faultData, &m_code, sizeof(m_code), &bytesCopied);
+    memAppend(faultData, &m_occurences, sizeof(m_occurences), &bytesCopied);
+    memAppend(faultData, &m_startNum, sizeof(m_startNum), &bytesCopied);
+    memAppend(faultData, &m_timestamp, sizeof(m_timestamp), &bytesCopied);
+
+    return faultData;
+}
+
+void FaultReport::clear() {
 
 }

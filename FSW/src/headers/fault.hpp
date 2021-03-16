@@ -30,22 +30,27 @@ namespace faultCode {
         
         ERR_CODE
     };
+    const size_t COUNT = ERR_CODE + 1;
 };
 
-class Fault {
+class FaultReport {
     private:
         uint8_t m_code; // single byte int to store fault code
-        uint16_t m_occurences;
+        uint8_t m_occurences;
         uint16_t m_startNum;
         uint32_t m_timestamp;
-
-        HammingBlock encodedBlock;
+        bool m_active;
 
     public:
-        Fault();
-        Fault(uint8_t code);
+        FaultReport();
+        FaultReport(uint8_t code, uint16_t startNum);
+
         unsigned int getCode() { return m_code; }
         void resolve(); // remove self from list
+        bool isActive() { return m_active; }
+        uint8_t *getData();
+        void clear();
+
 };
 
 #endif

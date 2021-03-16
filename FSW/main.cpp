@@ -17,10 +17,10 @@
 #include "src/headers/config.hpp"
 #include "src/headers/commandHandling.hpp"
 #include "src/headers/housekeeping.hpp"
-#include "src/headers/eventUtil.hpp"
 #include "src/headers/timingClass.hpp"
 #include "src/headers/timing.hpp"
 #include "src/headers/dataCollection.hpp"
+#include "src/headers/faultManager.hpp"
 
 /* - - - - - - Functions - - - - - - */
 
@@ -36,6 +36,7 @@
  */
 bool init() {
     Serial.print("Initializing NanoSAM II FSW... ");
+    feedWD();
 
     // Set pin modes
     pinMode(PIN_HEAT, OUTPUT);

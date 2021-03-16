@@ -61,12 +61,6 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
 static Event exitMainLoopEvent; // event to trigger main loop exit
 
 
-/* - - - - - - Error Detection and Correction (EDAC) Module - - - - - - */
-// do not change these. It will break everything.
-const int HAMMING_BLOCK_SIZE = 9;  // bytes of data in a block, including parity bits, 9
-const int MESSAGE_SIZE = 8;        // bytes of non-redundant data in a block, 8
-
-
 /* - - - - - - Data Collection Module - - - - - - */
 const int SAMPLING_RATE = 50;       // Hz, desired irradiance sampling rate
 const int WINDOW_LENGTH_SEC = 240;  // seconds, length of science data 
@@ -83,8 +77,6 @@ const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store tim
 const int BUFFERSIZE = SAMPLING_RATE * WINDOW_LENGTH_SEC; // number of samples to keep in science buffer
 const int BUFFER_MEMSIZE = BUFFERSIZE * sizeof(uint16_t); // bytes, size of data buffer
 const int SCIDATA_RAW_MEMSIZE = BUFFER_MEMSIZE + TIMESTAMP_SIZE; // bytes, combined size of science data
-const int SCIDATA_MESSAGE_COUNT = (SCIDATA_RAW_MEMSIZE / MESSAGE_SIZE) + !!(SCIDATA_RAW_MEMSIZE % MESSAGE_SIZE); // number of message blocks per file
-const int SCIDATA_ENCODED_MEMSIZE = SCIDATA_MESSAGE_COUNT * HAMMING_BLOCK_SIZE; // bytes, size of encoded data in file
 
 // timing constants
 const unsigned long SAMPLE_PERIOD_MSEC = 1000 / (unsigned long)SAMPLING_RATE; // milliseconds, time between samples  
@@ -105,17 +97,13 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
-const int NEW_UPLOAD_FLAG_ADDR = 0;
-const int PERSIST_DATA_ADDR = 1; // memory address in EEPROM of unexpected reset counter
-const int PERSIST_DATA_MEMSIZE = 32;
-const uint8_t NEW_UPLOAD_FLAG = 0xAA;
-const int MAX_FAULTS = 50; // maximum number of faults to keep, must be less than ~100 to fit in EEPROM
-
+static bool ACT_ON_NEW_FAULTS = true;
+const int PERSIST_DATA_ADDR = 1; // first address of persistent system data in EEPROM
 
 // watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
 const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset signal duration
-static RecurringEvent wdTimer(WD_RESET_INTERVAL_MSEC);
+
 
 /* - - - - - - Housekeeping Module - - - - - - */
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep

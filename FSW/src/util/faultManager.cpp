@@ -20,53 +20,77 @@
 #include "../headers/faultManager.hpp"
 #include "../headers/encodedFile.hpp"
 
+/* Module Variable Definitions */
+FaultReport faultLog[faultCode::COUNT];
 
-
-
-FaultManager::FaultManager() {
-    m_logIdx = 0;
-    m_startCount = 0;
-    m_unexpectedRestartCount = 0;
-    m_eepromWriteCount = 0;
- }
-
-
-
-void FaultManager::log(uint8_t code) {
+void logFault(uint8_t code) {
     if (code >= faultCode::ERR_CODE) {
         Serial.println("Warning, tried to log a fault with invalid fault code (Fault Manager)");
         return;
     }
-    m_faultList[m_logIdx] = Fault(code);
-    m_logIdx++;
+    Serial.print("Fault Logged: ");
+    Serial.println(code);
+
+    faultLog[code].occurences++;
+    faultLog[code].startNum = persistentData.startCount;
+    faultLog[code].timestamp = millis();
+
     saveEEPROM();
 }
 
 
+void feedWD() {
+    digitalWrite(PIN_WD_RESET, HIGH);
+    delayMicroseconds(WD_PULSE_DUR_MICROSEC); // we may not even need this, since digitalWrite takes some time to execute.
+    digitalWrite(PIN_WD_RESET, LOW);
+}
+                                                                     
 
-void FaultManager::saveEEPROM() {
-    m_eepromWriteCount++; // one more write to EEPROM
-    uint8_t rawData[m_encodedData.DECODED_MEMSIZE] = {}; // contiguous array to store unencoded data
+void handleFaults() {
+
+}
+
+void clearFaultLog() {
+    for (int i = 0; i < faultCode::COUNT; i++) {
+        faultLog[i].occurences = 0;
+        faultLog[i].startNum = 1;
+        faultLog[i].timestamp = 0;
+    }
+}
+
+void logStart() {
+    persistentData.startCount++;
+    
+}
+
+void clearResetCount() {
+    persistentData.unexpectedRestartCount = 0;
+    saveEEPROM();
+}
+
+void saveEEPROM() {
+    persistentData.eepromWriteCount++; // one more write to EEPROM
+    uint8_t rawData[DECODED_MEMSIZE] = {}; // contiguous array to store unencoded data
 
     // copy data to rawData array
     size_t bytesCopied = 0;
-    memAppend(rawData, &m_eepromWriteCount, sizeof(m_eepromWriteCount), &bytesCopied);
-    memAppend(rawData, &m_startCount, sizeof(m_startCount), &bytesCopied);
-    memAppend(rawData, &m_unexpectedRestartCount, sizeof(m_unexpectedRestartCount), &bytesCopied);
+    memAppend(rawData, &persisentData.eepromWriteCount, sizeof(persisentData.eepromWriteCount), &bytesCopied);
+    memAppend(rawData, &persisentData.startCount, sizeof(persisentData.startCount), &bytesCopied);
+    memAppend(rawData, &persisentData.unexpectedRestartCount, sizeof(persisentData.unexpectedRestartCount), &bytesCopied);
 
     // encode the data
-    m_encodedData.encodeData(rawData);
+    EncodedFile<
+    encodedData.encodeData(rawData);
 
     // write to EEPROM
     for (int byteNum = 0; byteNum < m_encodedData.MEMSIZE; byteNum++) {
         int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        //EEPROM.write(eepromAddress, encodedData[byteNum]);
+        EEPROM.write(eepromAddress, encodedData[byteNum]);
     }
 }
 
 
-
-void FaultManager::loadEEPROM() {
+void loadEEPROM() {
     uint8_t eepromData[PERSIST_DATA_MEMSIZE] = {}; // array to store EEPROM contents
 
     // read EEPROM
@@ -84,5 +108,5 @@ void FaultManager::loadEEPROM() {
     memExtract(&m_eepromWriteCount, decodedData, sizeof(m_eepromWriteCount), &bytesCopied);
     memExtract(&m_startCount, decodedData, sizeof(m_startCount), &bytesCopied);
     memExtract(&m_unexpectedRestartCount, decodedData, sizeof(m_unexpectedRestartCount), &bytesCopied);
-
 }
+
