@@ -45,7 +45,6 @@ static const int FILE_IDX_OFFSET = 11;           // index of file number in char
  *  data from the ADC (bin number)
  */
 float dataProcessing() {
-    float voltage;
 
     // begin an SPI connection
     // TODO: we should probably begin the SPI connection in main to avoid duplicates
@@ -176,7 +175,7 @@ bool saveBuffer(int &index) {
     unsigned long timestamp = calcTimestamp(); 
     
     // Run all the data through EDAC
-    EncodedSciData encodedFileData = EncodedSciData(dataBuffer, timestamp); // this one line cost 50+ hours of my life
+    EncodedSciData encodedFileData = EncodedSciData(timeSortBuffer, timestamp); // this one line cost 50+ hours of my life
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
