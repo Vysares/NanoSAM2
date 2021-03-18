@@ -98,7 +98,8 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
 static bool ACT_ON_NEW_FAULTS = true;
-const int PERSIST_DATA_ADDR = 1; // first address of persistent system data in EEPROM
+const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM
+const uint8_t EXPECTING_RESTART_FLAG = 0xaa; // 10101010, value of flag indicating that the last restart was expected.
 
 // watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval

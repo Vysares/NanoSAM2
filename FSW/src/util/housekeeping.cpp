@@ -16,6 +16,7 @@
 // All libraries are put in housekeeping.hpp
 // NS2 headers
 #include "../headers/housekeeping.hpp"
+#include "../headers/faultManager.hpp"
 
 
 /* Module Variable Definitions */
@@ -102,17 +103,17 @@ void sampleHousekeepingData() {
 
     // Check if values are in acceptable ranges
     // TODO: Log a fault for every case
-    if (latestHkSample.opticsTemp > OPTICS_TEMP_MAX_SAFE) { } // optics temp too high
-    else if (latestHkSample.opticsTemp < OPTICS_TEMP_MIN_SAFE) { } // optics temp too low
+    if (latestHkSample.opticsTemp > OPTICS_TEMP_MAX_SAFE) { logFault(faultCode::OPTICS_TOO_HOT); } // optics temp too high
+    else if (latestHkSample.opticsTemp < OPTICS_TEMP_MIN_SAFE) { logFault(faultCode::OPTICS_TOO_COLD); } // optics temp too low
 
-    if (latestHkSample.analogTemp > BOARD_TEMP_MAX_SAFE) { } // analog board temp too high
-    else if (latestHkSample.analogTemp < BOARD_TEMP_MIN_SAFE) { } // analog board temp too low
+    if (latestHkSample.analogTemp > BOARD_TEMP_MAX_SAFE) { logFault(faultCode::ANALOG_TOO_HOT); } // analog board temp too high
+    else if (latestHkSample.analogTemp < BOARD_TEMP_MIN_SAFE) { logFault(faultCode::ANALOG_TOO_COLD); } // analog board temp too low
 
-    if (latestHkSample.digitalTemp > BOARD_TEMP_MAX_SAFE) { } // digital board temp too high
-    else if (latestHkSample.digitalTemp < BOARD_TEMP_MIN_SAFE) { } // digital board temp too low
+    if (latestHkSample.digitalTemp > BOARD_TEMP_MAX_SAFE) { logFault(faultCode::DIGITAL_TOO_HOT); } // digital board temp too high
+    else if (latestHkSample.digitalTemp < BOARD_TEMP_MIN_SAFE) { logFault(faultCode::DIGITAL_TOO_COLD); } // digital board temp too low
 
-    if (latestHkSample.digitalRegPG > PG_VOLTAGE_MAX_EXPECTED) { } // digital regulator PG signal too high
-    else if (latestHkSample.digitalRegPG < PG_VOLTAGE_MIN_EXPECTED) { } // digital regulator PG signal too low
+    if (latestHkSample.digitalRegPG > PG_VOLTAGE_MAX_EXPECTED || latestHkSample.digitalRegPG < PG_VOLTAGE_MIN_EXPECTED) { 
+        logFault(faultCode::DREG_OUT_OF_RANGE); } // digital regulator PG signal too low
 
 }
 

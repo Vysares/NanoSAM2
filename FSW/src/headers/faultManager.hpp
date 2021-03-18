@@ -15,8 +15,6 @@ namespace faultCode {
     // fault codes are wrapped in a namespace so they are not global
     enum Code {
         UNEXPECTED_RESTART,
-        FAULT_LOG_OVERFLOW,     // probably a bad sign.
-        
 
         // Temperature
         ANALOG_TOO_HOT,
@@ -25,6 +23,9 @@ namespace faultCode {
         DIGITAL_TOO_COLD,
         OPTICS_TOO_HOT,
         OPTICS_TOO_COLD,
+
+        // Power
+        DREG_OUT_OF_RANGE,
         
         ERR_CODE
     };
@@ -33,29 +34,33 @@ namespace faultCode {
 
 struct FaultReport {
     uint8_t occurences = 0;
+    uint8_t pendingAction = 0; 
     uint16_t startNum = 1;
     uint32_t timestamp = 0;
-    static const size_t MEMSIZE = ;
+    static const size_t MEMSIZE = 64;
 };
 
-struct PersistentData {
-        uint8_t recoveredMode = 0;
+struct PayloadData {
+        uint8_t expectingRestartFlag = 0;
         uint16_t startCount = 1;
-        uint16_t unexpectedRestartCount = 0;
+        uint16_t consecutiveBadRestarts = 0;
         uint32_t eepromWriteCount = 0;
-        static const size_t MEMSIZE = ;
+        uint8_t recoveredMode = 0;
+        static const size_t MEMSIZE = 72;
 };
 
-PersistentData persistentData;
+PayloadData payloadData;
 
-void logFault(uint8_t code);
+
+void logFault(int code);
 void feedWD();
-
 void handleFaults();
-void clearLog();
-void logStart();
-void clearResetCount();
+
+void clearAllPersistentData();
+void recordNewStart();
+void prepareForRestart();
 void saveEEPROM();
 void loadEEPROM();
+void resetFaultCounts();
 
 #endif

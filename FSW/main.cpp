@@ -36,7 +36,13 @@
  */
 bool init() {
     Serial.print("Initializing NanoSAM II FSW... ");
+    
+    // feed the dog
     feedWD();
+
+    // load persistent data from EEPROM
+    loadEEPROM();
+    recordNewStart();
 
     // Set pin modes
     pinMode(PIN_HEAT, OUTPUT);
@@ -105,8 +111,14 @@ int main() {
         /* - ONLY EXECTUTE DURING NORMAL OPERATION - */
         if (scienceMode.getMode() != SAFE_MODE) {
             scienceMemoryHandling();
+            handleFaults();
         }
 
+         /* - ONLY EXECUTE ON ENTRY TO STANDBY MODE - */
+         if (scienceMode.onStandbyEntry.checkInvoked()) {
+            // reset fault occurence counts
+            resetFaultCounts();
+         }
 
          /* - ONLY EXECUTE IN STANDBY MODE - */
         if (scienceMode.getMode() == STANDBY_MODE) {
@@ -116,11 +128,14 @@ int main() {
             }
             // downlink data
             if (downlinkEvent.checkInvoked()) {
-                downlink;
+                downlink();
             }
         }
 
+        
+
         if (exitMainLoopEvent.checkInvoked()) {
+            clearResetCount();
             Serial.print("Exiting main loop at iteration ");
             Serial.println(mainLoopIterations);
             break;

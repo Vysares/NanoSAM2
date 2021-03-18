@@ -32,6 +32,9 @@ class ScienceMode {
         // lockout to prevent sweep change while ADCS is reversing direction
         // (has placeholder duration for compilation, this is set properly during initialization)
         TimedEvent sweepChangeLockout; 
+
+        // event indicating entry into standby mode
+        Event onStandbyEntry;
 };
 
 #endif
