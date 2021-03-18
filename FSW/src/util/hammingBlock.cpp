@@ -285,7 +285,7 @@ void memAppend(void *dst, void *src, size_t size, size_t *bytesCopied) {
  * Outputs:
  *  None
  */
-void memExtract(void *dst, void *src, size_t size, size_t *bytesCopied) {
+void memExtract(void *src, void *dst, size_t size, size_t *bytesCopied) {
     memcpy(dst, static_cast<uint8_t*>(src) + *bytesCopied, size);
     *bytesCopied += size;
 }

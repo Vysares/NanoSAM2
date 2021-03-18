@@ -37,23 +37,24 @@ class EncodedFile {
         EncodedFile() { }
         EncodedFile(void *src);
         
-        // methods
+        // public methods
         void encodeData(void *src);
         void fill(void *encodedData);
         ScrubReport scrub();
 
         // getters
         uint8_t *getData() { return m_data; }
-        uint8_t *decode();
-        
+        uint8_t *getDecodedData() { return m_decodedData; }
+
         // for debugging
         void printBlock(int index);
         void injectError(int blockNum, int index);
 
     protected:
-        // member variables
+        void *decode();
         HammingBlock m_blocks[MESSAGE_COUNT]; // vector of encoded hamming blocks
-        uint8_t m_data[MEMSIZE];  // array to hold encoded/decoded data
+        uint8_t m_data[MEMSIZE];  // array to hold encoded data
+        uint8_t m_decodedData[DECODED_MEMSIZE]; // array to hold decoded data
 
 };
 
@@ -96,7 +97,7 @@ void EncodedFile<N>::encodeData(void *src) {
         uint8_t message[HammingBlock::MSG_SIZE]; 
         memcpy(message, static_cast<uint8_t*>(src) + blockNum * HammingBlock::MSG_SIZE, HammingBlock::MSG_SIZE);
 
-        // encode the message
+        // encode the message in a block
         m_blocks[blockNum].encodeMessage(message);
     }
 
@@ -110,6 +111,8 @@ void EncodedFile<N>::encodeData(void *src) {
             assignBit(m_data, bitIdx, val); // assign bit to data array
         }
     }
+
+    decode();
 }
 
 /* - - - - - - fill - - - - - - *
@@ -135,6 +138,7 @@ void EncodedFile<N>::fill(void *encodedData) {
         }
         m_blocks[blockNum].fill(unlacedBlockData); // fill block with unlaced data
     }
+    decode();
 }
 
 /* - - - - - - scrub - - - - - - *
@@ -170,26 +174,23 @@ ScrubReport EncodedFile<N>::scrub() {
 }
 
 
-/* - - - - - - decode - - - - - - *
+/* - - - - - - decode (protected) - - - - - - *
  * Usage:
- *  Extracts all decoded messages from encoded file
+ *  Appends messages from each block into m_decodedData
  *  
  * Inputs:
  *  None
- * 
  * Outputs:
- *  pointer to decoded data, type uint8_t*
+ *  None
  */
 template <size_t N>
-uint8_t *EncodedFile<N>::decode() { 
-    static uint8_t decodedData[DECODED_MEMSIZE];
-    memset(decodedData, 0, DECODED_MEMSIZE); // clear the data array
+void *EncodedFile<N>::decode() { 
+    memset(m_decodedData, 0, DECODED_MEMSIZE); // clear the data array
     
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...
         // copy the decoded message to the data array
-        memcpy(decodedData + blockNum * HammingBlock::MSG_SIZE, m_blocks[blockNum].getMessage(), HammingBlock::MSG_SIZE);
+        memcpy(m_decodedData + blockNum * HammingBlock::MSG_SIZE, m_blocks[blockNum].getMessage(), HammingBlock::MSG_SIZE);
     }
-    return decodedData;
 }
 
 

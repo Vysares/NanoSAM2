@@ -22,7 +22,6 @@ namespace commandCode {
     // command codes are wrapped in a namespace so they are not global
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
-
         // Mode change
         ENTER_SAFE_MODE = 1,            // enter safemode state
         ENTER_STANDBY_MODE,             // enter standby state
