@@ -95,7 +95,7 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    if (!detectedFault) { return; }
+    if (!detectedFault || !ACT_ON_NEW_FAULTS) { return; }
     detectedFault = false;
     saveEEPROM();
 
@@ -126,7 +126,7 @@ void handleFaults() {
                     break;
 
                 // if fault has no corrective action
-                case default:
+                default:
                     Serial.print("Fault code ");
                     Serial.print(code);
                     Serial.println(" has no assigned corrective action.");
@@ -219,7 +219,7 @@ void saveEEPROM() {
     size_t bytesCopied = 0;
     memAppend(rawData, &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
     memAppend(rawData, &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
-    memAppend(rawData, &payloadData.unexpectedRestartCount, sizeof(payloadData.unexpectedRestartCount), &bytesCopied);
+    memAppend(rawData, &payloadData.consecutiveBadRestarts, sizeof(payloadData.consecutiveBadRestarts), &bytesCopied);
     memAppend(rawData, &payloadData.recoveredMode, sizeof(payloadData.recoveredMode), &bytesCopied);
 
     // copy fault data to rawData array
@@ -236,10 +236,10 @@ void saveEEPROM() {
     // write to EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
         int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        uint8_t dataToWrite = encodedData.getData[byteNum];
+        uint8_t dataToWrite = encodedData.getData()[byteNum];
 
         if (EEPROM.read(eepromAddress) != dataToWrite) { // only overwrite if the byte has changed. This extends the life of the EEPROM.
-            EEPROM.write(eepromAddress, encodedData.getData[byteNum]);
+            EEPROM.write(eepromAddress, dataToWrite);
         }
     }
 }
@@ -262,7 +262,7 @@ void loadEEPROM() {
     // read EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
         int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        eepromData[byteNum] = EPROM.read(eepromAddress);
+        eepromData[byteNum] = EEPROM.read(eepromAddress);
     }
 
     // decode the EEPROM data
@@ -270,9 +270,9 @@ void loadEEPROM() {
 
     // extract system data 
     size_t bytesCopied = 0;
-    memExtract(encodedData.getDecodedData(), &persisentData.eepromWriteCount, sizeof(persisentData.eepromWriteCount), &bytesCopied);
-    memExtract(encodedData.getDecodedData(), &persisentData.startCount, sizeof(persisentData.startCount), &bytesCopied);
-    memExtract(encodedData.getDecodedData(), &persisentData.unexpectedRestartCount, sizeof(persisentData.unexpectedRestartCount), &bytesCopied);
+    memExtract(encodedData.getDecodedData(), &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
+    memExtract(encodedData.getDecodedData(), &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
+    memExtract(encodedData.getDecodedData(), &payloadData.consecutiveBadRestarts, sizeof(payloadData.consecutiveBadRestarts), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.recoveredMode, sizeof(payloadData.recoveredMode), &bytesCopied);
 
     // copy fault data to fault log

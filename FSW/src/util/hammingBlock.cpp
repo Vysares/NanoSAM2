@@ -25,7 +25,7 @@
 *   None
 */
 HammingBlock::HammingBlock() {
-    memset(m_block, 0, HAMMING_BLOCK_SIZE);
+    memset(m_block, 0, BLOCK_SIZE);
 }
 
 /* - - - - - - encodeMessage - - - - - - *
@@ -40,13 +40,13 @@ HammingBlock::HammingBlock() {
  */
 void HammingBlock::encodeMessage(void *message) {
     
-    memset(m_block, 0, HAMMING_BLOCK_SIZE); // clear the destination block
+    memset(m_block, 0, BLOCK_SIZE); // clear the destination block
     uint8_t indexParity = 0; // stores the parity of all indices with a set bit
     int totalSetBits = 0;
     
     /* copy message into hamming block */
     int messageIdx = 0;
-    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 0; hammingIdx < BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
 
         if (( hammingIdx & (hammingIdx - 1) ) != 0) { // if current index is not power of 2...
             // copy bit from message block to hamming block
@@ -69,7 +69,7 @@ void HammingBlock::encodeMessage(void *message) {
     }
 
     // find the total block parity and put it in index 0
-    for (int hammingIdx = 1; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 1; hammingIdx < BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
         if (checkBit(m_block, hammingIdx)) {
                 totalSetBits++;
         }
@@ -89,10 +89,10 @@ void HammingBlock::encodeMessage(void *message) {
  *  pointer to the decoded message, type uint8_t*
  */
 uint8_t *HammingBlock::getMessage() {
-    memset(m_message, 0, MESSAGE_SIZE); // clear last known message
+    memset(m_message, 0, MSG_SIZE); // clear last known message
     // Extract message from block
     int messageIdx = 0;
-    for (int hammingIdx = 0; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 0; hammingIdx < BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
         if (( hammingIdx & (hammingIdx - 1) ) != 0) { // if current index is not power of 2, and thus not a parity bit...
             // copy bit from hamming block to destination message block
             assignBit(m_message, messageIdx, checkBit(m_block, hammingIdx));
@@ -118,7 +118,7 @@ ErrorReport HammingBlock::scanBlock() {
     int totalSetBits = 0;
 
     // calculate index parity
-    for (int hammingIdx = 1; hammingIdx < HAMMING_BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
+    for (int hammingIdx = 1; hammingIdx < BLOCK_SIZE * 8; hammingIdx++) { // for each bit in the hamming block...
         if (checkBit(m_block, hammingIdx)) {
                 indexParity ^= hammingIdx;
                 totalSetBits++;
@@ -178,7 +178,7 @@ ErrorReport HammingBlock::correctBlock() {
  *  None
  */
 void HammingBlock::fill(void *newData) {
-    memcpy(m_block, newData, HAMMING_BLOCK_SIZE);
+    memcpy(m_block, newData, BLOCK_SIZE);
 }
 
 /* - - - - - - clear - - - - - - *
@@ -191,7 +191,7 @@ void HammingBlock::fill(void *newData) {
  *  None
  */
 void HammingBlock::clear() {
-    memset(m_block, 0, HAMMING_BLOCK_SIZE);
+    memset(m_block, 0, BLOCK_SIZE);
 }
 
 
@@ -293,8 +293,8 @@ void memExtract(void *src, void *dst, size_t size, size_t *bytesCopied) {
 /* For Debugging: */
 
 void HammingBlock::printBlock() {
-    // for (int i = 0; i < HAMMING_BLOCK_SIZE; i ++) { Serial.println(m_block[i]); }
-    for (int idx = 0; idx < HAMMING_BLOCK_SIZE * 0b1000; idx++) {
+    // for (int i = 0; i < BLOCK_SIZE; i ++) { Serial.println(m_block[i]); }
+    for (int idx = 0; idx < BLOCK_SIZE * 0b1000; idx++) {
         if (idx % 0b1000 == 0 && idx != 0) {
             Serial.println();
         }

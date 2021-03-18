@@ -51,7 +51,7 @@ class EncodedFile {
         void injectError(int blockNum, int index);
 
     protected:
-        void *decode();
+        void decode();
         HammingBlock m_blocks[MESSAGE_COUNT]; // vector of encoded hamming blocks
         uint8_t m_data[MEMSIZE];  // array to hold encoded data
         uint8_t m_decodedData[DECODED_MEMSIZE]; // array to hold decoded data
@@ -111,7 +111,6 @@ void EncodedFile<N>::encodeData(void *src) {
             assignBit(m_data, bitIdx, val); // assign bit to data array
         }
     }
-
     decode();
 }
 
@@ -184,7 +183,7 @@ ScrubReport EncodedFile<N>::scrub() {
  *  None
  */
 template <size_t N>
-void *EncodedFile<N>::decode() { 
+void EncodedFile<N>::decode() { 
     memset(m_decodedData, 0, DECODED_MEMSIZE); // clear the data array
     
     for (int blockNum = 0; blockNum < MESSAGE_COUNT; blockNum++) { // for each block...

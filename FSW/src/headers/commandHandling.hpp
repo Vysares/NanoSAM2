@@ -51,7 +51,9 @@ namespace commandCode {
         SCRUB_FLASH,                   // start scrubbing the flash memory for errors
 
         // Fault Mitigation
-        CLEAR_RESET_COUNT,             // clears the unexpected reset counter
+        CLEAR_ALL_PERSISTENT_DATA,     // clears all persistent data stored in EEPROM
+        ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
+        ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
 
         // Main Loop Commands
         EXIT_MAIN_LOOP,

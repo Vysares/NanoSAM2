@@ -288,8 +288,8 @@ void downlink() {
         SerialFlashFile file;
         file = SerialFlash.open(downlinkFileName);
         if (file) {
-            char downlinkBuffer[SCIDATA_ENCODED_MEMSIZE];
-            file.read(downlinkBuffer, SCIDATA_ENCODED_MEMSIZE);
+            char downlinkBuffer[EncodedSciData::MEMSIZE];
+            file.read(downlinkBuffer, EncodedSciData::MEMSIZE);
             Serial.println(downlinkBuffer);
             Serial.println(); // skip a line between files
             downlinkFileCount++;
@@ -340,8 +340,8 @@ void scrubFlash() {
         SerialFlashFile file;
         file = SerialFlash.open(scrubFilename);
         if (file) {
-            uint8_t fileContents[SCIDATA_ENCODED_MEMSIZE];
-            file.read(fileContents, SCIDATA_ENCODED_MEMSIZE);
+            uint8_t fileContents[EncodedSciData::MEMSIZE];
+            file.read(fileContents, EncodedSciData::MEMSIZE);
             correctedFileData.fill(fileContents);
             scrubInfo = correctedFileData.scrub(); // scrub it
 
@@ -356,9 +356,9 @@ void scrubFlash() {
             SerialFlash.remove(scrubFilename); // remove corrupted file
             
             // create new file and write corrected data
-            bool status = SerialFlash.create(scrubFilename, SCIDATA_ENCODED_MEMSIZE);
+            bool status = SerialFlash.create(scrubFilename, EncodedSciData::MEMSIZE);
             file = SerialFlash.open(scrubFilename);
-            status = file.write(correctedFileData.getData(), SCIDATA_ENCODED_MEMSIZE); // write encoded science data to file
+            status = file.write(correctedFileData.getData(), EncodedSciData::MEMSIZE); // write encoded science data to file
         }
     }
 

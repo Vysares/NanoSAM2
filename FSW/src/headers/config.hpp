@@ -97,7 +97,7 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
-static bool ACT_ON_NEW_FAULTS = true;
+static volatile bool ACT_ON_NEW_FAULTS = true;
 const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM
 const uint8_t EXPECTING_RESTART_FLAG = 0xaa; // 10101010, value of flag indicating that the last restart was expected.
 
@@ -110,13 +110,13 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
 
 // heater cutoff temperatures
-static bool FORCE_HEATER_ON = false;   // if true, heater will always be on regardless of temperature
+static volatile bool FORCE_HEATER_ON = false;   // if true, heater will always be on regardless of temperature
 const float HEATER_TEMP_LOW = -20;   // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
 
 // optics thermistor calibration
 const float OPTICS_THERM_CAL_TEMP = 30;            // celsius, known temperature of optics baseline
-static float OPTICS_THERM_CAL_VOLTAGE = 1.777F;    // volts, thermistor voltage at baseline temp
+static volatile float OPTICS_THERM_CAL_VOLTAGE = 1.777F;    // volts, thermistor voltage at baseline temp
 const float OPTICS_THERM_GAIN = -0.0109;           // volts/deg celsius, V/T relationship for optics thermistor
 
 // safe temperature range

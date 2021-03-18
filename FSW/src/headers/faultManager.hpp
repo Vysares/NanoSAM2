@@ -5,12 +5,13 @@
 // C++ libraries
 
 // Other libraries
+#include <EEPROM.h>
 
 // NS2 headers
 #include "config.hpp"
-#include "fault.hpp"
 
-/* - - - - - - Declarations - - - - - - */
+/* - - - - - - Struct Declarations - - - - - - */
+
 namespace faultCode { 
     // fault codes are wrapped in a namespace so they are not global
     enum Code {
@@ -29,7 +30,7 @@ namespace faultCode {
         
         ERR_CODE
     };
-    const size_t COUNT = ERR_CODE + 1;
+    const int COUNT = ERR_CODE + 1;
 };
 
 struct FaultReport {
@@ -37,7 +38,7 @@ struct FaultReport {
     uint8_t pendingAction = 0; 
     uint16_t startNum = 1;
     uint32_t timestamp = 0;
-    static const size_t MEMSIZE = 64;
+    static const int MEMSIZE = 64;
 };
 
 struct PayloadData {
@@ -49,9 +50,9 @@ struct PayloadData {
         static const size_t MEMSIZE = 72;
 };
 
-PayloadData payloadData;
+static PayloadData payloadData;
 
-
+/* - - - - - - Function Declarations - - - - - - */
 void logFault(int code);
 void feedWD();
 void handleFaults();
