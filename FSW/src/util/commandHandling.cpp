@@ -279,9 +279,19 @@ void executeCommand(int command) {
             break;
 
         // Fault Mitigation
-        case commandCode::CLEAR_RESET_COUNT:
-            
-            Serial.println("Command Executed - Unexpected reset counter set to 0.");
+        case commandCode::CLEAR_ALL_PERSISTENT_DATA:
+            clearAllPersistentData();
+            Serial.println("Command Executed - Persistent data cleared");
+            break;
+
+        case commandCode::ACT_ON_FAULTS_T:
+            ACT_ON_NEW_FAULTS = true;
+            Serial.println("Command Executed - NS2 will attempt to correct faults");
+            break;
+
+        case commandCode::ACT_ON_FAULTS_F:
+            ACT_ON_NEW_FAULTS = false;
+            Serial.println("Command Executed - NS2 will NOT attempt to correct faults");
             break;
 
         // Main Loop

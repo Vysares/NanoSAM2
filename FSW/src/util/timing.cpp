@@ -40,6 +40,9 @@ int ScienceMode::getMode() {
 }
 
 void ScienceMode::setMode(int newMode) {
+    if (mode != newMode && newMode == STANDBY_MODE) {
+        onStandbyEntry.invoke();
+    }
     mode = newMode;
 }
 

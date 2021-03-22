@@ -45,7 +45,6 @@ static const int FILE_IDX_OFFSET = 11;           // index of file number in char
  *  data from the ADC (bin number)
  */
 float dataProcessing() {
-    float voltage;
 
     // begin an SPI connection
     // TODO: we should probably begin the SPI connection in main to avoid duplicates
@@ -176,7 +175,7 @@ bool saveBuffer(int &index) {
     unsigned long timestamp = calcTimestamp(); 
     
     // Run all the data through EDAC
-    EncodedSciData encodedFileData = EncodedSciData(dataBuffer, timestamp); // this one line cost 50+ hours of my life
+    EncodedSciData encodedFileData = EncodedSciData(timeSortBuffer, timestamp); // this one line cost 50+ hours of my life
 
     /* send sorted array to file on flash memory along with timestamp 
      * see SerialFlash docs for info on these functions
@@ -288,8 +287,8 @@ void downlink() {
         SerialFlashFile file;
         file = SerialFlash.open(downlinkFileName);
         if (file) {
-            char downlinkBuffer[SCIDATA_ENCODED_MEMSIZE];
-            file.read(downlinkBuffer, SCIDATA_ENCODED_MEMSIZE);
+            char downlinkBuffer[EncodedSciData::MEMSIZE];
+            file.read(downlinkBuffer, EncodedSciData::MEMSIZE);
             Serial.println(downlinkBuffer);
             Serial.println(); // skip a line between files
             downlinkFileCount++;
@@ -340,8 +339,8 @@ void scrubFlash() {
         SerialFlashFile file;
         file = SerialFlash.open(scrubFilename);
         if (file) {
-            uint8_t fileContents[SCIDATA_ENCODED_MEMSIZE];
-            file.read(fileContents, SCIDATA_ENCODED_MEMSIZE);
+            uint8_t fileContents[EncodedSciData::MEMSIZE];
+            file.read(fileContents, EncodedSciData::MEMSIZE);
             correctedFileData.fill(fileContents);
             scrubInfo = correctedFileData.scrub(); // scrub it
 
@@ -356,9 +355,9 @@ void scrubFlash() {
             SerialFlash.remove(scrubFilename); // remove corrupted file
             
             // create new file and write corrected data
-            bool status = SerialFlash.create(scrubFilename, SCIDATA_ENCODED_MEMSIZE);
+            bool status = SerialFlash.create(scrubFilename, EncodedSciData::MEMSIZE);
             file = SerialFlash.open(scrubFilename);
-            status = file.write(correctedFileData.getData(), SCIDATA_ENCODED_MEMSIZE); // write encoded science data to file
+            status = file.write(correctedFileData.getData(), EncodedSciData::MEMSIZE); // write encoded science data to file
         }
     }
 

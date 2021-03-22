@@ -16,8 +16,8 @@
 class EncodedSciData : public EncodedFile<SCIDATA_RAW_MEMSIZE> {
     private:
         // member variables
-        uint16_t m_buffer[BUFFERSIZE];      // array to hold decoded buffer
-        unsigned long m_timestamp = MEMSIZE;         // file timestamp
+        uint16_t m_buffer[BUFFERSIZE];        // array to hold decoded buffer
+        unsigned long m_timestamp = MEMSIZE;  // file timestamp
 
     public:
         // constructors
