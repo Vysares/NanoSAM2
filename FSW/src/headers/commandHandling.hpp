@@ -51,7 +51,8 @@ namespace commandCode {
         SCRUB_FLASH,                   // start scrubbing the flash memory for errors
 
         // Fault Mitigation
-        CLEAR_ALL_PERSISTENT_DATA,     // clears all persistent data stored in EEPROM
+        WIPE_EEPROM,                   // completely wipes the EEPROM and then resets persistent data
+        RESET_PERSISTENT_DATA,         // resets all persistent data to default values
         ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
         ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
 

@@ -279,10 +279,16 @@ void executeCommand(int command) {
             break;
 
         // Fault Mitigation
-        case commandCode::CLEAR_ALL_PERSISTENT_DATA:
-            clearAllPersistentData();
+        case commandCode::WIPE_EEPROM:
+            wipeEEPROM();
+            Serial.println("Command Executed - Wipe EEPROM");
+            break;
+
+        case commandCode::RESET_PERSISTENT_DATA:
+            resetPersistentData();
             Serial.println("Command Executed - Persistent data cleared");
             break;
+
 
         case commandCode::ACT_ON_FAULTS_T:
             ACT_ON_NEW_FAULTS = true;

@@ -25,9 +25,12 @@
 
 /* Module Variable Definitions */
 // fault log
+PayloadData payloadData;
 static FaultReport faultLog[faultCode::COUNT];
+
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
+
 // flag to indicate whether any faults were logged in the current main loop iteration
 static bool detectedFault = false; 
 
@@ -35,7 +38,7 @@ static bool detectedFault = false;
 
 /* - - - - - - logFault - - - - - - *
  * Usage:
- *  records a new occurence of a fault
+ *  records a new occurrence of a fault
  *  
  * Inputs:
  *  code - fault code to log
@@ -43,12 +46,13 @@ static bool detectedFault = false;
  * Outputs:
  *  None
  */
-void logFault(uint8_t code) {
+void logFault(int code) {
     detectedFault = true;
 
     // check if fault is valid
     if (code >= faultCode::ERR_CODE) {
-        Serial.println("Warning, tried to log a fault with invalid fault code (Fault Manager)");
+        Serial.print("Warning, tried to log a fault with invalid fault code: ");
+        Serial.println(code);
         return;
     }
 
@@ -59,11 +63,11 @@ void logFault(uint8_t code) {
     faultLog[code].startNum = payloadData.startCount;
     faultLog[code].timestamp = millis();
 
-    if (faultLog[code].occurences < 255) {
-        faultLog[code].occurences++;
+    if (faultLog[code].occurrences < 255) {
+        faultLog[code].occurrences++;
         
-        // mark for action on first and max occurences
-        if (faultLog[code].occurences == 1 || faultLog[code].occurences == 255) {
+        // mark for action on first and max occurrences
+        if (faultLog[code].occurrences == 1 || faultLog[code].occurrences == 255) {
             faultLog[code].pendingAction = 1;
         }
     }
@@ -125,6 +129,12 @@ void handleFaults() {
                     executeCommand(commandCode::FORCE_HEATER_ON_T);
                     break;
 
+                // EEPROM corrupted
+                case faultCode::EEPROM_CORRUPTED:
+                    Serial.println("Detected corrupted data in EEPROM, entering safe mode.");
+                    executeCommand(commandCode::ENTER_SAFE_MODE);
+                    break;
+
                 // if fault has no corrective action
                 default:
                     Serial.print("Fault code ");
@@ -132,27 +142,59 @@ void handleFaults() {
                     Serial.println(" has no assigned corrective action.");
                     break;
             }
-        } 
+        }
     }
 }
 
-/* - - - - - - clearAllPersistentData - - - - - - *
+/* - - - - - - wipeEEPROM - - - - - - *
  * Usage:
- *  Clears all persistent data
+ *  Clears every byte in EEPROM and resets all persistent data to default values.
+ *  Are you sure you want to do that?
+ *  As a safeguard, this must be called twice before EEPROM is cleared.
  *  
  * Inputs:
  *  None
  * Outputs:
  *  None
  */
-void clearAllPersistentData() {
+void wipeEEPROM() {
+    static Event eepromLock;
+
+    if (eepromLock.checkInvoked()) {
+        // Completely wipe the EEPROM
+        for (int i = 0; i < EEPROM_SIZE; i++) {
+            EEPROM.write(i, 0);
+        }
+        payloadData.eepromWriteCount = 1;
+        resetPersistentData();
+        Serial.println("EEPROM wiped.");
+    } else {
+        eepromLock.invoke();
+        // WARNING! DANGER!
+        Serial.println("!!! EEPROM lock disabled. EEPROM will be wiped on next attempt. !!!");
+        Serial.print("The current write count is ");
+        Serial.println(payloadData.eepromWriteCount);
+    }
+}
+
+/* - - - - - - resetPersistentData - - - - - - *
+ * Usage:
+ *  Resets all persistent data to default values.
+ *  Does not change EEPROM write counter.
+ *  
+ * Inputs:
+ *  None
+ * Outputs:
+ *  None
+ */
+void resetPersistentData() {
     payloadData.expectingRestartFlag = 0;
     payloadData.startCount = 1;
     payloadData.consecutiveBadRestarts = 0;
     payloadData.recoveredMode = 0;
 
     for (int i = 0; i < faultCode::COUNT; i++) {
-        faultLog[i].occurences = 0;
+        faultLog[i].occurrences = 0;
         faultLog[i].startNum = 1;
         faultLog[i].timestamp = 0;
     }
@@ -198,8 +240,6 @@ void prepareForRestart() {
     saveEEPROM();
 }
 
-/* - - - - - - Helper Functions - - - - - - */
-
 /* - - - - - - saveEEPROM - - - - - - *
  * Usage:
  *  Saves payload data and fault log to EEPROM.
@@ -207,12 +247,14 @@ void prepareForRestart() {
  *  
  * Inputs:
  *  None
+ * 
  * Outputs:
- *  None
+ *  The total number of bytes overwritten
  */
-void saveEEPROM() {
+int saveEEPROM() {
 
     payloadData.eepromWriteCount++; // one more write to EEPROM
+    int bytesWritten = 0;
     uint8_t rawData[EEPROM_DECODED_SIZE] = {}; // contiguous array to store unencoded data
 
     // copy persistent data to rawData array
@@ -224,7 +266,7 @@ void saveEEPROM() {
 
     // copy fault data to rawData array
     for (int i = 0; i < faultCode::COUNT; i++) {
-        memAppend(rawData, &faultLog[i].occurences, sizeof(faultLog[i].occurences), &bytesCopied);
+        memAppend(rawData, &faultLog[i].occurrences, sizeof(faultLog[i].occurrences), &bytesCopied);
         memAppend(rawData, &faultLog[i].startNum, sizeof(faultLog[i].startNum), &bytesCopied);
         memAppend(rawData, &faultLog[i].timestamp, sizeof(faultLog[i].timestamp), &bytesCopied);
     }
@@ -240,8 +282,10 @@ void saveEEPROM() {
 
         if (EEPROM.read(eepromAddress) != dataToWrite) { // only overwrite if the byte has changed. This extends the life of the EEPROM.
             EEPROM.write(eepromAddress, dataToWrite);
+            bytesWritten++;
         }
     }
+    return bytesWritten;
 }
 
 /* - - - - - - loadEEPROM - - - - - - *
@@ -265,10 +309,15 @@ void loadEEPROM() {
         eepromData[byteNum] = EEPROM.read(eepromAddress);
     }
 
-    // decode the EEPROM data
+    // decode and scrub EEPROM data
     encodedData.fill(eepromData);
+    ScrubReport scrubInfo = encodedData.scrub();
 
-    // extract system data 
+    if (scrubInfo.uncorrected != 0) { // oh no!
+        logFault(faultCode::EEPROM_CORRUPTED);
+    }
+
+    // extract system data
     size_t bytesCopied = 0;
     memExtract(encodedData.getDecodedData(), &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
@@ -277,7 +326,7 @@ void loadEEPROM() {
 
     // copy fault data to fault log
     for (int i = 0; i < faultCode::COUNT; i++) {
-        memExtract(encodedData.getDecodedData(), &faultLog[i].occurences, sizeof(faultLog[i].occurences), &bytesCopied);
+        memExtract(encodedData.getDecodedData(), &faultLog[i].occurrences, sizeof(faultLog[i].occurrences), &bytesCopied);
         memExtract(encodedData.getDecodedData(), &faultLog[i].startNum, sizeof(faultLog[i].startNum), &bytesCopied);
         memExtract(encodedData.getDecodedData(), &faultLog[i].timestamp, sizeof(faultLog[i].timestamp), &bytesCopied);
     }
@@ -285,8 +334,8 @@ void loadEEPROM() {
 
 /* - - - - - - resetFaultCounts - - - - - - *
  * Usage:
- *  Resets the occurence count of each fault report to 0.
- *  timestamp and mode of last fault occurence are not altered
+ *  Resets the occurrence count of each fault report to 0.
+ *  timestamp and mode of last fault occurrence are not changed
  *  
  * Inputs:
  *  None
@@ -295,7 +344,7 @@ void loadEEPROM() {
  */
 void resetFaultCounts() {
     for (int i = 0; i < faultCode::COUNT; i++) {
-        faultLog[i].occurences = 0;
+        faultLog[i].occurrences = 0;
         faultLog[i].pendingAction = 0;
     }
     saveEEPROM();
