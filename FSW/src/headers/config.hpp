@@ -6,7 +6,7 @@
  *  sampling rates, etc) that we will want to be able to change
  *  from a single location and include in multiple modules
  * 
- *  declare all objects as static to avoid the error 
+ *  declare all objects as extern to avoid the error 
  *      "multiple definitions of <object>" during compilation
  */
 
@@ -58,7 +58,7 @@ const bool ADCS_READY_FOR_SCIENCE = true;     // flag on whether or not attitude
  * = = = = = = = = = = = = = = = = = = = = = */
 
 /* - - - - - - Main - - - - - - */
-static Event exitMainLoopEvent; // event to trigger main loop exit
+extern Event exitMainLoopEvent; // event to trigger main loop exit
 
 
 /* - - - - - - Data Collection Module - - - - - - */
@@ -69,6 +69,10 @@ const float ADC_BINS = 65536;       // bins, number of bins in ADC (2^16)
 const float ADC_MAX_VOLTAGE = 3.3;  // Volts, upper end of ADC voltage range
 const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; // volts per ADC bin
+
+// Continuous data streaming
+extern volatile bool STREAM_PHOTO_DATA; // whether to print photodiode samples in real time.
+const bool STREAM_PHOTO_DATA_INIT = true;
 
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
@@ -84,12 +88,12 @@ const int WINDOW_LENGTH_MSEC = WINDOW_LENGTH_SEC * 1000; // milliseconds, length
 const int SWEEP_TIMEOUT_MSEC = 1000; // milliseconds, time for ADCS to sweep optic across the sun
 
 // Events
-static RecurringEvent dataProcessEvent(SAMPLE_PERIOD_MSEC); // assuming that duration arg is ms
-static Event saveBufferEvent;
-static TimedEvent sunriseTimerEvent(WINDOW_LENGTH_MSEC);
-static TimedEvent sweepTimeoutEvent(SWEEP_TIMEOUT_MSEC);
-static AsyncEvent downlinkEvent(MAXFILES);
-static AsyncEvent scrubEvent(MAXFILES);
+extern RecurringEvent dataProcessEvent; // assuming that duration arg is ms
+extern Event saveBufferEvent;
+extern TimedEvent sunriseTimerEvent;
+extern TimedEvent sweepTimeoutEvent;
+extern AsyncEvent downlinkEvent;
+extern AsyncEvent scrubEvent;
 
 
 /* - - - - - - Command Handling Module - - - - - - */
@@ -97,8 +101,13 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
-static volatile bool ACT_ON_NEW_FAULTS = true;
+// Corrective action
+extern volatile bool ACT_ON_NEW_FAULTS; // whether to attempt corrective action when faults are detected
+const bool ACT_ON_NEW_FAULTS_INIT = true;
+
+// EEPROM
 const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM
+const int EEPROM_SIZE = 1080; // size of EEPROM in bytes
 const uint8_t EXPECTING_RESTART_FLAG = 0xaa; // 10101010, value of flag indicating that the last restart was expected.
 
 // watchdog
@@ -109,15 +118,19 @@ const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset sign
 /* - - - - - - Housekeeping Module - - - - - - */
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
 
-// heater cutoff temperatures
-static volatile bool FORCE_HEATER_ON = false;   // if true, heater will always be on regardless of temperature
+// Heater control override
+extern volatile bool FORCE_HEATER_ON;   // if true, heater will always be on regardless of temperature
+const bool FORCE_HEATER_ON_INIT = false;
+
+// Heater cutoff temperatures
 const float HEATER_TEMP_LOW = -20;   // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
 
 // optics thermistor calibration
-const float OPTICS_THERM_CAL_TEMP = 30;            // celsius, known temperature of optics baseline
-static volatile float OPTICS_THERM_CAL_VOLTAGE = 1.777F;    // volts, thermistor voltage at baseline temp
-const float OPTICS_THERM_GAIN = -0.0109;           // volts/deg celsius, V/T relationship for optics thermistor
+const float OPTICS_THERM_CAL_TEMP = 30;             // celsius, known temperature of optics baseline
+const float OPTICS_THERM_GAIN = -0.0109;            // volts/deg celsius, V/T relationship for optics thermistor
+extern volatile float OPTICS_THERM_CAL_VOLTAGE;    
+const float OPTICS_THERM_CAL_VOLTAGE_INIT = 1.777F; // volts, thermistor voltage at baseline temp
 
 // safe temperature range
 const float OPTICS_TEMP_MIN_SAFE = -35; // celsius, minimum safe photodiode temp
@@ -133,7 +146,7 @@ const float PG_VOLTAGE_MIN_EXPECTED = 3.2;  // volts, minimum expected reading f
 const int HK_SAMPLE_PERIOD_MSEC = 1000;    // milliseconds, interval between housekeeping updates
 
 // Events
-static RecurringEvent housekeepingTimer(HK_SAMPLE_PERIOD_MSEC);
+extern RecurringEvent housekeepingTimer;
 
 
 /* - - - - - - Timing Module - - - - - - */
@@ -143,6 +156,6 @@ const int ADCS_SWEEP_IDX_OFFSET = SMOOTH_IDX_COUNT; // number of indices to trav
 const int ADCS_SWEEP_CHANGE_DURATION = 2 * SMOOTH_IDX_COUNT * SAMPLE_PERIOD_MSEC; // millisec, duration to prevent ADCS sweep direction change
 
 // timing science mode object declaration
-static ScienceMode scienceMode;
+extern ScienceMode scienceMode;
 
 #endif
