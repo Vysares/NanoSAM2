@@ -11,7 +11,7 @@
 // NS2 headers
 
 
-/* - - - - - - Class Definitions - - - - - - */
+/* - - - - - - Class Declarations - - - - - - */
 
 /* - - - - - - Event - - - - - - *
  * Usage:
@@ -66,6 +66,7 @@ class TimedEvent : public Event {
  */
 class RecurringEvent : public TimedEvent {
     public:
+        RecurringEvent() { }
         RecurringEvent(unsigned long newDuration);
 
         bool checkInvoked();

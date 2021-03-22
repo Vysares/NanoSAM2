@@ -25,7 +25,7 @@
 
 /* Module Variable Definitions */
 
-/* - - - - - - Class Implementations - - - - - - */
+/* - - - - - - Class Definitions - - - - - - */
 /* - - - - - - ScienceMode - - - - - - *
  * Usage:
  *  tracks the Science Mode of the payload
@@ -40,6 +40,9 @@ int ScienceMode::getMode() {
 }
 
 void ScienceMode::setMode(int newMode) {
+    if (mode != newMode && newMode == STANDBY_MODE) {
+        onStandbyEntry.invoke();
+    }
     mode = newMode;
 }
 
