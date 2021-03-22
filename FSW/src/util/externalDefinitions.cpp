@@ -1,5 +1,5 @@
-/* externalConfig.cpp DEFINES all global objects declared with the 'extern' keyword in config.hpp
-    The compiler will point all files to these definitions, so that only one instance of each object exists globally.
+/* externalDefinitions.cpp DEFINES all global objects declared with the 'extern' keyword in config.hpp
+    The compiler will point all files to these definitions so that only one instance of each object exists globally.
     DO NOT DEFINE THESE OBJECTS ANYWHERE ELSE!!!
 */
 

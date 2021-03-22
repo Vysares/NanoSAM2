@@ -6,8 +6,9 @@
  *  sampling rates, etc) that we will want to be able to change
  *  from a single location and include in multiple modules
  * 
- *  declare all objects as extern to avoid the error 
- *      "multiple definitions of <object>" during compilation
+ *  Delcare all non-constant object as 'extern' and define them in externalDefinitions.cpp
+ *  to create a single instance shared across all files. 
+ *  Objects not declared as `extern` will not be linked between files. 
  */
 
 //C++ libraries
