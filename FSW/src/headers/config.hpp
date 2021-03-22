@@ -72,7 +72,7 @@ const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; //
 
 // Continuous data streaming
 extern volatile bool STREAM_PHOTO_DATA; // whether to print photodiode samples in real time.
-const bool STREAM_PHOTO_DATA_INIT = true;
+const bool STREAM_PHOTO_DATA_INIT = false;
 
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp

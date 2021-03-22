@@ -70,6 +70,12 @@ float dataProcessing() {
      *      lead to more work for future teams trying to retrofit our format
      */
 
+    // print the voltage value (for testing)
+    if (STREAM_PHOTO_DATA) {
+        float voltage = photodiode16 * ADC_VOLTAGE_RES;
+        Serial.println(voltage);
+    }
+
     // return the bin number
     return photodiode16;
 }

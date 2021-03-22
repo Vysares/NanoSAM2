@@ -22,12 +22,16 @@ namespace commandCode {
     // command codes are wrapped in a namespace so they are not global
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
-        // Mode change
+        // Mode Change
         ENTER_SAFE_MODE = 1,            // enter safemode state
         ENTER_STANDBY_MODE,             // enter standby state
         ENTER_SUNSET_MODE,              // enter sunset data collection mode
         ENTER_PRE_SUNRISE_MODE,         // enter watch-for-sunset mode
         ENTER_SUNRISE_MODE,             // enter sunrise data collection mode
+
+        // Data Collection
+        STREAM_PHOTO_DATA_T,            // start streaming photodiode data
+        STREAM_PHOTO_DATA_F,            // stop streaming photodiode data
         
         // Housekeeping
         DISABLE_WD_RESET,               // disable watchdog reset signal, forcing a restart

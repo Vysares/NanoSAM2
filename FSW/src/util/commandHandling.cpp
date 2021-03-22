@@ -207,7 +207,18 @@ void executeCommand(int command) {
             scienceMode.setMode(SUNRISE_MODE);
             Serial.println("Command Executed - Entering Sunrise Mode.");
             break;
-        
+
+        // Data Collection
+        case commandCode::STREAM_PHOTO_DATA_T:
+            STREAM_PHOTO_DATA = true;
+            Serial.println("Command Executed - Transmitting photdiode voltages in real time.");
+            break;
+
+        case commandCode::STREAM_PHOTO_DATA_F:
+            STREAM_PHOTO_DATA = false;
+            Serial.println("Command Executed - Stopped photodiode data streaming.");
+            break;
+
         // Housekeeping
         case commandCode::DISABLE_WD_RESET: 
             // TODO: change wd timer duration by calling setDuration()
