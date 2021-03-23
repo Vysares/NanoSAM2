@@ -135,7 +135,7 @@ int main() {
         
 
         if (exitMainLoopEvent.checkInvoked()) {
-            clearResetCount();
+            prepareForRestart();
             Serial.print("Exiting main loop at iteration ");
             Serial.println(mainLoopIterations);
             break;
