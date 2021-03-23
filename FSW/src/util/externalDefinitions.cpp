@@ -5,6 +5,7 @@
 
 // Config Header
 #include "../headers/config.hpp"
+#include "../headers/globalDeclarations.hpp"
 
 /* GLOBAL DEFINITIONS */
 // Main
@@ -29,3 +30,6 @@ RecurringEvent housekeepingTimer = RecurringEvent(HK_SAMPLE_PERIOD_MSEC);
 
 // Timing
 ScienceMode scienceMode = ScienceMode();
+
+// System Manager objects
+CommandHandler commandHandler = CommandHandler();

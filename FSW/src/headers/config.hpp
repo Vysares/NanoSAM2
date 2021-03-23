@@ -6,7 +6,7 @@
  *  sampling rates, etc) that we will want to be able to change
  *  from a single location and include in multiple modules
  * 
- *  Declare all non-constant objects as 'extern' and define them in externalDefinitions.cpp
+ *  Deare all non-constant objects as 'extern' and define them in externalDefinitions.cpp
  *  to create a single instance shared across all files. 
  *  Objects not declared as `extern` will not be linked between files. 
  */

@@ -16,20 +16,13 @@
 /* - - - - - - Includes - - - - - - */
 // All libraries are put in commandHandling.hpp
 // NS2 headers
-#include "../headers/commandHandling.hpp"
+#include "../headers/commandHandler.hpp"
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp" //for mode enum
 #include "../headers/faultManager.hpp"
 
 
-/* Module Variable Definitions */
-static int commandQueue[COMMAND_QUEUE_SIZE] = {};  // initializes as all zeros
-static int queueIndex = 0;                  // next available index of command queue
-static bool isPaused = false;               // indicates if command execution is paused
-
-/* - - - - - - Module Driver Functions - - - - - - */
-
-/* - - - - - - commandHandling - - - - - - *
+/* - - - - - - handleCommands (main driver function) - - - - - - *
  * Usage:
  *  looks for and reads incoming commands via serial, adds them to the command queue, and executes
  *  each command in the queue
@@ -38,21 +31,24 @@ static bool isPaused = false;               // indicates if command execution is
  *  none
  * 
  * Outputs:
- *  None
+ *  True if a valid command was detected, false otherwise
  */
-void commandHandling() {
-    int newCommand = readCommand(); // read command from serial
+bool CommandHandler::handleCommands() {
+    bool commandDetected = true;
+    int newCommand = readSerial(); // read command from serial
+    
     if (checkMetaCommand(newCommand)) { // if new command is a meta command, execute it immediately
-        executeCommand(newCommand);
+        execute(newCommand);
     } else if (newCommand != -1) { // if the new command is valid, add it to the queue
-        queueCommand(newCommand);
+        queue(newCommand);
+    } else {
+        commandDetected = false;
     }
-    executeAllCommands(); // execute all commands in the queue
+    executeAll(); // execute all commands in the queue
+    return commandDetected;
 }
 
-/* - - - - - - Helper Functions - - - - - - */
-
-/* - - - - - - readCommand - - - - - - *
+/* - - - - - - readSerial (private) - - - - - - *
  * Usage:
  *  Reads serial input for an incoming command, checks if it has received a valid command,
  *  and returns the new command
@@ -63,7 +59,7 @@ void commandHandling() {
  * Outputs:
  *  a single valid command code, or -1 if no valid code is received
  */
-int readCommand() {
+int CommandHandler::readSerial() {
     // read Serial
     if (Serial.available() > 0) { // check if there is serial input
         int serialInput = Serial.parseInt(); // read the command
@@ -83,28 +79,7 @@ int readCommand() {
     return -1; // no command
 }
 
-/* - - - - - - queueCommand - - - - - - *
- * Usage:
- *  Adds command to the next availiable spot in the command queue.
- *  New commands are not added if the queue is full.
- * 
- * Inputs:
- *  command - a single command code
- * 
- * Outputs:
- *  None
- */
-void queueCommand(int command) {
-    if (queueIndex < COMMAND_QUEUE_SIZE) { // if end of queue has not been reached, add command to queue 
-        commandQueue[queueIndex] = command;
-        queueIndex++;
-    } else {
-        Serial.println("Command queue full.");
-        Serial.println("(Command Handling)");
-    }
-}
-
-/* - - - - - - checkMetaCommand - - - - - - *
+/* - - - - - - checkMetaCommand (private) - - - - - - *
  * Usage:
  *  Checks if input command is a meta command.
  *  Meta commands are executed immediately even if the queue is paused
@@ -116,41 +91,42 @@ void queueCommand(int command) {
  *  True if meta command detected
  *  False if no meta command detected
  */
-bool checkMetaCommand(int command) {
+bool CommandHandler::checkMetaCommand(int command) {
     switch (command) {
         case commandCode::PAUSE_EXECUTE_COMMANDS: 
-            break;
         case commandCode::RESUME_EXECUTE_COMMANDS:
-            break;
         case commandCode::CLEAR_COMMAND_QUEUE:
+            return true;
             break;
+            
         default:
             return false; // no meta command detected
             break;
     }
-    return true;
 }
 
-/* - - - - - - executeAllCommands - - - - - - *
+/* - - - - - - queue - - - - - - *
  * Usage:
- *  Executes every command in the command queue, starting from index 0 and up to the current index
+ *  Adds command to the next availiable spot in the command queue.
+ *  New commands are not added if the queue is full.
  * 
  * Inputs:
- *  None 
+ *  command - a single command code
  * 
  * Outputs:
  *  None
  */
-void executeAllCommands() {
-    if (!isPaused) { // if command execution is not paused
-        for (int i = 0; i < queueIndex; i++) { // execute each command in the queue
-            executeCommand(commandQueue[i]);
-        }
-        clearCommandQueue();
+void CommandHandler::queue(int command) {
+    if (m_queueIdx < COMMAND_QUEUE_SIZE) { // if end of queue has not been reached, add command to queue 
+        m_queue[m_queueIdx] = command;
+        m_queueIdx++;
+    } else {
+        Serial.println("Command queue full.");
+        Serial.println("(Command Handling)");
     }
 }
 
-/* - - - - - - clearCommandQueue - - - - - - *
+/* - - - - - - clearQueue - - - - - - *
  * Usage:
  *  Sets all elements in command queue to 0
  *  resets queue index to 0.
@@ -161,14 +137,33 @@ void executeAllCommands() {
  * Outputs:
  *  None
  */
-void clearCommandQueue() {
+void CommandHandler::clearQueue() {
     for (int i = 0; i < COMMAND_QUEUE_SIZE; i++) { // execute each command in the queue
-            commandQueue[i] = 0;
+            m_queue[i] = 0;
         }
-        queueIndex = 0; // reset queue index
+        m_queueIdx = 0; // reset queue index
 }
 
-/* - - - - - - executeCommand - - - - - - *
+/* - - - - - - executeAll - - - - - - *
+ * Usage:
+ *  Executes every command in the command queue, starting from index 0 and up to the current index
+ * 
+ * Inputs:
+ *  None 
+ * 
+ * Outputs:
+ *  None
+ */
+void CommandHandler::executeAll() {
+    if (!m_isPaused) { // if command execution is not paused
+        for (int i = 0; i < m_queueIdx; i++) { // execute each command in the queue
+            execute(m_queue[i]);
+        }
+        clearQueue();
+    }
+}
+
+/* - - - - - - execute - - - - - - *
  * Usage:
  *  executes a single command by checking it against the Command enum
  * 
@@ -178,7 +173,7 @@ void clearCommandQueue() {
  * Outputs:
  *  None
  */
-void executeCommand(int command) {
+void CommandHandler::execute(int command) {
     // When adding new commands, make sure to include any relevant headers!
     switch (command) {
         // Mode change
@@ -253,17 +248,17 @@ void executeCommand(int command) {
 
         // Command Handling
         case commandCode::PAUSE_EXECUTE_COMMANDS: 
-            isPaused = true;
+            m_isPaused = true;
             Serial.println("Command Executed - Command execution paused.");
             break;
         
         case commandCode::RESUME_EXECUTE_COMMANDS: 
-            isPaused = false;
+            m_isPaused = false;
             Serial.println("Command Executed - Command execution resumed.");
             break;
         
         case commandCode::CLEAR_COMMAND_QUEUE: 
-            clearCommandQueue();
+            clearQueue();
             Serial.println("Command Executed - Command queue cleared.");
             break;
 

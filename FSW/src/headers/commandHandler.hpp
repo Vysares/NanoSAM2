@@ -1,5 +1,5 @@
-#ifndef COMHANDLING_H
-#define COMHANDLING_H
+#ifndef COMHANDLER_H
+#define COMHANDLER_H
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
@@ -10,13 +10,23 @@
 #include "config.hpp"
 
 /* - - - - - - Declarations - - - - - - */
-void commandHandling();
-int readCommand();
-void queueCommand(int command);
-bool checkMetaCommand(int command);
-void executeAllCommands();
-void clearCommandQueue();
-void executeCommand(int command);
+class CommandHandler {
+    private:
+        int m_queue[COMMAND_QUEUE_SIZE] = {}; // command queue
+        int m_queueIdx; // current index in queue
+        bool m_isPaused; // whether execution is paused
+        
+        int readSerial();
+        bool checkMetaCommand(int command);
+
+    public:
+        bool handleCommands();
+        void queue(int command);
+        void clearQueue();
+        void executeAll();
+        void execute(int command);
+
+};
 
 namespace commandCode {
     // command codes are wrapped in a namespace so they are not global

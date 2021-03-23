@@ -18,9 +18,9 @@
 /* - - - - - - Includes - - - - - - */
 // All libraries are put in dataCollection.hpp
 // NS2 headers
+#include "../headers/globalDeclarations.hpp"
 #include "../headers/faultManager.hpp"
 #include "../headers/encodedFile.hpp"
-#include "../headers/commandHandling.hpp"
 #include "../headers/housekeeping.hpp"
 
 /* Module Variable Definitions */
@@ -112,27 +112,27 @@ void handleFaults() {
             // TODO: Expand to include more faults
             switch (code) {
                 case faultCode::UNEXPECTED_RESTART:
-                    executeCommand(commandCode::ENTER_SAFE_MODE);
+                    commandHandler.execute(commandCode::ENTER_SAFE_MODE);
                     break;
                 
                 // temp too hot
                 case faultCode::ANALOG_TOO_HOT:
                 case faultCode::DIGITAL_TOO_HOT:
                 case faultCode::OPTICS_TOO_HOT:
-                    executeCommand(commandCode::FORCE_HEATER_ON_F);
+                    commandHandler.execute(commandCode::FORCE_HEATER_ON_F);
                     break;
 
                 // tempt too cold
                 case faultCode::ANALOG_TOO_COLD:
                 case faultCode::DIGITAL_TOO_COLD:
                 case faultCode::OPTICS_TOO_COLD:
-                    executeCommand(commandCode::FORCE_HEATER_ON_T);
+                    commandHandler.execute(commandCode::FORCE_HEATER_ON_T);
                     break;
 
                 // EEPROM corrupted
                 case faultCode::EEPROM_CORRUPTED:
                     Serial.println("Detected corrupted data in EEPROM, entering safe mode.");
-                    executeCommand(commandCode::ENTER_SAFE_MODE);
+                    commandHandler.execute(commandCode::ENTER_SAFE_MODE);
                     break;
 
                 // if fault has no corrective action

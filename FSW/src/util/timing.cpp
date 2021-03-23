@@ -20,7 +20,7 @@
 // NS2 headers
 #include "../headers/timing.hpp"
 #include "../headers/eventUtil.hpp"
-#include "../headers/commandHandling.hpp"
+#include "../headers/commandHandler.hpp"
 #include "../headers/dataCollection.hpp"
 
 /* Module Variable Definitions */
