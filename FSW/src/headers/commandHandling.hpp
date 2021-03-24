@@ -22,12 +22,16 @@ namespace commandCode {
     // command codes are wrapped in a namespace so they are not global
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
-        // Mode change
+        // Mode Change
         ENTER_SAFE_MODE = 1,            // enter safemode state
         ENTER_STANDBY_MODE,             // enter standby state
         ENTER_SUNSET_MODE,              // enter sunset data collection mode
         ENTER_PRE_SUNRISE_MODE,         // enter watch-for-sunset mode
         ENTER_SUNRISE_MODE,             // enter sunrise data collection mode
+
+        // Data Collection
+        STREAM_PHOTO_DATA_T,            // start streaming photodiode data
+        STREAM_PHOTO_DATA_F,            // stop streaming photodiode data
         
         // Housekeeping
         DISABLE_WD_RESET,               // disable watchdog reset signal, forcing a restart
@@ -35,6 +39,8 @@ namespace commandCode {
         HEATER_OFF,                     // turn heater off, does not override housekeeping heater control
         FORCE_HEATER_ON_T,              // force the heater on, overrrides houskeeping heater control
         FORCE_HEATER_ON_F,              // stop forcing the heater on, giving control back to housekeeping
+        STREAM_TEMPERATURE_T,           // start streaming temperature measurements
+        STREAM_TEMPERATURE_F,           // stop streaming temperature measurements
         CALIBRATE_OPTICS_THERM,         // take new voltage measurement at known temp for optics thermistor
 
         // Command Handling
@@ -51,7 +57,10 @@ namespace commandCode {
         SCRUB_FLASH,                   // start scrubbing the flash memory for errors
 
         // Fault Mitigation
-        CLEAR_ALL_PERSISTENT_DATA,     // clears all persistent data stored in EEPROM
+        WIPE_EEPROM,                   // completely wipes the EEPROM and then resets persistent data
+        RESET_PERSISTENT_DATA,         // resets all persistent data to default values
+        SUPPRESS_FAULTS_T,             // stops new faults from being logged
+        SUPPRESS_FAULTS_F,             // allows new faults to be logged
         ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
         ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
 

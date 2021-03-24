@@ -207,10 +207,23 @@ void executeCommand(int command) {
             scienceMode.setMode(SUNRISE_MODE);
             Serial.println("Command Executed - Entering Sunrise Mode.");
             break;
-        
+
+        // Data Collection
+        case commandCode::STREAM_PHOTO_DATA_T:
+            STREAM_PHOTO_DATA = true;
+            Serial.println("Command Executed - Transmitting photodiode voltages in real time.");
+            Serial.println("time (ms) | photodiode voltage (V)");
+            break;
+
+        case commandCode::STREAM_PHOTO_DATA_F:
+            STREAM_PHOTO_DATA = false;
+            Serial.println("Command Executed - Stopped streaming photodiode data");
+            break;
+
         // Housekeeping
         case commandCode::DISABLE_WD_RESET: 
-            // TODO: change wd timer duration by calling setDuration()
+            wdTimer.setDuration(0xFFFFFFFF); // that should do it.
+            Serial.println("Command Executed - Watchdog will not be fed. Restart imminent!");
             break;
         
         case commandCode::HEATER_ON: 
@@ -231,6 +244,17 @@ void executeCommand(int command) {
         case commandCode::FORCE_HEATER_ON_F:
             FORCE_HEATER_ON = false;
             Serial.println("Command Executed - Automatic heater control enabled.");
+            break;
+
+        case commandCode::STREAM_TEMPERATURE_T:
+            STREAM_TEMPERATURE = true;
+            Serial.println("Command Executed - Transmitting temperature data in real time.");
+            Serial.println("time (ms) | optics temp (C) | analog temp (C) | digital temp (C)");
+            break;
+
+        case commandCode::STREAM_TEMPERATURE_F:
+            STREAM_TEMPERATURE = false;
+            Serial.println("Command Executed - Stopped streaming temperature data.");
             break;
 
         case commandCode::CALIBRATE_OPTICS_THERM:
@@ -279,9 +303,24 @@ void executeCommand(int command) {
             break;
 
         // Fault Mitigation
-        case commandCode::CLEAR_ALL_PERSISTENT_DATA:
-            clearAllPersistentData();
+        case commandCode::WIPE_EEPROM:
+            wipeEEPROM();
+            Serial.println("Command Executed - Wipe EEPROM");
+            break;
+
+        case commandCode::RESET_PERSISTENT_DATA:
+            resetPersistentData();
             Serial.println("Command Executed - Persistent data cleared");
+            break;
+        
+        case commandCode::SUPPRESS_FAULTS_T:
+            SUPPRESS_FAULTS = true;
+            Serial.println("Command Executed - New faults are now suppressed.");
+            break;
+
+        case commandCode::SUPPRESS_FAULTS_F:
+            SUPPRESS_FAULTS = false;
+            Serial.println("Command Executed - New faults can now be logged.");
             break;
 
         case commandCode::ACT_ON_FAULTS_T:

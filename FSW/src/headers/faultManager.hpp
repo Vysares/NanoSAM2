@@ -26,19 +26,21 @@ namespace faultCode {
         OPTICS_TOO_COLD,
 
         // Power
-        DREG_OUT_OF_RANGE,
+        DREG_OUT_OF_RANGE,      // Digital regulator voltage is out of normal range
         
+        // Bad News
+        EEPROM_CORRUPTED,       // EEPROM data is corrupted beyond rescue
         ERR_CODE
     };
     const int COUNT = ERR_CODE + 1;
 };
 
 struct FaultReport {
-    uint8_t occurences = 0;
+    uint8_t occurrences = 0;
     uint8_t pendingAction = 0; 
     uint16_t startNum = 1;
     uint32_t timestamp = 0;
-    static const int MEMSIZE = 64;
+    static const int MEMSIZE = 8;
 };
 
 struct PayloadData {
@@ -47,20 +49,22 @@ struct PayloadData {
         uint16_t consecutiveBadRestarts = 0;
         uint32_t eepromWriteCount = 0;
         uint8_t recoveredMode = 0;
-        static const size_t MEMSIZE = 72;
+        static const size_t MEMSIZE = 10;
 };
 
-static PayloadData payloadData;
+extern PayloadData payloadData;
 
 /* - - - - - - Function Declarations - - - - - - */
 void logFault(int code);
 void feedWD();
 void handleFaults();
 
-void clearAllPersistentData();
+void wipeEEPROM();
+void resetPersistentData();
+
 void recordNewStart();
 void prepareForRestart();
-void saveEEPROM();
+int saveEEPROM();
 void loadEEPROM();
 void resetFaultCounts();
 

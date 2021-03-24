@@ -126,10 +126,7 @@ ErrorReport HammingBlock::scanBlock() {
     }
     // calculate block parity
     bool blockParity = !!(totalSetBits % 2);
-    Serial.println(totalSetBits);
-    Serial.println(checkBit(m_block, 0));
-    Serial.println(blockParity);
-    Serial.println(checkBit(m_block, 0) == blockParity);
+
     // determine error type
     if (checkBit(m_block, 0) == blockParity) {
         if (indexParity == 0) {

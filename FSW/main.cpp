@@ -107,6 +107,11 @@ int main() {
             handleHousekeeping();
         }  
 
+        // feed the dog
+        if (wdTimer.checkInvoked()) {
+            feedWD();
+        }
+
 
         /* - ONLY EXECTUTE DURING NORMAL OPERATION - */
         if (scienceMode.getMode() != SAFE_MODE) {
@@ -135,7 +140,7 @@ int main() {
         
 
         if (exitMainLoopEvent.checkInvoked()) {
-            clearResetCount();
+            prepareForRestart();
             Serial.print("Exiting main loop at iteration ");
             Serial.println(mainLoopIterations);
             break;
