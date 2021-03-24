@@ -68,6 +68,8 @@ bool init() {
     scienceMode.sweepChangeLockout.setDuration(ADCS_SWEEP_CHANGE_DURATION);
 
     // Begin timers
+    dataProcessEvent.start();
+    wdTimer.start();
     housekeepingTimer.start();
     
 
@@ -98,48 +100,40 @@ int main() {
      * = = = = = = = = = = = = = = = = = */
     while(true) { // run main loop until exit command
         
-        /* - ALWAYS EXECUTE - */
-        // handle commands
-        commandHandling();
-        
-        // handle housekeeping
-        if (housekeepingTimer.checkInvoked()) {
-            handleHousekeeping();
-        }  
-
-        // feed the dog
-        if (wdTimer.checkInvoked()) {
-            feedWD();
+        /* ===== ALWAYS EXECUTE ===== */
+        commandHandling(); // handle commands
+                                            
+        if (housekeepingTimer.checkInvoked()) { // housekeeping
+            handleHousekeeping(); 
         }
 
+        if (wdTimer.checkInvoked()) { // feed the watchdog
+            feedWD(); 
+        }
 
-        /* - ONLY EXECTUTE DURING NORMAL OPERATION - */
+        /* ===== ONLY EXECTUTE DURING NORMAL OPERATION ===== */
         if (scienceMode.getMode() != SAFE_MODE) {
-            scienceMemoryHandling();
-            handleFaults();
+            scienceMemoryHandling(); // handle science data collection
+            handleFaults();          // handle faults
         }
 
-         /* - ONLY EXECUTE ON ENTRY TO STANDBY MODE - */
-         if (scienceMode.onStandbyEntry.checkInvoked()) {
-            // reset fault occurence counts
-            resetFaultCounts();
+         /* ===== ONLY EXECUTE ON ENTRY TO STANDBY MODE ===== */
+        if (scienceMode.onStandbyEntry.checkInvoked()) {
+            resetFaultCounts(); // reset fault occurence counts
          }
 
-         /* - ONLY EXECUTE IN STANDBY MODE - */
+         /* ===== ONLY EXECUTE IN STANDBY MODE ===== */
         if (scienceMode.getMode() == STANDBY_MODE) {
-            // scrub flash
-            if (scrubEvent.checkInvoked()) {
-                scrubFlash();
+            if (scrubEvent.checkInvoked()) { // scrub flash 
+                scrubFlash(); 
             }
-            // downlink data
-            if (downlinkEvent.checkInvoked()) {
-                downlink();
+            if (downlinkEvent.checkInvoked()) { // downlink files
+                downlink(); 
             }
         }
 
-        
-
-        if (exitMainLoopEvent.checkInvoked()) {
+         /* ===== EXIT MAIN LOOP ===== */
+        if (exitMainLoopEvent.checkInvoked()) { // exit main loop
             prepareForRestart();
             Serial.print("Exiting main loop at iteration ");
             Serial.println(mainLoopIterations);

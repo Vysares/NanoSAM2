@@ -102,11 +102,6 @@ void scienceMemoryHandling() {
 
         // determine which mode the payload is in to act on this data properly
         updatePayloadMode(dataBuffer, bufIdx); // from timing module
-
-        Serial.print("Photodiode Voltage: ");
-        Serial.print(photodiodeVoltage);
-        Serial.print(" - Payload Mode ");
-        Serial.println(scienceMode.getMode());
     }
 
     if (saveBufferEvent.checkInvoked()) {
