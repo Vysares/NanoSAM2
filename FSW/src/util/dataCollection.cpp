@@ -44,7 +44,7 @@ static const int FILE_IDX_OFFSET = 11;           // index of file number in char
  * Outputs:
  *  data from the ADC (bin number)
  */
-float dataProcessing() {
+uint16_t dataProcessing() {
 
     // begin an SPI connection
     // TODO: we should probably begin the SPI connection in main to avoid duplicates
@@ -97,7 +97,7 @@ float dataProcessing() {
  */
 void scienceMemoryHandling() {    
     if (dataProcessEvent.checkInvoked()) { // checks event status from timing module
-        float photodiodeVoltage = dataProcessing();
+        uint16_t photodiodeVoltage = dataProcessing();
         updateBuffer(photodiodeVoltage, bufIdx);
 
         // determine which mode the payload is in to act on this data properly
