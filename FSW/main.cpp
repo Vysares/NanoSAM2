@@ -107,6 +107,11 @@ int main() {
             handleHousekeeping();
         }  
 
+        // feed the dog
+        if (wdTimer.checkInvoked()) {
+            feedWD();
+        }
+
 
         /* - ONLY EXECTUTE DURING NORMAL OPERATION - */
         if (scienceMode.getMode() != SAFE_MODE) {

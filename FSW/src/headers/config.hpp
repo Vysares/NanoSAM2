@@ -72,8 +72,8 @@ const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; // volts per ADC bin
 
 // Continuous data streaming
-extern volatile bool STREAM_PHOTO_DATA; // whether to print photodiode samples in real time.
-const bool STREAM_PHOTO_DATA_INIT = false;
+extern volatile bool STREAM_PHOTO_DATA;
+const bool STREAM_PHOTO_DATA_INIT = false; // whether to print photodiode samples in real time.
 
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
@@ -102,9 +102,12 @@ const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the comman
 
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
+extern volatile bool SUPPRESS_FAULTS;
+const bool SUPPRESS_FAULTS_INIT = false;  // whether or not to log new fault occurrences.
+
 // Corrective action
-extern volatile bool ACT_ON_NEW_FAULTS; // whether to attempt corrective action when faults are detected
-const bool ACT_ON_NEW_FAULTS_INIT = true;
+extern volatile bool ACT_ON_NEW_FAULTS; 
+const bool ACT_ON_NEW_FAULTS_INIT = true; // whether to attempt corrective action when faults are detected
 
 // EEPROM
 const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM
@@ -114,14 +117,18 @@ const uint8_t EXPECTING_RESTART_FLAG = 0xaa; // 10101010, value of flag indicati
 // watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
 const int WD_PULSE_DUR_MICROSEC = 10;       // microseconds, watchdog reset signal duration
-
+extern RecurringEvent wdTimer;
 
 /* - - - - - - Housekeeping Module - - - - - - */
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
 
 // Heater control override
-extern volatile bool FORCE_HEATER_ON;   // if true, heater will always be on regardless of temperature
-const bool FORCE_HEATER_ON_INIT = false;
+extern volatile bool FORCE_HEATER_ON;
+const bool FORCE_HEATER_ON_INIT = false; // if true, heater will always be on regardless of temperature
+
+// Real time temperature data streaming
+extern volatile bool STREAM_TEMPERATURE;
+const bool STREAM_TEMPERATURE_INIT = false; // if true, temperature data will be printed over serial in real time
 
 // Heater cutoff temperatures
 const float HEATER_TEMP_LOW = -20;   // celsius, heater will turn on at or below this temp

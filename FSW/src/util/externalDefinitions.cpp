@@ -20,10 +20,13 @@ AsyncEvent downlinkEvent = AsyncEvent(MAXFILES);
 AsyncEvent scrubEvent = AsyncEvent(MAXFILES);
 
 // Fault Mitigation
+volatile bool SUPPRESS_FAULTS = SUPPRESS_FAULTS_INIT;
 volatile bool ACT_ON_NEW_FAULTS = ACT_ON_NEW_FAULTS_INIT;
+RecurringEvent wdTimer = RecurringEvent(WD_RESET_INTERVAL_MSEC);
 
 // Housekeeping
 volatile bool FORCE_HEATER_ON = FORCE_HEATER_ON_INIT;
+volatile bool STREAM_TEMPERATURE = STREAM_TEMPERATURE_INIT;
 volatile float OPTICS_THERM_CAL_VOLTAGE = OPTICS_THERM_CAL_VOLTAGE_INIT;
 RecurringEvent housekeepingTimer = RecurringEvent(HK_SAMPLE_PERIOD_MSEC);
 

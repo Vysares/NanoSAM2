@@ -47,6 +47,7 @@ static bool detectedFault = false;
  *  None
  */
 void logFault(int code) {
+    if (SUPPRESS_FAULTS) { return; }
     detectedFault = true;
 
     // check if fault is valid

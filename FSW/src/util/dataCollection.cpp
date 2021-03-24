@@ -73,6 +73,9 @@ float dataProcessing() {
     // print the voltage value (for testing)
     if (STREAM_PHOTO_DATA) {
         float voltage = photodiode16 * ADC_VOLTAGE_RES;
+        Serial.print("PHOTO, ");
+        Serial.print(millis());
+        Serial.print(", ");
         Serial.println(voltage);
     }
 

@@ -40,7 +40,7 @@ struct FaultReport {
     uint8_t pendingAction = 0; 
     uint16_t startNum = 1;
     uint32_t timestamp = 0;
-    static const int MEMSIZE = 64;
+    static const int MEMSIZE = 8;
 };
 
 struct PayloadData {
@@ -49,7 +49,7 @@ struct PayloadData {
         uint16_t consecutiveBadRestarts = 0;
         uint32_t eepromWriteCount = 0;
         uint8_t recoveredMode = 0;
-        static const size_t MEMSIZE = 72;
+        static const size_t MEMSIZE = 10;
 };
 
 extern PayloadData payloadData;

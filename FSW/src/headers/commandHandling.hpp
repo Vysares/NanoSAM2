@@ -39,6 +39,8 @@ namespace commandCode {
         HEATER_OFF,                     // turn heater off, does not override housekeeping heater control
         FORCE_HEATER_ON_T,              // force the heater on, overrrides houskeeping heater control
         FORCE_HEATER_ON_F,              // stop forcing the heater on, giving control back to housekeeping
+        STREAM_TEMPERATURE_T,           // start streaming temperature measurements
+        STREAM_TEMPERATURE_F,           // stop streaming temperature measurements
         CALIBRATE_OPTICS_THERM,         // take new voltage measurement at known temp for optics thermistor
 
         // Command Handling
@@ -57,6 +59,8 @@ namespace commandCode {
         // Fault Mitigation
         WIPE_EEPROM,                   // completely wipes the EEPROM and then resets persistent data
         RESET_PERSISTENT_DATA,         // resets all persistent data to default values
+        SUPPRESS_FAULTS_T,             // stops new faults from being logged
+        SUPPRESS_FAULTS_F,             // allows new faults to be logged
         ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
         ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
 

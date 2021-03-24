@@ -115,6 +115,17 @@ void sampleHousekeepingData() {
     if (latestHkSample.digitalRegPG > PG_VOLTAGE_MAX_EXPECTED || latestHkSample.digitalRegPG < PG_VOLTAGE_MIN_EXPECTED) { 
         logFault(faultCode::DREG_OUT_OF_RANGE); } // digital regulator PG signal too low
 
+    // Print temperature data
+    if (STREAM_TEMPERATURE) {
+        Serial.print("TEMP, ");
+        Serial.print(millis());
+        Serial.print(", ");
+        Serial.print(latestHkSample.opticsTemp);
+        Serial.print(", ");
+        Serial.print(latestHkSample.analogTemp);
+        Serial.print(", ");
+        Serial.println(latestHkSample.digitalTemp);
+    }
 }
 
 /* - - - - - - voltageToBoardTemp - - - - - - *
