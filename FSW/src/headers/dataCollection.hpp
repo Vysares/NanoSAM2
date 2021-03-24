@@ -14,9 +14,9 @@
 #include "config.hpp"
 
 /* - - - - - - Declarations - - - - - - */
-float dataProcessing();
+uint16_t dataProcessing();
 void scienceMemoryHandling();
-void updateBuffer(float sample, int &index);
+void updateBuffer(uint16_t sample, int &index);
 bool saveBuffer(int &index);
 unsigned long calcTimestamp(); // currently outputs relative timestamp instead of absolute timestamp
 void downlink();
