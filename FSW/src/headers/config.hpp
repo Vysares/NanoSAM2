@@ -47,7 +47,7 @@ const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
 
 /* - - - - - - Serial - - - - - - */
 const int SERIAL_BAUD = 9600;       // Hz, baud rate of serial connection
-const int SERIAL_TIMEOUT_MSEC = 100; // milliseconds, time to wait for serial input
+const int SERIAL_TIMEOUT_MSEC = 50; // milliseconds, time to wait for serial input
 
 /* - - - - - - ADCS - - - - - - */
 // NanoSAM II will assume that ADCS will be implemented later, but have places in the logic
