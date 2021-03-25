@@ -7,7 +7,7 @@ import tkinter.messagebox
 import os
 
 # to compile to a single exe with pyinstaller use the following line:
-# pyinstaller.exe --onefile --icon=Assets\NS2_BW.ico --windowed testNS2.py
+# pyinstaller.exe --onefile --icon=Assets/NS2_BW.ico --windowed Source/testNS2.py
 
 # ==== setup application window ====
 root = Tk()
@@ -22,7 +22,8 @@ root.grid_rowconfigure(1,weight=1)
 # ==== create widgets ====
 # command frame
 commandFrame = LabelFrame(root, text='Send Commands', padx=5, pady=5)
-commandField = Entry(commandFrame, width=30, borderwidth=3, font=('Consolas',10))
+commandField = Entry(commandFrame, width=20, borderwidth=3, font=('Consolas',10))
+commandLabel = Label(commandFrame, text='Command Code : ')
 
 # log frame
 logFrame = LabelFrame(root, text='Log', padx=5, pady=5)
@@ -30,7 +31,7 @@ log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=2
 
 # monitor frame
 monitorFrame = LabelFrame(root, text='NS2 Output', padx=5, pady=5)
-monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=80, height=30, font=('Consolas',10))
+monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=30, font=('Consolas',10))
 autoScroll = BooleanVar(value=True)
 check_autoScroll = Checkbutton(monitorFrame, text='Auto Scroll', variable=autoScroll, onvalue=True, offvalue=False)
 
@@ -38,19 +39,25 @@ check_autoScroll = Checkbutton(monitorFrame, text='Auto Scroll', variable=autoSc
 fileFrame = LabelFrame(root, text='Save to File', padx=5, pady=5)
 fileNameField = Entry(fileFrame, width=30, borderwidth=3)
 fileNameLabel = Label(fileFrame, text='File Name : ')
-fileNameField.insert(0, 'defaultFile')
-autoSave = BooleanVar(value=True)
-check_autoSave = Checkbutton(fileFrame, text='Save Continuously', variable=autoSave, onvalue=True, offvalue=False)
+fileNameField.insert(0, 'super-cool-file')
 
 # serial setup frame
 serialFrame = LabelFrame(root, text='Setup Serial', padx=5, pady=5)
 portField = Entry(serialFrame, width=30, borderwidth=3)
 portField.insert(0, 'COM3')
+portLabel = Label(serialFrame, text='Port : ')
 
 
 # ==== define functions and button commands ====
 # update log #
 def updateLog(text): # writes text to the log
+    log.configure(state ='normal')
+    log.insert(END, '> ' + text + '\r\n')
+    log.configure(state ='disabled')
+    log.see(END)
+
+# update log without indicator #
+def updateLogPlain(text): # writes text to the log without >
     log.configure(state ='normal')
     log.insert(END, text + '\r\n')
     log.configure(state ='disabled')
@@ -75,27 +82,26 @@ def readSerial(): # reads incoming communication from NS2 via the open serial po
         monitor.configure(state ='normal')
         monitor.insert(END, parsedData) # insert data in monitor
         monitor.configure(state ='disabled')
+        # write to backup file
+        backupFile.write(parsedData)
+        backupFile.flush()
 
         if autoScroll.get():
             monitor.see(END)
             
-        if autoSave.get():
-            openedFile.write(parsedData)
-            openedFile.flush()
-
 # scan for serial ports
 def scanPorts(): # finds and lists all available com ports
     availablePorts = list_ports.comports()
     foundPorts = False
     updateLog('==== Found Serial Ports: ====')
     for port in availablePorts:
-        updateLog('- ' + port.description)
+        updateLogPlain('- ' + port.description)
         foundPorts = True
     if not foundPorts:
         updateLog('No ports detected.')
                 
 # open serial port #
-def openSerialPort(): # opens a new serial connection if port exists
+def openSerialPort(event=None): # opens a new serial connection if port exists
     availablePorts = list_ports.comports()
     for port in availablePorts: # if port exists, connect to it
         if portField.get() in port.description:
@@ -104,28 +110,31 @@ def openSerialPort(): # opens a new serial connection if port exists
             teensy.open()
             global portOpen
             updateLog('Connected to port \"' + portField.get() + '\".')
+            updateLog('If the Teensy becomes disconnected, restart this application before attempting to open the port again.')
             return    
     updateLog('Port \"' + portField.get() + '\" not found.')
     
 # save to file #
-def saveFile(): # saves monitor contents to a file
+def saveFile(event=None): # saves monitor contents to a file
+    if not fileNameField.get():
+        updateLog('Enter a valid file name!')
+        return
     fileName = fileNameField.get() + '.txt'
     filePath = 'SavedFiles\\' + fileName
     if (os.path.exists(filePath)): # display warning if file already exists
         warning = '\"' + fileName + '\" already exists in "SavedFiles" folder. Do you wish to overwrite it?'
-        overwrite = tkinter.messagebox.askyesno(title='Warning', message= warning)
+        overwrite = tkinter.messagebox.askyesno(title='Overwrite?', message= warning)
         if (not overwrite):
             return
     # write to file
-    print(fileName)
-    global openedFile
-    openedFile = open(filePath, 'w', newline='')
-    openedFile.write(monitor.get('1.0','end-1c'))
-    updateLog( 'Output saved to ' + fileName)
+    file = open(filePath, 'w', newline='')
+    file.write(monitor.get('1.0','end-1c'))
+    updateLog( 'Output saved to: \"' + filePath + '\"')
 
 # clear output #
 def clearOutput(): # clears the output monitor
-    confirm = tkinter.messagebox.askyesno(title='Warning', message= 'Are you sure you want to clear the output monitor???')
+    warning = 'Are you sure you want to clear the output monitor? Unsaved data will be lost forever.'
+    confirm = tkinter.messagebox.askyesno(title='Clear Output?', message=warning)
     if confirm:
         monitor.configure(state ='normal')
         monitor.delete('1.0', 'end')
@@ -134,25 +143,31 @@ def clearOutput(): # clears the output monitor
 
 # on window close
 def onClose():
-    if tkinter.messagebox.askyesno(title='Quit', message='Do you want to quit?'):
+    if tkinter.messagebox.askyesno(title='Quit?', message='Do you want to quit?'):
         root.destroy()
+        backupFile.close()
         global running
         running = False
 root.protocol("WM_DELETE_WINDOW", onClose)
 
 # ==== buttons ====
-button_sendCommand = Button(commandFrame, text='Send', command=sendCommand)
-root.bind('<Return>', sendCommand) # bind the enter key to send command
+button_sendCommand = Button(commandFrame, text='Send', width=10, command=sendCommand)
 button_scanPorts = Button(serialFrame, text='Scan For Serial Ports', command=scanPorts)
-button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#c9ffba', command=openSerialPort)
-button_saveFile = Button(fileFrame, text='Save to File', command=saveFile)
-button_clearOutput = Button(monitorFrame, text='Clear', command=clearOutput)
+button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#e0ffe7', command=openSerialPort)
+button_saveFile = Button(fileFrame, text='Save to File', width=15, command=saveFile)
+button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearOutput)
+
+# bind the enter key in each entry frame
+commandField.bind('<Return>', sendCommand) 
+portField.bind('<Return>', openSerialPort) 
+fileNameField.bind('<Return>', saveFile)
 
 # ==== draw everything ====
 # draw command frame
 commandFrame.grid(row=0, column=0, padx=5, pady=5, sticky=W+E)
-commandField.grid(row=0, column=0, padx=5, pady=3, sticky=W+E)
-button_sendCommand.grid(row=0, column=1, sticky=W+E)
+commandLabel.grid(row=0, column=0, sticky=W)
+commandField.grid(row=0, column=1, padx=5, pady=3, sticky=W+E)
+button_sendCommand.grid(row=0, column=2, sticky=W+E)
 
 # draw log frame
 logFrame.grid(row=1, column=0, padx=5, pady=5, sticky=N+S+E+W)
@@ -166,16 +181,16 @@ button_clearOutput.pack(side='right')
 
 # draw serial frame
 serialFrame.grid(row=2, column=0, padx=5, pady=5, sticky=W+E)
-portField.grid(row=0, column=0, sticky=W+E)
-button_updatePort.grid(row=0, column=1, sticky=W+E)
-button_scanPorts.grid(row=1, column=0, sticky=W+E, columnspan=2)
+portLabel.grid(row=0, column=0, sticky=W)
+portField.grid(row=0, column=1, sticky=E)
+button_updatePort.grid(row=0, column=2, sticky=W+E)
+button_scanPorts.grid(row=1, column=0, sticky=W+E, columnspan=3)
 
 # draw file frame
 fileFrame.grid(row=3, column=0, padx=5, pady=5, sticky=W+E)
 fileNameLabel.grid(row=0, column=0, sticky=W+N)
 fileNameField.grid(row=0, column=1, sticky=W+E)
 button_saveFile.grid(row=0, column=2, sticky=W+E)
-check_autoSave.grid(row=1, column=0, sticky=W, columnspan=2)
 
 # ==== start application ====
 running = True;
@@ -185,12 +200,15 @@ teensy.baudrate = 19200
 teensy.timeout = 0.05
 
 # configure file
-openedFile = open('SavedFiles\\' + fileNameField.get() + '.txt', 'w', newline = '')
+backupFile = open('SavedFiles\\backup.txt', 'w', newline='')
 
 # brief the user
+updateLog('Make sure to close this application before reprogramming the Teensy.\n')
 scanPorts() # scan for serial ports
-updateLog('\nTeensy usually appears as \"USB Serial Device\"')
+updateLogPlain('')
+updateLog('Teensy usually appears as \"USB Serial Device\"')
 updateLog('Enter the Teensy\'s COM port and click \"Open Serial Port\" to connect.')
+updateLog('The Arduino serial monitor must be closed before attempting to connect!')
 commandField.focus() # place cursor in command field
 
 # Main loop
