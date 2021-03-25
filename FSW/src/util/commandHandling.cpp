@@ -321,7 +321,7 @@ void executeCommand(int command) {
             DANGER_COMMANDS_ALLOWED = false;
             Serial.println("Command Executed - Potentially dangerous commands are now disabled.");
             break;
-            
+
         // ADCS
         case commandCode::ADCS_POINTING_AT_SUN_T:
             scienceMode.setPointingAtSun(true);
@@ -347,7 +347,7 @@ void executeCommand(int command) {
         // Fault Mitigation
         case commandCode::WIPE_EEPROM:
             wipeEEPROM();
-            Serial.println("Command Executed - Wipe EEPROM");
+            Serial.println("Command Executed - EEPROM has been wiped.");
             break;
 
         case commandCode::RESET_PERSISTENT_DATA:
