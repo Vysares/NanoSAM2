@@ -19,13 +19,17 @@ TimedEvent sweepTimeoutEvent = TimedEvent(SWEEP_TIMEOUT_MSEC);
 AsyncEvent downlinkEvent = AsyncEvent(MAXFILES);
 AsyncEvent scrubEvent = AsyncEvent(MAXFILES);
 
+// Command Handling
+volatile bool DANGER_COMMANDS_ALLOWED = DANGER_COMMANDS_ALLOWED_INIT;
+
 // Fault Mitigation
 volatile bool SUPPRESS_FAULTS = SUPPRESS_FAULTS_INIT;
 volatile bool ACT_ON_NEW_FAULTS = ACT_ON_NEW_FAULTS_INIT;
 RecurringEvent wdTimer = RecurringEvent(WD_RESET_INTERVAL_MSEC);
 
 // Housekeeping
-volatile bool FORCE_HEATER_ON = FORCE_HEATER_ON_INIT;
+volatile bool HEATER_ON = HEATER_ON_INIT;
+volatile bool HEATER_OVERRIDE = HEATER_OVERRIDE_INIT;
 volatile bool STREAM_TEMPERATURE = STREAM_TEMPERATURE_INIT;
 volatile float OPTICS_THERM_CAL_VOLTAGE = OPTICS_THERM_CAL_VOLTAGE_INIT;
 RecurringEvent housekeepingTimer = RecurringEvent(HK_SAMPLE_PERIOD_MSEC);
