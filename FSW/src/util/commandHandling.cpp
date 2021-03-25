@@ -20,6 +20,7 @@
 #include "../headers/dataCollection.hpp"
 #include "../headers/timing.hpp" //for mode enum
 #include "../headers/faultManager.hpp"
+#include "../headers/housekeeping.hpp"
 
 
 /* Module Variable Definitions */
@@ -35,8 +36,7 @@ static bool isPaused = false;               // indicates if command execution is
  *  each command in the queue
  * 
  * Inputs:
- *  none
- * 
+ *  None
  * Outputs:
  *  None
  */
@@ -118,6 +118,7 @@ void queueCommand(int command) {
  */
 bool checkMetaCommand(int command) {
     switch (command) {
+        case commandCode::INFO:
         case commandCode::PAUSE_EXECUTE_COMMANDS: 
         case commandCode::RESUME_EXECUTE_COMMANDS:
         case commandCode::CLEAR_COMMAND_QUEUE:
@@ -165,7 +166,6 @@ bool checkIfCommandAllowed(int command) {
  * 
  * Inputs:
  *  None 
- * 
  * Outputs:
  *  None
  */
@@ -185,7 +185,6 @@ void executeAllCommands() {
  * 
  * Inputs:
  *  None 
- * 
  * Outputs:
  *  None
  */
@@ -211,6 +210,11 @@ void executeCommand(int command) {
 
     // When adding new commands, make sure to include any relevant headers!
     switch (command) {
+        // Ping
+        case commandCode::INFO:
+            printInfo();
+            break;
+
         // Mode change
         case commandCode::ENTER_SAFE_MODE: 
             scienceMode.setMode(SAFE_MODE);
@@ -393,3 +397,35 @@ void executeCommand(int command) {
     }
 }
 
+/* - - - - - - printInfo - - - - - - *
+ * Usage:
+ *  Prints a status report of the payload
+ * 
+ * Inputs:
+ *  None
+ * Outputs:
+ *  None
+ */
+void printInfo() {
+    Serial.println("===== Status Report =====");
+    Serial.print("Uptime (ms): ");
+    Serial.println(millis());
+    Serial.print("Mode: ");
+    Serial.println(scienceMode.getMode());
+    Serial.print("total restarts: ");
+    Serial.println(payloadData.startCount);
+    Serial.print("Heater override: ");
+    if (HEATER_OVERRIDE) { Serial.println("Enabled"); } 
+    else { Serial.println("Disabled"); }
+    Serial.print("Heater Status: ");
+    if (HEATER_ON) { Serial.println("ON"); } 
+    else { Serial.println("OFF"); }
+    Serial.print("Risky Commands: ");
+    if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
+    else { Serial.println("Disabled"); }
+    Serial.print("Analog board current: ");
+    Serial.println(latestHkSample.analogCurrent);
+    Serial.print("Digital board current: ");
+    Serial.println(latestHkSample.digitalCurrent);
+    Serial.println("===== End Report =====");
+}

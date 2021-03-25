@@ -71,8 +71,10 @@ bool init() {
     dataProcessEvent.start();
     wdTimer.start();
     housekeepingTimer.start();
-    
 
+    // Sample housekeeping data
+    handleHousekeeping(); 
+    
     Serial.println("Complete");
     return true;
 }

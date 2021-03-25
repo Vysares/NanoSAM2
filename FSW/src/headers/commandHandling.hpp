@@ -18,13 +18,17 @@ bool checkIfCommandAllowed(int command);
 void executeAllCommands();
 void clearCommandQueue();
 void executeCommand(int command);
+void printInfo();
 
 namespace commandCode {
     // command codes are wrapped in a namespace so they are not global
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
+        // Ping
+        INFO = 1,                       // Triggers a readback of system data
+
         // Mode Change
-        ENTER_SAFE_MODE = 1,            // enter safemode state
+        ENTER_SAFE_MODE,                // enter safemode state
         ENTER_STANDBY_MODE,             // enter standby state
         ENTER_SUNSET_MODE,              // enter sunset data collection mode
         ENTER_PRE_SUNRISE_MODE,         // enter watch-for-sunset mode
