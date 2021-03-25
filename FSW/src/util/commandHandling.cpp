@@ -119,9 +119,7 @@ void queueCommand(int command) {
 bool checkMetaCommand(int command) {
     switch (command) {
         case commandCode::PAUSE_EXECUTE_COMMANDS: 
-            break;
         case commandCode::RESUME_EXECUTE_COMMANDS:
-            break;
         case commandCode::CLEAR_COMMAND_QUEUE:
             break;
         default:
@@ -129,6 +127,36 @@ bool checkMetaCommand(int command) {
             break;
     }
     return true;
+}
+
+/* - - - - - - checkIfCommandAllowed - - - - - - *
+ * Usage:
+ *  Checks if input command is allowed to be executed.
+ * 
+ * Inputs:
+ *  command - a single command code
+ * 
+ * Outputs:
+ *  True if command is allowed
+ *  False if command is not allowed
+ */
+bool checkIfCommandAllowed(int command) {
+    if (DANGER_COMMANDS_ALLOWED) { return true; }
+
+    switch (command) {
+        // list dangerous commands here
+        case commandCode::RESET_PERSISTENT_DATA:
+        case commandCode::WIPE_EEPROM:
+        case commandCode::DISABLE_WD_RESET:
+        case commandCode::EXIT_MAIN_LOOP:
+            break;
+        default:
+            return true; // no dangerous command detected
+            break;
+    }
+    Serial.println("!!! This command command can cause shutdown or data loss !!!");
+    Serial.println("You must enable potentially dangerous commands to execute this command.");
+    return false;
 }
 
 /* - - - - - - executeAllCommands - - - - - - *
@@ -179,6 +207,8 @@ void clearCommandQueue() {
  *  None
  */
 void executeCommand(int command) {
+    if (!checkIfCommandAllowed(command)) { return; }
+
     // When adding new commands, make sure to include any relevant headers!
     switch (command) {
         // Mode change
@@ -221,35 +251,32 @@ void executeCommand(int command) {
             break;
 
         // Housekeeping
-        case commandCode::DISABLE_WD_RESET: 
-            wdTimer.setDuration(0xFFFFFFFF); // that should do it.
-            Serial.println("Command Executed - Watchdog will not be fed. Restart imminent!");
+        case commandCode::TURN_HEATER_ON: 
+            HEATER_ON = true;
+            Serial.println("Command Executed - Heater turned ON.");
+            if (!HEATER_OVERRIDE) { Serial.println("Automatic control still has priority."); }
             break;
         
-        case commandCode::HEATER_ON: 
-            digitalWrite(PIN_HEAT, HIGH);
-            Serial.println("Command Executed - Heater turned ON. Automatic heater control still has priority.");
+        case commandCode::TURN_HEATER_OFF: 
+            HEATER_ON = true;
+            Serial.println("Command Executed - Heater turned OFF.");
+            if (!HEATER_OVERRIDE) { Serial.println("Automatic control still has priority."); }
             break;
         
-        case commandCode::HEATER_OFF: 
-            digitalWrite(PIN_HEAT, LOW);
-            Serial.println("Command Executed - Heater turned OFF. Automatic heater control still has priority.");
-            break;
-        
-        case commandCode::FORCE_HEATER_ON_T:
-            FORCE_HEATER_ON = true;
-            Serial.println("Command Executed - Heater is now forced ON. Automatic heater control has been disabled.");
+        case commandCode::HEATER_OVERRIDE_T:
+            HEATER_OVERRIDE = true;
+            Serial.println("Command Executed - Automatic heater control is disabled.");
             break;
 
-        case commandCode::FORCE_HEATER_ON_F:
-            FORCE_HEATER_ON = false;
-            Serial.println("Command Executed - Automatic heater control enabled.");
+        case commandCode::HEATER_OVERRIDE_F:
+            HEATER_OVERRIDE = false;
+            Serial.println("Command Executed - Automatic heater control is enabled.");
             break;
 
         case commandCode::STREAM_TEMPERATURE_T:
             STREAM_TEMPERATURE = true;
             Serial.println("Command Executed - Transmitting temperature data in real time.");
-            Serial.println("time (ms) | optics temp (C) | analog temp (C) | digital temp (C)");
+            Serial.println("time (ms) | heater status | optics temp (C) | analog temp (C) | digital temp (C)");
             break;
 
         case commandCode::STREAM_TEMPERATURE_F:
@@ -262,6 +289,11 @@ void executeCommand(int command) {
             Serial.print("Command Executed - Optics thermistor calibrated at ");
             Serial.print(OPTICS_THERM_CAL_TEMP);
             Serial.println(" C");
+            break;
+
+        case commandCode::DISABLE_WD_RESET: 
+            wdTimer.setDuration(0xFFFFFFFF); // that should do it.
+            Serial.println("Command Executed - Watchdog will not be fed. Restart imminent!");
             break;
 
         // Command Handling
@@ -280,6 +312,16 @@ void executeCommand(int command) {
             Serial.println("Command Executed - Command queue cleared.");
             break;
 
+        case commandCode::DANGER_COMMANDS_ALLOWED_T:
+            DANGER_COMMANDS_ALLOWED = true;
+            Serial.println("Command Executed - !!! Potentially dangerous commands are now enabled !!!");
+            break;
+
+        case commandCode::DANGER_COMMANDS_ALLOWED_F:
+            DANGER_COMMANDS_ALLOWED = false;
+            Serial.println("Command Executed - Potentially dangerous commands are now disabled.");
+            break;
+            
         // ADCS
         case commandCode::ADCS_POINTING_AT_SUN_T:
             scienceMode.setPointingAtSun(true);
@@ -350,3 +392,4 @@ void executeCommand(int command) {
             break;
     }
 }
+

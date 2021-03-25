@@ -14,6 +14,7 @@ void commandHandling();
 int readCommand();
 void queueCommand(int command);
 bool checkMetaCommand(int command);
+bool checkIfCommandAllowed(int command);
 void executeAllCommands();
 void clearCommandQueue();
 void executeCommand(int command);
@@ -34,11 +35,10 @@ namespace commandCode {
         STREAM_PHOTO_DATA_F,            // stop streaming photodiode data
         
         // Housekeeping
-        DISABLE_WD_RESET,               // disable watchdog reset signal, forcing a restart
-        HEATER_ON,                      // turn heater on, does not override housekeeping heater control
-        HEATER_OFF,                     // turn heater off, does not override housekeeping heater control
-        FORCE_HEATER_ON_T,              // force the heater on, overrrides houskeeping heater control
-        FORCE_HEATER_ON_F,              // stop forcing the heater on, giving control back to housekeeping
+        TURN_HEATER_ON,                 // turn heater on, does not override housekeeping heater control
+        TURN_HEATER_OFF,                // turn heater off, does not override housekeeping heater control
+        HEATER_OVERRIDE_T,              // disables houskeeping heater control
+        HEATER_OVERRIDE_F,              // enables housekeeping heater control
         STREAM_TEMPERATURE_T,           // start streaming temperature measurements
         STREAM_TEMPERATURE_F,           // stop streaming temperature measurements
         CALIBRATE_OPTICS_THERM,         // take new voltage measurement at known temp for optics thermistor
@@ -47,6 +47,8 @@ namespace commandCode {
         PAUSE_EXECUTE_COMMANDS,         // pause command execution
         RESUME_EXECUTE_COMMANDS,        // resume command execution
         CLEAR_COMMAND_QUEUE,            // clears all commands from queue
+        DANGER_COMMANDS_ALLOWED_T,      // allow potentially dangerous commands
+        DANGER_COMMANDS_ALLOWED_F,      // disallow potentially dangerous commands
         
         // ADCS
         ADCS_POINTING_AT_SUN_T,         // sets pointing at sun flag to true
@@ -63,9 +65,10 @@ namespace commandCode {
         SUPPRESS_FAULTS_F,             // allows new faults to be logged
         ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
         ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
+        DISABLE_WD_RESET,              // disable watchdog reset signal, forcing a restart
 
-        // Main Loop Commands
-        EXIT_MAIN_LOOP,
+        // System Commands
+        EXIT_MAIN_LOOP,                // exits the main loop
 
         // End of list
         DO_NOTHING                    // do nothing. KEEP THIS LAST IN THE ENUM, it is used for indexing.
