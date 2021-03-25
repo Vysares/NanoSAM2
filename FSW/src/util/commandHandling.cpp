@@ -414,9 +414,9 @@ void printInfo() {
     Serial.println(scienceMode.getMode());
     Serial.print("Total restarts: ");
     Serial.println(payloadData.startCount);
-    Serial.print("Heater override: ");
-    if (HEATER_OVERRIDE) { Serial.println("Enabled"); } 
-    else { Serial.println("Disabled"); }
+    Serial.print("Heater control: ");
+    if (HEATER_OVERRIDE) { Serial.println("Manual control"); } 
+    else { Serial.println("NS2 has priority"); }
     Serial.print("Heater status: ");
     if (HEATER_ON) { Serial.println("ON"); } 
     else { Serial.println("OFF"); }
