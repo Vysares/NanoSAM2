@@ -26,6 +26,8 @@
 /* - - - - - - Teensy Pins - - - - - - */
 const int PIN_HEAT = 7;             // activate heater pin
 const int PIN_WD_RESET = 2;         // Watchdog reset pin
+const int PIN_FLASH1_CS = 8;		// flash module 1 chip select
+const int PIN_FLASH2_CS = 9;		// flash module 2 chip select
 const int PIN_ADC_CS = 10;          // ADC Chip Select Pin
 const int PIN_AREG_CURR = 17;       // analog regulator current pin
 const int PIN_DREG_CURR = 18;       // digital regulator current pin
@@ -34,6 +36,7 @@ const int PIN_PHOTO = 21;           // direct photodiode data pin for use with T
 const int PIN_DIGITAL_THERM = 14;   // digital board thermistor pin
 const int PIN_ANALOG_THERM = 15;    // analog board thermistor pin
 const int PIN_OPTICS_THERM = 16;    // optics bench thermistor pin
+
 
 
 /* - - - - - - Teensy ADC - - - - - - */
