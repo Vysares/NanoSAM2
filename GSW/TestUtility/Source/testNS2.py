@@ -6,12 +6,14 @@ import tkinter.scrolledtext as tkScrolledText
 import tkinter.messagebox
 import os
 import re
+import ctypes
 
 # to compile to a single exe with pyinstaller run the following line from the "GSW/TestUtility" directory:
 # pyinstaller.exe --onefile --icon=source/Assets/NS2_BW.ico --windowed --name TestNS2 source/testNS2.py
 # you can then safely delete the "build" folder and spec file if you want. The exe will be in the "dist" folder.
 
 # ==== setup application window ====
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
 root = Tk()
 root.title('NanoSAM II Testing Utility')
 root.iconbitmap('Assets\\NS2_BW.ico')
