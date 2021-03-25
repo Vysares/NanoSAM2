@@ -33,8 +33,7 @@ static int hkIndex = 0;
  *  
  * 
  * Inputs:
- *  none
- *  
+ *  None
  * Outputs:
  *  None
  */
@@ -55,22 +54,23 @@ void handleHousekeeping() {
  * 
  * Inputs:
  *  none
- *  
  * Outputs:
  *  None
  */
 void setHeater() {
-    // force heater on (if set in config)
-    if (FORCE_HEATER_ON) {
-        digitalWrite(PIN_HEAT, HIGH);
-        return;
-    }
-
-    // toggle heater based on current temperature
-    if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH) {
-        digitalWrite(PIN_HEAT, LOW); // turn heater off
-    } else if (latestHkSample.opticsTemp <= HEATER_TEMP_LOW) {
+    // toggle heater status based on current temperature
+    if (!HEATER_OVERRIDE) {
+        if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH) {
+            HEATER_ON = false;
+        } else if (latestHkSample.opticsTemp <= HEATER_TEMP_LOW) {
+            HEATER_ON = true;
+        }
+    } 
+    // enable/disable heater
+    if (HEATER_ON) {
         digitalWrite(PIN_HEAT, HIGH); // turn heater on
+    } else {
+        digitalWrite(PIN_HEAT, LOW); // turn heater off
     }
 }
 
@@ -80,8 +80,7 @@ void setHeater() {
  *  checks for out-of-bounds values and logs faults if found
  * 
  * Inputs:
- *  none
- *  
+ *  None
  * Outputs:
  *  None
  */
@@ -92,6 +91,7 @@ void sampleHousekeepingData() {
     float digitalThermVoltage = TEENSY_VOLTAGE_RES*analogRead(PIN_DIGITAL_THERM);
     
     // update housekeeping data
+    latestHkSample.heaterOn = HEATER_ON;
     latestHkSample.opticsTemp = voltageToOpticsTemp(opticsThermVoltage); 
     latestHkSample.analogTemp = voltageToBoardTemp(analogThermVoltage);
     latestHkSample.digitalTemp = voltageToBoardTemp(digitalThermVoltage);
@@ -119,6 +119,8 @@ void sampleHousekeepingData() {
     if (STREAM_TEMPERATURE) {
         Serial.print("TEMP, ");
         Serial.print(millis());
+        Serial.print(", ");
+        Serial.print(latestHkSample.heaterOn);
         Serial.print(", ");
         Serial.print(latestHkSample.opticsTemp);
         Serial.print(", ");
@@ -178,7 +180,7 @@ float voltageToOpticsTemp(float voltage) {
  *  Returns pointer to array of housekeeping data, sorted in ascending cronological order
  * 
  * Inputs:
- *  none
+ *  None
  *  
  * Outputs:
  *  Pointer to array of sorted housekeeping data, type HousekeepingData*
