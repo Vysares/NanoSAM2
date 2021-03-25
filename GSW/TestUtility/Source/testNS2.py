@@ -5,6 +5,7 @@ from tkinter import *
 import tkinter.scrolledtext as tkScrolledText
 import tkinter.messagebox
 import os
+import re
 
 # to compile to a single exe with pyinstaller use the following line:
 # pyinstaller.exe --onefile --icon=Assets/NS2_BW.ico --windowed Source/testNS2.py
@@ -27,11 +28,11 @@ commandLabel = Label(commandFrame, text='Command Code : ')
 
 # log frame
 logFrame = LabelFrame(root, text='Log', padx=5, pady=5)
-log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=20, font=('Consolas',10),  wrap=WORD)
+log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=30, font=('Consolas',10), wrap=WORD)
 
 # monitor frame
 monitorFrame = LabelFrame(root, text='NS2 Output', padx=5, pady=5)
-monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=30, font=('Consolas',10))
+monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=30, font=('Consolas',10), wrap=WORD)
 autoScroll = BooleanVar(value=True)
 check_autoScroll = Checkbutton(monitorFrame, text='Auto Scroll', variable=autoScroll, onvalue=True, offvalue=False)
 
@@ -63,15 +64,19 @@ def updateLogPlain(text): # writes text to the log without >
     log.configure(state ='disabled')
     log.see(END)
 
-# send command #
-def sendCommand(event=None): # sends a command over serial
+# send command
+def sendCommand(command): # sends command to Teensy
+    teensy.write(bytes(command, 'utf-8'))
+    updateLog('Command Sent: ' + command)
+
+# read and send command #
+def readAndSendCommand(event=None): # sends a command over serial from user input
     if not teensy.isOpen():
         updateLog('No connection!')
         return
     command = commandField.get()
     if command:
-        teensy.write(bytes(command, 'utf-8'))
-        updateLog('Command Sent: ' + command)
+        sendCommand(command)
         commandField.delete(0, END)
 
 # read serial #
@@ -98,20 +103,24 @@ def scanPorts(): # finds and lists all available com ports
         updateLogPlain('- ' + port.description)
         foundPorts = True
     if not foundPorts:
-        updateLog('No ports detected.')
+        updateLogPlain('No ports found. Is the Teensy connected?')
                 
 # open serial port #
 def openSerialPort(event=None): # opens a new serial connection if port exists
+    if not re.match(r"COM[0-9]+", portField.get()):
+        updateLog('Port field must take the form \"COM<0-99>\"')
+        return
+    
     availablePorts = list_ports.comports()
     for port in availablePorts: # if port exists, connect to it
         if portField.get() in port.description:
             teensy.close()
             teensy.port = portField.get()
             teensy.open()
-            global portOpen
             updateLog('Connected to port \"' + portField.get() + '\".')
             updateLog('If the Teensy becomes disconnected, restart this application before attempting to open the port again.')
-            return    
+            sendCommand('1');
+            return
     updateLog('Port \"' + portField.get() + '\" not found.')
     
 # save to file #
@@ -151,14 +160,14 @@ def onClose():
 root.protocol("WM_DELETE_WINDOW", onClose)
 
 # ==== buttons ====
-button_sendCommand = Button(commandFrame, text='Send', width=10, command=sendCommand)
+button_sendCommand = Button(commandFrame, text='Send', width=10, command=readAndSendCommand)
 button_scanPorts = Button(serialFrame, text='Scan For Serial Ports', command=scanPorts)
 button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#e0ffe7', command=openSerialPort)
 button_saveFile = Button(fileFrame, text='Save to File', width=15, command=saveFile)
 button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearOutput)
 
 # bind the enter key in each entry frame
-commandField.bind('<Return>', sendCommand) 
+commandField.bind('<Return>', readAndSendCommand) 
 portField.bind('<Return>', openSerialPort) 
 fileNameField.bind('<Return>', saveFile)
 
