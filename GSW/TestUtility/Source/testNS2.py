@@ -85,7 +85,13 @@ def readAndSendCommand(event=None): # sends a command over serial from user inpu
 
 # read serial #
 def readSerial(): # reads incoming communication from NS2 via the open serial port
-    data = str(teensy.readline())[2:-1]
+    try:
+        data = str(teensy.readline())[2:-1]
+    except: # close the port if exception thrown
+        teensy.close()
+        updateLog('!!! SERIAL CONNECTION INTERRUPTED !!!')
+        return
+    
     if data:
         parsedData = codecs.decode(data, "unicode_escape")
         monitor.configure(state ='normal')
@@ -121,9 +127,8 @@ def openSerialPort(event=None): # opens a new serial connection if port exists
             teensy.close()
             teensy.port = portField.get()
             teensy.open()
-            updateLog('Connected to port \"' + portField.get() + '\".')
-            updateLog('Make sure to close the port before reprogramming the Teensy.')
-            updateLog('If the Teensy becomes disconnected while the port is open, restart this application before attempting to open the port again.')
+            updateLog('Connected to port \"' + portField.get() + '\"')
+            updateLog('Make sure to close the port before reprogramming or disconnecting the Teensy.')
             sendCommand('1');
             return
     updateLog('Port \"' + portField.get() + '\" not found.')

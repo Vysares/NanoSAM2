@@ -146,6 +146,7 @@ bool checkIfCommandAllowed(int command) {
 
     switch (command) {
         // list dangerous commands here
+        case commandCode::CALIBRATE_OPTICS_THERM:
         case commandCode::RESET_PERSISTENT_DATA:
         case commandCode::WIPE_EEPROM:
         case commandCode::DISABLE_WD_RESET:
