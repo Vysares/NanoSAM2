@@ -423,9 +423,9 @@ void printInfo() {
     Serial.print("Risky Commands: ");
     if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
-    Serial.print("Analog board current: ");
+    Serial.print("Analog board current (A): ");
     Serial.println(latestHkSample.analogCurrent);
-    Serial.print("Digital board current: ");
+    Serial.print("Digital board current (A): ");
     Serial.println(latestHkSample.digitalCurrent);
     Serial.println("===== End Report =====");
 }
