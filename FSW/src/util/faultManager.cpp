@@ -102,7 +102,6 @@ void feedWD() {
 void handleFaults() {
     if (!detectedFault || !ACT_ON_NEW_FAULTS) { return; }
     detectedFault = false;
-    saveEEPROM();
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
         
@@ -113,6 +112,7 @@ void handleFaults() {
             // TODO: Expand to include more faults
             switch (code) {
                 case faultCode::UNEXPECTED_RESTART:
+                    Serial.println("Unexpected restart detected. Entering safe mode.");
                     executeCommand(commandCode::ENTER_SAFE_MODE);
                     break;
                 
@@ -120,14 +120,16 @@ void handleFaults() {
                 case faultCode::ANALOG_TOO_HOT:
                 case faultCode::DIGITAL_TOO_HOT:
                 case faultCode::OPTICS_TOO_HOT:
-                    executeCommand(commandCode::FORCE_HEATER_ON_F);
+                    Serial.println("Warning - one or more temperatures above acceptable range!");
+                    executeCommand(commandCode::TURN_HEATER_OFF);
                     break;
 
                 // tempt too cold
                 case faultCode::ANALOG_TOO_COLD:
                 case faultCode::DIGITAL_TOO_COLD:
                 case faultCode::OPTICS_TOO_COLD:
-                    executeCommand(commandCode::FORCE_HEATER_ON_T);
+                    Serial.println("Warning - one or more temperatures below acceptable range!");
+                    executeCommand(commandCode::TURN_HEATER_ON);
                     break;
 
                 // EEPROM corrupted
@@ -159,23 +161,15 @@ void handleFaults() {
  *  None
  */
 void wipeEEPROM() {
-    static Event eepromLock;
+    Serial.print("The current EEPROM write count is ");
+    Serial.println(payloadData.eepromWriteCount);
 
-    if (eepromLock.checkInvoked()) {
-        // Completely wipe the EEPROM
-        for (int i = 0; i < EEPROM_SIZE; i++) {
-            EEPROM.write(i, 0);
-        }
-        payloadData.eepromWriteCount = 1;
-        resetPersistentData();
-        Serial.println("EEPROM wiped.");
-    } else {
-        eepromLock.invoke();
-        // WARNING! DANGER!
-        Serial.println("!!! EEPROM lock disabled. EEPROM will be wiped on next attempt. !!!");
-        Serial.print("The current write count is ");
-        Serial.println(payloadData.eepromWriteCount);
+    // Completely wipe the EEPROM
+    for (int i = 0; i < EEPROM_SIZE; i++) {
+        EEPROM.write(i, 0);
     }
+    payloadData.eepromWriteCount = 1;
+    resetPersistentData();
 }
 
 /* - - - - - - resetPersistentData - - - - - - *

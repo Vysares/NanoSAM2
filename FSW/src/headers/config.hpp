@@ -46,7 +46,7 @@ const float TEENSY_VOLTAGE_RES = (TEENSY_HIGH_VOLTAGE - TEENSY_LOW_VOLTAGE) / TE
 const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
 
 /* - - - - - - Serial - - - - - - */
-const int SERIAL_BAUD = 9600;       // Hz, baud rate of serial connection
+const int SERIAL_BAUD = 19200;       // Hz, baud rate of serial connection
 const int SERIAL_TIMEOUT_MSEC = 50; // milliseconds, time to wait for serial input
 
 /* - - - - - - ADCS - - - - - - */
@@ -100,6 +100,8 @@ extern AsyncEvent scrubEvent;
 /* - - - - - - Command Handling Module - - - - - - */
 const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
 
+extern volatile bool DANGER_COMMANDS_ALLOWED;
+const bool DANGER_COMMANDS_ALLOWED_INIT = false; // whether potentially dangerous commands are allowed
 
 /* - - - - - - Fault Mitigation Module - - - - - - */
 extern volatile bool SUPPRESS_FAULTS;
@@ -107,7 +109,7 @@ const bool SUPPRESS_FAULTS_INIT = false;  // whether or not to log new fault occ
 
 // Corrective action
 extern volatile bool ACT_ON_NEW_FAULTS; 
-const bool ACT_ON_NEW_FAULTS_INIT = true; // whether to attempt corrective action when faults are detected
+const bool ACT_ON_NEW_FAULTS_INIT = false; // whether to attempt corrective action when faults are detected
 
 // EEPROM
 const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM
@@ -122,9 +124,13 @@ extern RecurringEvent wdTimer;
 /* - - - - - - Housekeeping Module - - - - - - */
 const int HK_SAMPLES_TO_KEEP = 5000;   // number of previous housekeeping samples to keep
 
+// Heater status
+extern volatile bool HEATER_ON;
+const bool HEATER_ON_INIT = false; // whether the heater is o
+
 // Heater control override
-extern volatile bool FORCE_HEATER_ON;
-const bool FORCE_HEATER_ON_INIT = false; // if true, heater will always be on regardless of temperature
+extern volatile bool HEATER_OVERRIDE;
+const bool HEATER_OVERRIDE_INIT = false; // if true, automatic heater control will be disabled
 
 // Real time temperature data streaming
 extern volatile bool STREAM_TEMPERATURE;

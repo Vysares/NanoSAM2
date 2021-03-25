@@ -17,6 +17,7 @@
 *   analogCurrent, digitalCurrent, digitalRegPG, timeMillis 
 */
 struct HousekeepingData {
+    bool heaterOn;         // whether the heater is on
     float opticsTemp;      // optics bench temp, celsius
     float analogTemp;      // analog board temp, celsius
     float digitalTemp;     // digital board temp, celsius
