@@ -201,22 +201,30 @@ bool saveBuffer(int &index) {
         }
     }
 
-    // create new file (non-erasable, delete file after downlink)
-    bool status = true; // track file creation/writing status
-    status = SerialFlash.create(filename, encodedFileData.MEMSIZE);
+	// establish SPI connection to flash chip
+	bool status = true; // track file creation/writing status
+	
+	if (SerialFlash.begin(PIN_FLASH1_CS)) { // SPI successful
 
-    if (status) {
-        Serial.print("Found file ");
-        Serial.print(filename);
-        Serial.println(" on flash chip");
-    }
+		// create new file (non-erasable, delete file after downlink)
+		status = SerialFlash.create(filename, encodedFileData.MEMSIZE);
 
-    // write buffer to this new file
-    SerialFlashFile file;
-    file = SerialFlash.open(filename);
-    status = file.write(encodedFileData.getData(), encodedFileData.MEMSIZE); // write encoded science data to file
+		if (status) {
+			Serial.print("Found file ");
+			Serial.print(filename);
+			Serial.println(" on flash chip");
+		}
 
-    index = 0; // reset index to start of array since we have saved the buffer
+		// write buffer to this new file
+		SerialFlashFile file;
+		file = SerialFlash.open(filename);
+		status = file.write(encodedFileData.getData(), encodedFileData.MEMSIZE); // write encoded science data to file
+
+		index = 0; // reset index to start of array since we have saved the buffer
+	} else {
+		Serial.println("Failed to establish SerialFlash connection to Flash 1 (saveBuffer() func)");
+		status = false;
+	}
 
     return status; // return whether or not file was successfully created
 }
