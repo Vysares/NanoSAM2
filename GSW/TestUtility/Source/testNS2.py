@@ -20,6 +20,7 @@ root.grid_columnconfigure(0,weight=0)
 root.grid_columnconfigure(1,weight=1)
 root.grid_rowconfigure(1,weight=1)
 
+
 # ==== create widgets ====
 # command frame
 commandFrame = LabelFrame(root, text='Send Commands', padx=5, pady=5)
@@ -44,7 +45,7 @@ fileNameField.insert(0, 'super-cool-file')
 
 # serial setup frame
 serialFrame = LabelFrame(root, text='Setup Serial', padx=5, pady=5)
-portField = Entry(serialFrame, width=30, borderwidth=3)
+portField = Entry(serialFrame, width=20, borderwidth=3)
 portField.insert(0, 'COM3')
 portLabel = Label(serialFrame, text='Port : ')
 
@@ -64,7 +65,7 @@ def updateLogPlain(text): # writes text to the log without >
     log.configure(state ='disabled')
     log.see(END)
 
-# send command
+# send command #
 def sendCommand(command): # sends command to Teensy
     teensy.write(bytes(command, 'utf-8'))
     updateLog('Command Sent: ' + command)
@@ -94,7 +95,7 @@ def readSerial(): # reads incoming communication from NS2 via the open serial po
         if autoScroll.get():
             monitor.see(END)
             
-# scan for serial ports
+# scan for serial ports #
 def scanPorts(): # finds and lists all available com ports
     availablePorts = list_ports.comports()
     foundPorts = False
@@ -118,10 +119,17 @@ def openSerialPort(event=None): # opens a new serial connection if port exists
             teensy.port = portField.get()
             teensy.open()
             updateLog('Connected to port \"' + portField.get() + '\".')
-            updateLog('If the Teensy becomes disconnected, restart this application before attempting to open the port again.')
+            updateLog('Make sure to close the connection before reprogramming the Teensy.')
+            updateLog('If the Teensy becomes disconnected while the port is open, restart this application before attempting to open the port again.')
             sendCommand('1');
             return
     updateLog('Port \"' + portField.get() + '\" not found.')
+
+# close serial port #
+def closeSerialPort():
+    if tkinter.messagebox.askyesno(title='Close Port?', message='Are you sure you want to close the serial connection?'):
+        teensy.close()
+        updateLog('Port closed. Serial connection terminated.')
     
 # save to file #
 def saveFile(event=None): # saves monitor contents to a file
@@ -159,10 +167,12 @@ def onClose():
         running = False
 root.protocol("WM_DELETE_WINDOW", onClose)
 
+
 # ==== buttons ====
 button_sendCommand = Button(commandFrame, text='Send', width=10, command=readAndSendCommand)
 button_scanPorts = Button(serialFrame, text='Scan For Serial Ports', command=scanPorts)
 button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#e0ffe7', command=openSerialPort)
+button_closePort = Button(serialFrame, text='Close Serial Port', command=closeSerialPort)
 button_saveFile = Button(fileFrame, text='Save to File', width=15, command=saveFile)
 button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearOutput)
 
@@ -170,6 +180,7 @@ button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearO
 commandField.bind('<Return>', readAndSendCommand) 
 portField.bind('<Return>', openSerialPort) 
 fileNameField.bind('<Return>', saveFile)
+
 
 # ==== draw everything ====
 # draw command frame
@@ -192,14 +203,16 @@ button_clearOutput.pack(side='right')
 serialFrame.grid(row=2, column=0, padx=5, pady=5, sticky=W+E)
 portLabel.grid(row=0, column=0, sticky=W)
 portField.grid(row=0, column=1, sticky=E)
-button_updatePort.grid(row=0, column=2, sticky=W+E)
-button_scanPorts.grid(row=1, column=0, sticky=W+E, columnspan=3)
+button_updatePort.grid(row=0, column=2, padx=3, pady=3, sticky=W+E)
+button_closePort.grid(row=0, column=3, padx=3, pady=3, sticky=W+E)
+button_scanPorts.grid(row=1, column=0, padx=3, pady=3, sticky=W+E, columnspan=4)
 
 # draw file frame
 fileFrame.grid(row=3, column=0, padx=5, pady=5, sticky=W+E)
 fileNameLabel.grid(row=0, column=0, sticky=W+N)
 fileNameField.grid(row=0, column=1, sticky=W+E)
 button_saveFile.grid(row=0, column=2, sticky=W+E)
+
 
 # ==== start application ====
 running = True;
@@ -212,12 +225,12 @@ teensy.timeout = 0.05
 backupFile = open('SavedFiles\\backup.txt', 'w', newline='')
 
 # brief the user
-updateLog('Make sure to close this application before reprogramming the Teensy.\n')
 scanPorts() # scan for serial ports
 updateLogPlain('')
 updateLog('Teensy usually appears as \"USB Serial Device\"')
 updateLog('Enter the Teensy\'s COM port and click \"Open Serial Port\" to connect.')
 updateLog('The Arduino serial monitor must be closed before attempting to connect!')
+updateLogPlain('')
 commandField.focus() # place cursor in command field
 
 # Main loop
