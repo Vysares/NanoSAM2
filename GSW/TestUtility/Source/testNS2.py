@@ -33,7 +33,7 @@ log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=3
 
 # monitor frame
 monitorFrame = LabelFrame(root, text='NS2 Output', padx=5, pady=5)
-monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=30, font=('Consolas',10), wrap=WORD)
+monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=10, font=('Consolas',10), wrap=WORD)
 autoScroll = BooleanVar(value=True)
 check_autoScroll = Checkbutton(monitorFrame, text='Auto Scroll', variable=autoScroll, onvalue=True, offvalue=False)
 
@@ -58,7 +58,7 @@ def updateLog(text): # writes text to the log
     log.configure(state ='disabled')
     log.see(END)
 
-# update log without indicator #
+# update log without > indicator #
 def updateLogPlain(text): # writes text to the log without >
     log.configure(state ='normal')
     log.insert(END, text + '\r\n')
@@ -119,7 +119,7 @@ def openSerialPort(event=None): # opens a new serial connection if port exists
             teensy.port = portField.get()
             teensy.open()
             updateLog('Connected to port \"' + portField.get() + '\".')
-            updateLog('Make sure to close the connection before reprogramming the Teensy.')
+            updateLog('Make sure to close the port before reprogramming the Teensy.')
             updateLog('If the Teensy becomes disconnected while the port is open, restart this application before attempting to open the port again.')
             sendCommand('1');
             return
@@ -171,7 +171,7 @@ root.protocol("WM_DELETE_WINDOW", onClose)
 # ==== buttons ====
 button_sendCommand = Button(commandFrame, text='Send', width=10, command=readAndSendCommand)
 button_scanPorts = Button(serialFrame, text='Scan For Serial Ports', command=scanPorts)
-button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#e0ffe7', command=openSerialPort)
+button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#cceeff', command=openSerialPort)
 button_closePort = Button(serialFrame, text='Close Serial Port', command=closeSerialPort)
 button_saveFile = Button(fileFrame, text='Save to File', width=15, command=saveFile)
 button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearOutput)
