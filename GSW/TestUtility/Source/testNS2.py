@@ -8,7 +8,7 @@ import os
 import re
 
 # to compile to a single exe with pyinstaller use the following line:
-# pyinstaller.exe --onefile --icon=Assets/NS2_BW.ico --windowed Source/testNS2.py
+# pyinstaller.exe --onefile --icon=source/Assets/NS2_BW.ico --windowed --name TestNS2 source/testNS2.py
 
 # ==== setup application window ====
 root = Tk()
@@ -171,7 +171,7 @@ root.protocol("WM_DELETE_WINDOW", onClose)
 # ==== buttons ====
 button_sendCommand = Button(commandFrame, text='Send', width=10, command=readAndSendCommand)
 button_scanPorts = Button(serialFrame, text='Scan For Serial Ports', command=scanPorts)
-button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#cceeff', command=openSerialPort)
+button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#d3ffcf', command=openSerialPort)
 button_closePort = Button(serialFrame, text='Close Serial Port', command=closeSerialPort)
 button_saveFile = Button(fileFrame, text='Save to File', width=15, command=saveFile)
 button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearOutput)

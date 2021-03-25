@@ -412,20 +412,23 @@ void printInfo() {
     Serial.println(millis());
     Serial.print("Mode: ");
     Serial.println(scienceMode.getMode());
-    Serial.print("total restarts: ");
+    Serial.print("Total restarts: ");
     Serial.println(payloadData.startCount);
     Serial.print("Heater override: ");
     if (HEATER_OVERRIDE) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
-    Serial.print("Heater Status: ");
+    Serial.print("Heater status: ");
     if (HEATER_ON) { Serial.println("ON"); } 
     else { Serial.println("OFF"); }
-    Serial.print("Risky Commands: ");
-    if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
-    else { Serial.println("Disabled"); }
     Serial.print("Analog board current (A): ");
     Serial.println(latestHkSample.analogCurrent);
     Serial.print("Digital board current (A): ");
     Serial.println(latestHkSample.digitalCurrent);
+    Serial.print("Risky commands: ");
+    if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
+    else { Serial.println("Disabled"); }
+    Serial.print("Command mode: ");
+    if (isPaused) { Serial.println("Queue"); } 
+    else { Serial.println("Execute immediately"); }
     Serial.println("===== End Report =====");
 }
