@@ -211,7 +211,7 @@ void executeCommand(int command) {
 
     // When adding new commands, make sure to include any relevant headers!
     switch (command) {
-        // Ping
+        // Info
         case commandCode::INFO:
             printInfo();
             break;
