@@ -41,7 +41,7 @@ int ScienceMode::getMode() {
 
 void ScienceMode::setMode(int newMode) {
     if (newMode < SAFE_MODE || newMode >= MODE_NOT_RECOGNIZED) { // check if new mode is valid
-        Serial.println("Payload Mode not recognized (Timing Module) - Defaulting to Safe Mode");
+        Serial.println("Attempted to set mode to unrecognized mode (Timing Module) - Defaulting to Safe Mode");
         scienceMode.setMode(SAFE_MODE);
         return;
     } else if (newMode == mode) { return; };
