@@ -35,7 +35,7 @@
  *  initStatus - flag (true if initialization was successful)
  */
 bool init() {
-    Serial.print("Initializing NanoSAM II FSW... ");
+    Serial.println("Initializing NanoSAM II FSW... ");
     
     // feed the dog
     feedWD();
@@ -75,7 +75,7 @@ bool init() {
     // Sample housekeeping data
     handleHousekeeping(); 
     
-    Serial.println("Complete");
+    Serial.println("Initialization Complete.");
     return true;
 }
 

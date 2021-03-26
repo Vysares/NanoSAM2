@@ -156,7 +156,7 @@ bool checkIfCommandAllowed(int command) {
             return true; // no dangerous command detected
             break;
     }
-    Serial.println("!!! This command command can cause shutdown or data loss !!!");
+    Serial.println("!!! This command can cause shutdown or data loss !!!");
     Serial.println("You must enable potentially dangerous commands to execute this command.");
     return false;
 }
@@ -244,15 +244,37 @@ void executeCommand(int command) {
             break;
 
         // Data Collection
-        case commandCode::STREAM_PHOTO_DATA_T:
-            STREAM_PHOTO_DATA = true;
-            Serial.println("Command Executed - Transmitting photodiode voltages in real time.");
-            Serial.println("time (ms) | photodiode voltage (V)");
+        case commandCode::SAVE_BUFFER:
+            if (saveBuffer()) { Serial.println("Command Executed - Buffer saved to flash."); }
+            else { Serial.println("Command Executed - Attempt to save buffer failed."); }
             break;
 
-        case commandCode::STREAM_PHOTO_DATA_F:
-            STREAM_PHOTO_DATA = false;
-            Serial.println("Command Executed - Stopped streaming photodiode data");
+        case commandCode::DOWNLINK_START:
+            downlinkEvent.invoke();
+            if (scienceMode.getMode() == STANDBY_MODE) { Serial.println("Command Executed - Downlink initiated."); }
+            else { Serial.println("Command Executed - Downlink will begin when payload enters standby."); }
+            break;
+
+        case commandCode::STREAM_PHOTO_SPI_T:
+            STREAM_PHOTO_SPI = true;
+            Serial.println("Command Executed - Transmitting photodiode voltages read by SPI in real time.");
+            Serial.println("PHOTO_SPI | time (ms) | photodiode voltage (V)");
+            break;
+
+        case commandCode::STREAM_PHOTO_SPI_F:
+            STREAM_PHOTO_SPI = false;
+            Serial.println("Command Executed - Stopped streaming photodiode data from SPI.");
+            break;
+
+        case commandCode::STREAM_PHOTO_DIRECT_T:
+            STREAM_PHOTO_DIRECT = true;
+            Serial.println("Command Executed - Transmitting photodiode voltages read by Teensy ADC in real time.");
+            Serial.println("PHOTO_DIR | time (ms) | photodiode voltage (V)");
+            break;
+
+        case commandCode::STREAM_PHOTO_DIRECT_F:
+            STREAM_PHOTO_DIRECT = false;
+            Serial.println("Command Executed - Stopped streaming photodiode data from Teensy ADC.");
             break;
 
         // Housekeeping
@@ -339,11 +361,6 @@ void executeCommand(int command) {
             break;
 
         // Memory
-        case commandCode::DOWNLINK_START:
-            downlinkEvent.invoke();
-            Serial.println("Command Executed - Downlink will begin when payload enters standby.");
-            break;
-
         case commandCode::SCRUB_FLASH:
             scrubEvent.invoke();
             Serial.println("Command Executed - Flash scrub initiated.");
@@ -387,8 +404,13 @@ void executeCommand(int command) {
             break;
 
         // End of list
+        case commandCode::SELF_DESTRUCT:
+            Serial.println(">>> NANOSAM WILL SELF DESTRUCT IN 10 SECONDS <<<");
+            // detonationTimer.start();
+            break;
+
         case commandCode::DO_NOTHING: 
-            Serial.println("Command Executed - Do nothing.");
+            Serial.println("Command Executed - Doing nothing.");
             break;
         
         default: 
@@ -413,22 +435,26 @@ void printInfo() {
     Serial.println(millis());
     Serial.print("Mode: ");
     Serial.println(scienceMode.getMode());
-    Serial.print("Total restarts: ");
+    Serial.print("Total Restarts: ");
     Serial.println(payloadData.startCount);
-    Serial.print("Heater control: ");
-    if (HEATER_OVERRIDE) { Serial.println("Manual control"); } 
+    Serial.print("EEPROM Writes: ");
+    Serial.println(payloadData.eepromWriteCount);
+    Serial.print("Analog Board Current (A): ");
+    Serial.println(latestHkSample.analogCurrent);
+    Serial.print("Digital Board Current (A): ");
+    Serial.println(latestHkSample.digitalCurrent);
+    Serial.print("Digital Reg PG (V): ");
+    Serial.println(latestHkSample.digitalRegPG);
+    Serial.print("Heater Control: ");
+    if (HEATER_OVERRIDE) { Serial.println("Manual"); } 
     else { Serial.println("NS2 has priority"); }
-    Serial.print("Heater status: ");
+    Serial.print("Heater Status: ");
     if (HEATER_ON) { Serial.println("ON"); } 
     else { Serial.println("OFF"); }
-    Serial.print("Analog board current (A): ");
-    Serial.println(latestHkSample.analogCurrent);
-    Serial.print("Digital board current (A): ");
-    Serial.println(latestHkSample.digitalCurrent);
-    Serial.print("Risky commands: ");
+    Serial.print("Risky Commands: ");
     if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
-    Serial.print("Command mode: ");
+    Serial.print("Command Mode: ");
     if (isPaused) { Serial.println("Queue"); } 
     else { Serial.println("Execute immediately"); }
     Serial.println("===== End Report =====");
