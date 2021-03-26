@@ -18,21 +18,29 @@ bool checkIfCommandAllowed(int command);
 void executeAllCommands();
 void clearCommandQueue();
 void executeCommand(int command);
+void printInfo();
 
 namespace commandCode {
     // command codes are wrapped in a namespace so they are not global
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
+        // Info
+        INFO = 1,                       // Triggers a readback of system data
+
         // Mode Change
-        ENTER_SAFE_MODE = 1,            // enter safemode state
+        ENTER_SAFE_MODE,                // enter safemode state
         ENTER_STANDBY_MODE,             // enter standby state
         ENTER_SUNSET_MODE,              // enter sunset data collection mode
         ENTER_PRE_SUNRISE_MODE,         // enter watch-for-sunset mode
         ENTER_SUNRISE_MODE,             // enter sunrise data collection mode
 
         // Data Collection
-        STREAM_PHOTO_DATA_T,            // start streaming photodiode data
-        STREAM_PHOTO_DATA_F,            // stop streaming photodiode data
+        SAVE_BUFFER,                    // saves the buffer in the next available file slot
+        DOWNLINK_START,                 // start downlink at next available time
+        STREAM_PHOTO_SPI_T,             // start streaming photodiode data read from SPI
+        STREAM_PHOTO_SPI_F,             // stop streaming photodiode data read from SPI
+        STREAM_PHOTO_DIRECT_T,          // start streaming photodiode data read directly from pin 21
+        STREAM_PHOTO_DIRECT_F,          // stop streaming photodiode data read directly from pin 21
         
         // Housekeeping
         TURN_HEATER_ON,                 // turn heater on, does not override housekeeping heater control
@@ -55,8 +63,7 @@ namespace commandCode {
         ADCS_POINTING_AT_SUN_F,         // sets pointing at sun flag to false
 
         // Memory
-        DOWNLINK_START,                // start downlink at next available time
-        SCRUB_FLASH,                   // start scrubbing the flash memory for errors
+        SCRUB_FLASH,                    // start scrubbing the flash memory for errors
 
         // Fault Mitigation
         WIPE_EEPROM,                   // completely wipes the EEPROM and then resets persistent data
@@ -71,6 +78,7 @@ namespace commandCode {
         EXIT_MAIN_LOOP,                // exits the main loop
 
         // End of list
+        SELF_DESTRUCT,                
         DO_NOTHING                    // do nothing. KEEP THIS LAST IN THE ENUM, it is used for indexing.
     };
 };

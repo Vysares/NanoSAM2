@@ -27,6 +27,8 @@ struct HousekeepingData {
     float timeMillis;      // time that sample was taken, milliseconds
 };
 
+extern HousekeepingData latestHkSample;
+
 struct TempVoltagePair { float temperature, voltage; }; // used for entries in thermistor lookup table
 
 // Thermistor lookup table for board thermistors, temperature (deg C) / voltage (Volts).

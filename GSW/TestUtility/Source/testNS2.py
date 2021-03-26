@@ -5,11 +5,16 @@ from tkinter import *
 import tkinter.scrolledtext as tkScrolledText
 import tkinter.messagebox
 import os
+import re
+import ctypes
 
-# to compile to a single exe with pyinstaller use the following line:
-# pyinstaller.exe --onefile --icon=Assets/NS2_BW.ico --windowed Source/testNS2.py
+# to compile to a single exe with pyinstaller run the following line from the "GSW/TestUtility" directory:
+#   pyinstaller.exe --onefile --icon=source/Assets/NS2_BW.ico --windowed --name TestNS2 source/testNS2.py
+# you can then safely delete the "build" folder and spec file if you want. The exe will be in the "dist" folder.
+# note that the exe will crash on startup unless the Assets and SavedFiles folders are in the same directory.
 
 # ==== setup application window ====
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
 root = Tk()
 root.title('NanoSAM II Testing Utility')
 root.iconbitmap('Assets\\NS2_BW.ico')
@@ -19,6 +24,7 @@ root.grid_columnconfigure(0,weight=0)
 root.grid_columnconfigure(1,weight=1)
 root.grid_rowconfigure(1,weight=1)
 
+
 # ==== create widgets ====
 # command frame
 commandFrame = LabelFrame(root, text='Send Commands', padx=5, pady=5)
@@ -27,11 +33,11 @@ commandLabel = Label(commandFrame, text='Command Code : ')
 
 # log frame
 logFrame = LabelFrame(root, text='Log', padx=5, pady=5)
-log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=20, font=('Consolas',10),  wrap=WORD)
+log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=30, font=('Consolas',10), wrap=WORD)
 
 # monitor frame
 monitorFrame = LabelFrame(root, text='NS2 Output', padx=5, pady=5)
-monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=30, font=('Consolas',10))
+monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=10, font=('Consolas',10), wrap=WORD)
 autoScroll = BooleanVar(value=True)
 check_autoScroll = Checkbutton(monitorFrame, text='Auto Scroll', variable=autoScroll, onvalue=True, offvalue=False)
 
@@ -43,7 +49,7 @@ fileNameField.insert(0, 'super-cool-file')
 
 # serial setup frame
 serialFrame = LabelFrame(root, text='Setup Serial', padx=5, pady=5)
-portField = Entry(serialFrame, width=30, borderwidth=3)
+portField = Entry(serialFrame, width=20, borderwidth=3)
 portField.insert(0, 'COM3')
 portLabel = Label(serialFrame, text='Port : ')
 
@@ -56,7 +62,7 @@ def updateLog(text): # writes text to the log
     log.configure(state ='disabled')
     log.see(END)
 
-# update log without indicator #
+# update log without > indicator #
 def updateLogPlain(text): # writes text to the log without >
     log.configure(state ='normal')
     log.insert(END, text + '\r\n')
@@ -64,19 +70,29 @@ def updateLogPlain(text): # writes text to the log without >
     log.see(END)
 
 # send command #
-def sendCommand(event=None): # sends a command over serial
+def sendCommand(command): # sends command to Teensy
+    teensy.write(bytes(command, 'utf-8'))
+    updateLog('Command Sent: ' + command)
+
+# read and send command #
+def readAndSendCommand(event=None): # sends a command over serial from user input
     if not teensy.isOpen():
         updateLog('No connection!')
         return
     command = commandField.get()
     if command:
-        teensy.write(bytes(command, 'utf-8'))
-        updateLog('Command Sent: ' + command)
+        sendCommand(command)
         commandField.delete(0, END)
 
 # read serial #
 def readSerial(): # reads incoming communication from NS2 via the open serial port
-    data = str(teensy.readline())[2:-1]
+    try:
+        data = str(teensy.readline())[2:-1]
+    except: # close the port if exception thrown
+        teensy.close()
+        updateLog('!!! SERIAL CONNECTION INTERRUPTED !!!')
+        return
+    
     if data:
         parsedData = codecs.decode(data, "unicode_escape")
         monitor.configure(state ='normal')
@@ -89,7 +105,7 @@ def readSerial(): # reads incoming communication from NS2 via the open serial po
         if autoScroll.get():
             monitor.see(END)
             
-# scan for serial ports
+# scan for serial ports #
 def scanPorts(): # finds and lists all available com ports
     availablePorts = list_ports.comports()
     foundPorts = False
@@ -98,21 +114,31 @@ def scanPorts(): # finds and lists all available com ports
         updateLogPlain('- ' + port.description)
         foundPorts = True
     if not foundPorts:
-        updateLog('No ports detected.')
+        updateLogPlain('No ports found. Is the Teensy connected?')
                 
 # open serial port #
 def openSerialPort(event=None): # opens a new serial connection if port exists
+    if not re.match(r"COM[0-9]+", portField.get()):
+        updateLog('Port field must take the form \"COM<0-99>\"')
+        return
+    
     availablePorts = list_ports.comports()
     for port in availablePorts: # if port exists, connect to it
         if portField.get() in port.description:
             teensy.close()
             teensy.port = portField.get()
             teensy.open()
-            global portOpen
-            updateLog('Connected to port \"' + portField.get() + '\".')
-            updateLog('If the Teensy becomes disconnected, restart this application before attempting to open the port again.')
-            return    
+            updateLog('Connected to port \"' + portField.get() + '\"')
+            updateLog('Make sure to close the port before reprogramming or disconnecting the Teensy.')
+            sendCommand('1');
+            return
     updateLog('Port \"' + portField.get() + '\" not found.')
+
+# close serial port #
+def closeSerialPort():
+    if tkinter.messagebox.askyesno(title='Close Port?', message='Are you sure you want to close the serial connection?'):
+        teensy.close()
+        updateLog('Port closed. Serial connection terminated.')
     
 # save to file #
 def saveFile(event=None): # saves monitor contents to a file
@@ -150,17 +176,20 @@ def onClose():
         running = False
 root.protocol("WM_DELETE_WINDOW", onClose)
 
+
 # ==== buttons ====
-button_sendCommand = Button(commandFrame, text='Send', width=10, command=sendCommand)
+button_sendCommand = Button(commandFrame, text='Send', width=10, command=readAndSendCommand)
 button_scanPorts = Button(serialFrame, text='Scan For Serial Ports', command=scanPorts)
-button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#e0ffe7', command=openSerialPort)
+button_updatePort = Button(serialFrame, text='Open Serial Port', bg='#d3ffcf', command=openSerialPort)
+button_closePort = Button(serialFrame, text='Close Serial Port', command=closeSerialPort)
 button_saveFile = Button(fileFrame, text='Save to File', width=15, command=saveFile)
 button_clearOutput = Button(monitorFrame, text='Clear', width=10, command=clearOutput)
 
 # bind the enter key in each entry frame
-commandField.bind('<Return>', sendCommand) 
+commandField.bind('<Return>', readAndSendCommand) 
 portField.bind('<Return>', openSerialPort) 
 fileNameField.bind('<Return>', saveFile)
+
 
 # ==== draw everything ====
 # draw command frame
@@ -183,14 +212,16 @@ button_clearOutput.pack(side='right')
 serialFrame.grid(row=2, column=0, padx=5, pady=5, sticky=W+E)
 portLabel.grid(row=0, column=0, sticky=W)
 portField.grid(row=0, column=1, sticky=E)
-button_updatePort.grid(row=0, column=2, sticky=W+E)
-button_scanPorts.grid(row=1, column=0, sticky=W+E, columnspan=3)
+button_updatePort.grid(row=0, column=2, padx=3, pady=3, sticky=W+E)
+button_closePort.grid(row=0, column=3, padx=3, pady=3, sticky=W+E)
+button_scanPorts.grid(row=1, column=0, padx=3, pady=3, sticky=W+E, columnspan=4)
 
 # draw file frame
 fileFrame.grid(row=3, column=0, padx=5, pady=5, sticky=W+E)
 fileNameLabel.grid(row=0, column=0, sticky=W+N)
 fileNameField.grid(row=0, column=1, sticky=W+E)
 button_saveFile.grid(row=0, column=2, sticky=W+E)
+
 
 # ==== start application ====
 running = True;
@@ -203,12 +234,12 @@ teensy.timeout = 0.05
 backupFile = open('SavedFiles\\backup.txt', 'w', newline='')
 
 # brief the user
-updateLog('Make sure to close this application before reprogramming the Teensy.\n')
 scanPorts() # scan for serial ports
 updateLogPlain('')
 updateLog('Teensy usually appears as \"USB Serial Device\"')
 updateLog('Enter the Teensy\'s COM port and click \"Open Serial Port\" to connect.')
 updateLog('The Arduino serial monitor must be closed before attempting to connect!')
+updateLogPlain('')
 commandField.focus() # place cursor in command field
 
 # Main loop

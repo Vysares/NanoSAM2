@@ -20,8 +20,8 @@
 
 
 /* Module Variable Definitions */
-static HousekeepingData latestHkSample; // latest point of housekeeping data
-static HousekeepingData housekeepingData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
+HousekeepingData latestHkSample = HousekeepingData(); // latest point of housekeeping data
+HousekeepingData housekeepingData[HK_SAMPLES_TO_KEEP] = {}; // array to store housekeeping data
 static int hkIndex = 0;
 
 /* - - - - - - Module Driver Functions - - - - - - */
