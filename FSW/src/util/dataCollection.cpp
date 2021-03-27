@@ -236,7 +236,7 @@ bool saveBuffer() {
 
 	} else { // SerialFlash connection failed
 
-		Serial.println("Failed to establish SerialFlash connection to Flash 1 (saveBuffer() func)");
+		Serial.println("Failed to establish SerialFlash connection to current flash module (saveBuffer() func)");
 		status = false;
 	}
 
