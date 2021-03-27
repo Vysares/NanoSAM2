@@ -31,6 +31,10 @@ static uint16_t dataBuffer[BUFFERSIZE]; // create array to hold data buffer elem
 static char filename[] = "scienceFile0.csv";   // null-terminated char array 
 static const int FILE_IDX_OFFSET = 11;           // index of file number in char array
 
+// SPI 
+// may want to update this to dynamically change the flash module, keeping it simple for now
+static const int CURRENT_FLASH_CHIP = PIN_FLASH1_CS;
+
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - dataProcessing - - - - - - *
@@ -210,7 +214,7 @@ bool saveBuffer() {
 	// establish SPI connection to flash chip
 	bool status = true; // track file creation/writing status
 	
-	if (SerialFlash.begin(PIN_FLASH1_CS)) { // SPI to flash module successful
+	if (SerialFlash.begin(CURRENT_FLASH_CHIP)) { // SPI to flash module successful
 
 		// create new file (non-erasable, delete file after downlink)
 		status = SerialFlash.create(filename, encodedFileData.MEMSIZE);
@@ -231,7 +235,7 @@ bool saveBuffer() {
         bufIdx = 0; // reset index to start of array since we have saved the buffer
 
 	} else { // SerialFlash connection failed
-    
+
 		Serial.println("Failed to establish SerialFlash connection to Flash 1 (saveBuffer() func)");
 		status = false;
 	}
@@ -298,7 +302,7 @@ void downlink() {
     }
 
     // TODO: make flash chip we are using configurable with a command? Auto balance the load somehow?
-    SerialFlash.begin(PIN_FLASH1_CS); // begin spi connection with flash module 1
+    SerialFlash.begin(CURRENT_FLASH_CHIP); // begin spi connection with flash module 1
 
     /* downlink a single file */
     downlinkFileName[FILE_IDX_OFFSET] = '0' + (downlinkEvent.iter() - 1); // update file name 
