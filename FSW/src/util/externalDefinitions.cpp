@@ -11,7 +11,8 @@
 Event exitMainLoopEvent = Event();
 
 // Data Collection
-volatile bool STREAM_PHOTO_DATA = STREAM_PHOTO_DATA_INIT;
+volatile bool STREAM_PHOTO_SPI = STREAM_PHOTO_SPI_INIT;
+volatile bool STREAM_PHOTO_DIRECT = STREAM_PHOTO_DIRECT_INIT;
 RecurringEvent dataProcessEvent = RecurringEvent(SAMPLE_PERIOD_MSEC);
 Event saveBufferEvent = Event();
 TimedEvent sunriseTimerEvent = TimedEvent(WINDOW_LENGTH_MSEC);

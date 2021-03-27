@@ -40,8 +40,17 @@ int ScienceMode::getMode() {
 }
 
 void ScienceMode::setMode(int newMode) {
-    if (mode != newMode && newMode == STANDBY_MODE) {
+    if (newMode < SAFE_MODE || newMode >= MODE_NOT_RECOGNIZED) { // check if new mode is valid
+        Serial.println("Attempted to set mode to unrecognized mode (Timing Module) - Defaulting to Safe Mode");
+        scienceMode.setMode(SAFE_MODE);
+        return;
+    } else if (newMode == mode) { return; };
+
+    if (newMode == STANDBY_MODE) {
         onStandbyEntry.invoke();
+    }
+    if (mode == SUNRISE_MODE || mode == SUNSET_MODE) {
+        saveBufferEvent.invoke();
     }
     mode = newMode;
 }
@@ -81,31 +90,26 @@ void ScienceMode::sweepChange() {
  *  bufIdx - index of most recent measurement updated in bufIdx
  * 
  * Outputs:
- *  none
+ *  None
  */
 void updatePayloadMode(uint16_t buffer[], int bufIdx) {
-
     int currentMode = scienceMode.getMode();
     
-    if ((currentMode < MODE_NOT_RECOGNIZED) && (currentMode > STANDBY_MODE)) {
+    if (currentMode == SUNSET_MODE || currentMode == PRE_SUNRISE_MODE || currentMode == SUNRISE_MODE) {
         if (scienceMode.getPointingAtSun()) {
-
             // smooth data to avoid a single noisy value prematurely ending a window
             float pdVoltageSmooth = voltageRunningMean(buffer, bufIdx); //photodiode voltage
             
             switch (currentMode) {
                 case SUNSET_MODE: // gathering data until sun passes behind horizon
                     if (pdVoltageSmooth < SUN_THRESH_VOLTAGE) { // if the sun is not found
-                        
                         // check if it is time to change sweep direction
                         checkSweepChange(buffer, bufIdx);
 
                         if (sweepTimeoutEvent.checkInvoked()) {
                             // if we have waited long enough for ADCS sweeping
-                            saveBufferEvent.invoke();
                             scienceMode.setMode(PRE_SUNRISE_MODE);
                         }
-
                     } else { 
                         // sun still found, return same mode and refresh sweep timeout
                         sweepTimeoutEvent.start();
@@ -121,19 +125,17 @@ void updatePayloadMode(uint16_t buffer[], int bufIdx) {
                     break;
 
                 case SUNRISE_MODE: // gathering data for length of buffer
-
                     // check if it is time to change sweep direction
                     checkSweepChange(buffer, bufIdx);
 
                     // wait until sunrise data window is complete, save buffer,
                     // and return to standby
                     if (sunriseTimerEvent.checkInvoked()) {
-                        saveBufferEvent.invoke();
                         scienceMode.setMode(STANDBY_MODE);
                     }
                     break;
             
-                default: // mode not recognized, this should not happen
+                default: // mode not recognized, this should not happen and is logically impossible
                     scienceMode.setMode(MODE_NOT_RECOGNIZED);
                     break;
             }
@@ -142,17 +144,6 @@ void updatePayloadMode(uint16_t buffer[], int bufIdx) {
             Serial.println("ADCS Not Ready for Science Measurements (Timing Module)");
             scienceMode.setMode(STANDBY_MODE);
         }
-
-    } else if (currentMode == STANDBY_MODE) {
-        // TODO: currently the only way to leave standby is through a command,
-        //       do we want some automated way to leave for testing?
-        //       it honestly might be best to leave it as having to manually start
-        //       a data window for testing
-        
-
-    } else { // mode was not recognized, this should not happen
-        Serial.println("Payload Mode not recognized (Timing Module) - Defaulting to Safe Mode");
-        scienceMode.setMode(SAFE_MODE);
     }
 }
 

@@ -75,8 +75,10 @@ const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; // volts per ADC bin
 
 // Continuous data streaming
-extern volatile bool STREAM_PHOTO_DATA;
-const bool STREAM_PHOTO_DATA_INIT = false; // whether to print photodiode samples in real time.
+extern volatile bool STREAM_PHOTO_SPI;
+const bool STREAM_PHOTO_SPI_INIT = false; // whether to print photodiode samples in real time read by SPI.
+extern volatile bool STREAM_PHOTO_DIRECT;
+const bool STREAM_PHOTO_DIRECT_INIT = false; // whether to print photodiode samples in real time read by onboard ADC.
 
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp

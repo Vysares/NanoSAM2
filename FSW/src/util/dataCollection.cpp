@@ -71,12 +71,19 @@ uint16_t dataProcessing() {
      */
 
     // print the voltage value (for testing)
-    if (STREAM_PHOTO_DATA) {
-        float voltage = photodiode16 * ADC_VOLTAGE_RES;
-        Serial.print("PHOTO, ");
+    if (STREAM_PHOTO_SPI) {
+        float spiVoltage = photodiode16 * ADC_VOLTAGE_RES;
+        Serial.print("PHOTO_SPI, ");
         Serial.print(millis());
         Serial.print(", ");
-        Serial.println(voltage);
+        Serial.println(spiVoltage);
+    }
+    if (STREAM_PHOTO_DIRECT) {
+        float directVoltage = analogRead(PIN_PHOTO) * TEENSY_VOLTAGE_RES;
+        Serial.print("PHOTO_DIR, ");
+        Serial.print(millis());
+        Serial.print(", ");
+        Serial.println(directVoltage);
     }
 
     // return the bin number
@@ -105,7 +112,7 @@ void scienceMemoryHandling() {
     }
 
     if (saveBufferEvent.checkInvoked()) {
-        saveBuffer(bufIdx);
+        saveBuffer();
     }
 }
 
@@ -152,25 +159,24 @@ void updateBuffer(uint16_t sample, int &index) {
  *  appends timestamp to the end of the file
  * 
  * Inputs:
- *  index - index to store new data at (pass-by-reference)
+ *  None
  *  
  * Outputs:
  *  file creation status
  */
-bool saveBuffer(int &index) {
+bool saveBuffer() {
     
     // create array to hold data in time ascending order
     uint16_t timeSortBuffer[BUFFERSIZE];
     int j = 0; // iterator for sorted array index
 
     // reorder array so that it is ascending in time
-    for (int i = index; i < BUFFERSIZE; i++) {
+    for (int i = bufIdx; i < BUFFERSIZE; i++) {
         timeSortBuffer[j] = dataBuffer[i];
         j++;
     } 
-
     // loop back to top of array and store remaining values
-    for (int i = 0; i < index; i++) {
+    for (int i = 0; i < bufIdx; i++) {
         timeSortBuffer[j] = dataBuffer[i];
         j++;
     }
@@ -196,32 +202,36 @@ bool saveBuffer(int &index) {
             fileFlag = SerialFlash.exists(filename);
             fileIdx++;
         } else if (fileIdx >= MAXFILES) {
-            Serial.print("WARNING: fileIdx reached MAXFILES ");
-            Serial.print("(Science Memory Handling Module - saveBuffer() func)\n");
+            Serial.print("WARNING: fileIdx reached MAXFILES.");
+            Serial.println("(Science Memory Handling Module - saveBuffer() func)");
         }
     }
 
 	// establish SPI connection to flash chip
 	bool status = true; // track file creation/writing status
 	
-	if (SerialFlash.begin(PIN_FLASH1_CS)) { // SPI successful
+	if (SerialFlash.begin(PIN_FLASH1_CS)) { // SPI to flash module successful
 
 		// create new file (non-erasable, delete file after downlink)
 		status = SerialFlash.create(filename, encodedFileData.MEMSIZE);
 
-		if (status) {
-			Serial.print("Found file ");
-			Serial.print(filename);
-			Serial.println(" on flash chip");
-		}
+		if (status) { Serial.print("Successfully created file: "); }
+        else { Serial.print("Failed to create file: "); }
+        Serial.println(filename);
 
 		// write buffer to this new file
 		SerialFlashFile file;
 		file = SerialFlash.open(filename);
 		status = file.write(encodedFileData.getData(), encodedFileData.MEMSIZE); // write encoded science data to file
 
-		index = 0; // reset index to start of array since we have saved the buffer
-	} else {
+        if (status) { Serial.print("Write successful: "); }
+        else { Serial.print("Write failed: "); }
+        Serial.println(filename);
+
+        bufIdx = 0; // reset index to start of array since we have saved the buffer
+
+	} else { // SerialFlash connection failed
+    
 		Serial.println("Failed to establish SerialFlash connection to Flash 1 (saveBuffer() func)");
 		status = false;
 	}
@@ -287,8 +297,11 @@ void downlink() {
         downlinkFileCount = 0;
     }
 
+    // TODO: make flash chip we are using configurable with a command? Auto balance the load somehow?
+    SerialFlash.begin(PIN_FLASH1_CS); // begin spi connection with flash module 1
+
     /* downlink a single file */
-    downlinkFileName[FILE_IDX_OFFSET] = static_cast<char>(downlinkEvent.iter() - 1); // update file name 
+    downlinkFileName[FILE_IDX_OFFSET] = '0' + (downlinkEvent.iter() - 1); // update file name 
     if (SerialFlash.exists(filename)) { // check if file exists
         Serial.print("Downlinking ");
         Serial.print(downlinkFileName);
@@ -345,7 +358,7 @@ void scrubFlash() {
     }
     
     /* scrub a single file */
-    scrubFilename[FILE_IDX_OFFSET] = static_cast<char>(scrubEvent.iter() - 1); // update file name
+    scrubFilename[FILE_IDX_OFFSET] = '0' + (scrubEvent.iter() - 1); // update file name
     if (SerialFlash.exists(scrubFilename)) { // check if file exists
         // read data from file and scrub it
         SerialFlashFile file;
