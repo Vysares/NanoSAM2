@@ -8,15 +8,11 @@ import os
 import re
 import ctypes
 
-# to compile to a single exe with pyinstaller run the following line from the "GSW/TestUtility" directory:
-#   pyinstaller.exe --onefile --icon=source/Assets/NS2_BW.ico --windowed --name TestNS2 source/testNS2.py
-# you can then safely delete the "build" folder and spec file if you want. The exe will be in the "dist" folder.
-# note that the exe will crash on startup unless the Assets and SavedFiles folders are in the same directory.
-
 # ==== setup application window ====
 root = Tk()
 root.title('NanoSAM II Testing Utility')
-root.iconbitmap('Assets\\NS2_BW.ico')
+if os.path.isdir('Assets'):
+    root.iconbitmap('Assets\\NS2_BW.ico')
 
 # configure grid
 root.grid_columnconfigure(0,weight=0)
@@ -234,6 +230,8 @@ teensy.baudrate = 19200
 teensy.timeout = 0.05
 
 # configure file
+if not os.path.isdir('SavedFiles'):
+    os.mkdir('SavedFiles')
 backupFile = open('SavedFiles\\backup.txt', 'w', newline='')
 
 # brief the user
