@@ -14,7 +14,6 @@ import ctypes
 # note that the exe will crash on startup unless the Assets and SavedFiles folders are in the same directory.
 
 # ==== setup application window ====
-ctypes.windll.shcore.SetProcessDpiAwareness(1)
 root = Tk()
 root.title('NanoSAM II Testing Utility')
 root.iconbitmap('Assets\\NS2_BW.ico')
@@ -224,6 +223,10 @@ button_saveFile.grid(row=0, column=2, sticky=W+E)
 
 
 # ==== start application ====
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+except:
+    updateLog('Failed to set DPI scaling. The application may appear blurry.')
 running = True;
 # configure serial connection
 teensy = serial.Serial()
