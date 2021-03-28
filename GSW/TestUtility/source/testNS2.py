@@ -137,10 +137,17 @@ def closeSerialPort():
     
 # save to file #
 def saveFile(event=None): # saves monitor contents to a file
-    if not fileNameField.get():
+    name = fileNameField.get()
+    # check if name is valid
+    if (not name) or (name == 'backup'):
         updateLog('Enter a valid file name!')
         return
-    fileName = fileNameField.get() + '.txt'
+    safeChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ '
+    for c in name:
+        if c not in safeChars:
+            updateLog('Enter a valid file name!')
+            return
+    fileName = name + '.txt'
     filePath = 'SavedFiles\\' + fileName
     if (os.path.exists(filePath)): # display warning if file already exists
         warning = '\"' + fileName + '\" already exists in "SavedFiles" folder. Do you wish to overwrite it?'
