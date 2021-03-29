@@ -285,7 +285,7 @@ void executeCommand(int command) {
             break;
         
         case commandCode::TURN_HEATER_OFF: 
-            HEATER_ON = true;
+            HEATER_ON = false;
             Serial.println("Command Executed - Heater turned OFF.");
             if (!HEATER_OVERRIDE) { Serial.println("Automatic control still has priority."); }
             break;

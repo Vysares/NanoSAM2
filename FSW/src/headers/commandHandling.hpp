@@ -25,7 +25,7 @@ namespace commandCode {
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
         // Info
-        INFO = 1,                       // Triggers a readback of system data
+        INFO = 1,                       // Prints a report of system data
 
         // Mode Change
         ENTER_SAFE_MODE,                // enter safemode state
@@ -39,17 +39,17 @@ namespace commandCode {
         DOWNLINK_START,                 // start downlink at next available time
         STREAM_PHOTO_SPI_T,             // start streaming photodiode data read from SPI
         STREAM_PHOTO_SPI_F,             // stop streaming photodiode data read from SPI
-        STREAM_PHOTO_DIRECT_T,          // start streaming photodiode data read directly from pin 21
-        STREAM_PHOTO_DIRECT_F,          // stop streaming photodiode data read directly from pin 21
+        STREAM_PHOTO_DIRECT_T,          // start streaming photodiode data read directly from pin
+        STREAM_PHOTO_DIRECT_F,          // stop streaming photodiode data read directly from pin
         
         // Housekeeping
         TURN_HEATER_ON,                 // turn heater on, does not override housekeeping heater control
         TURN_HEATER_OFF,                // turn heater off, does not override housekeeping heater control
-        HEATER_OVERRIDE_T,              // disables houskeeping heater control
+        HEATER_OVERRIDE_T,              // disables housekeeping heater control
         HEATER_OVERRIDE_F,              // enables housekeeping heater control
         STREAM_TEMPERATURE_T,           // start streaming temperature measurements
         STREAM_TEMPERATURE_F,           // stop streaming temperature measurements
-        CALIBRATE_OPTICS_THERM,         // take new voltage measurement at known temp for optics thermistor
+        CALIBRATE_OPTICS_THERM,         // take new voltage baseline at known temp for optics thermistor
 
         // Command Handling
         PAUSE_EXECUTE_COMMANDS,         // pause command execution
