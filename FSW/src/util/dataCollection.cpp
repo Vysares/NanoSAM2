@@ -31,6 +31,10 @@ static uint16_t dataBuffer[BUFFERSIZE]; // create array to hold data buffer elem
 static char filename[] = "scienceFile0.csv";   // null-terminated char array 
 static const int FILE_IDX_OFFSET = 11;           // index of file number in char array
 
+// SPI 
+// may want to update this to dynamically change the flash module, keeping it simple for now
+static const int CURRENT_FLASH_CHIP = PIN_FLASH1_CS;
+
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - dataProcessing - - - - - - *
@@ -207,24 +211,34 @@ bool saveBuffer() {
         }
     }
 
-    // create new file (non-erasable, delete file after downlink)
-    bool status = true; // track file creation/writing status
-    status = SerialFlash.create(filename, encodedFileData.MEMSIZE);
+	// establish SPI connection to flash chip
+	bool status = true; // track file creation/writing status
+	
+	if (SerialFlash.begin(CURRENT_FLASH_CHIP)) { // SPI to flash module successful
 
-    if (status) { Serial.print("Successfully created file: "); }
-    else { Serial.print("Failed to create file: "); }
-    Serial.println(filename);
+		// create new file (non-erasable, delete file after downlink)
+		status = SerialFlash.create(filename, encodedFileData.MEMSIZE);
 
-    // write buffer to this new file
-    SerialFlashFile file;
-    file = SerialFlash.open(filename);
-    status = file.write(encodedFileData.getData(), encodedFileData.MEMSIZE); // write encoded science data to file
+		if (status) { Serial.print("Successfully created file: "); }
+        else { Serial.print("Failed to create file: "); }
+        Serial.println(filename);
 
-    bufIdx = 0; // reset index to start of array since we have saved the buffer
+		// write buffer to this new file
+		SerialFlashFile file;
+		file = SerialFlash.open(filename);
+		status = file.write(encodedFileData.getData(), encodedFileData.MEMSIZE); // write encoded science data to file
 
-    if (status) { Serial.print("Write successful: "); }
-    else { Serial.print("Write failed: "); }
-    Serial.println(filename);
+        if (status) { Serial.print("Write successful: "); }
+        else { Serial.print("Write failed: "); }
+        Serial.println(filename);
+
+        bufIdx = 0; // reset index to start of array since we have saved the buffer
+
+	} else { // SerialFlash connection failed
+
+		Serial.println("Failed to establish SerialFlash connection to current flash module (saveBuffer() func)");
+		status = false;
+	}
 
     return status; // return whether or not file was successfully created
 }
@@ -286,6 +300,9 @@ void downlink() {
     if (downlinkEvent.first()) {
         downlinkFileCount = 0;
     }
+
+    // TODO: make flash chip we are using configurable with a command? Auto balance the load somehow?
+    SerialFlash.begin(CURRENT_FLASH_CHIP); // begin spi connection with flash module 1
 
     /* downlink a single file */
     downlinkFileName[FILE_IDX_OFFSET] = '0' + (downlinkEvent.iter() - 1); // update file name 
