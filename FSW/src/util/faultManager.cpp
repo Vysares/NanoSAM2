@@ -33,7 +33,7 @@ static FaultReport faultLog[faultCode::COUNT];
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
 const size_t MAX_ADDRESS = EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE * (EEPROM_SIZE / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE);
 
-// flag indicating if ave to EEPROM is required
+// flag indicating if save to EEPROM is required
 bool saveRequired = false;
 
 /* - - - - - - Module Driver Functions - - - - - - */
