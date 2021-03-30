@@ -62,7 +62,9 @@ void setHeater() {
     if (!HEATER_OVERRIDE) {
         if (latestHkSample.opticsTemp >= HEATER_TEMP_HIGH) {
             HEATER_ON = false;
+            Serial.println("Automatic Thermal Control - Heater OFF");
         } else if (latestHkSample.opticsTemp <= HEATER_TEMP_LOW) {
+            Serial.println("Automatic Thermal Control - Heater ON");
             HEATER_ON = true;
         }
     } 
