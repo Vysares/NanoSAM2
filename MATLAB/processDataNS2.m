@@ -141,7 +141,11 @@ function plotTemp(tempVals)
     xlabel("Time (s)")
     ylabel("Temperature (C)")
     
-    legend("Optics", "Analog", "Digital")
+    % plot temp requirement
+    yline(-20, 'g--', "linewidth", 2);
+    yline(60, 'g--', "linewidth", 2);
+    
+    legend("Optics", "Analog", "Digital", "Temp Requirement Bounds")
     
     
     figure % for heater status
