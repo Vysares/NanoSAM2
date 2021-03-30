@@ -326,12 +326,12 @@ void executeCommand(int command) {
         // Command Handling
         case commandCode::PAUSE_EXECUTE_COMMANDS: 
             isPaused = true;
-            Serial.println("Command Executed - Command execution paused.");
+            Serial.println("Command Executed - Command execution paused. New commands will be added to the queue.");
             break;
         
         case commandCode::RESUME_EXECUTE_COMMANDS: 
             isPaused = false;
-            Serial.println("Command Executed - Command execution resumed.");
+            Serial.println("Command Executed - Command execution resumed. Executing all queued commands.");
             break;
         
         case commandCode::CLEAR_COMMAND_QUEUE: 
