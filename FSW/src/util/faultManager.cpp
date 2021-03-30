@@ -110,13 +110,12 @@ void handleFaults() {
 
         // check if fault needs action
         // note that the action flag is set to false even if ACT_ON_FAULTS is false. 
-        //  this prevents a buildup of multiple faults that may conflict. (e.g. the optics temp cannot be too low and too high at once)
+        //  this prevents a buildup of multiple faults that may conflict. (e.g. the optics temp cannot be both too hot and too cold)
         if (faultLog[code].pendingAction) { faultLog[code].pendingAction = false; }  
         else { continue; }
         
-        // check if corrective actions are enabled
-        if (ACT_ON_FAULTS) {  }
-        else { continue; }
+        // skip all if corrective actions are disabled
+        if (!ACT_ON_FAULTS) { continue; }
         
         /* Take action to correct fault */
         // TODO: Expand to include more faults
