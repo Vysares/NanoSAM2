@@ -32,9 +32,6 @@ static FaultReport faultLog[faultCode::COUNT];
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
 
-// flag to indicate whether a fault has been detected
-bool detectedFault = false;
-
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - logFault - - - - - - *
@@ -61,7 +58,6 @@ void logFault(int code) {
 
     if (faultLog[code].occurrences < 255) { faultLog[code].occurrences++; }
     faultLog[code].pendingAction = true;
-    detectedFault = true;
     
     // Print message
     if (!SUPPRESS_FAULTS) {
@@ -99,18 +95,19 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    if (detectedFault) {
-        saveEEPROM();
-        detectedFault = false;
-    }
+    bool saveRequired = false;
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
-        
+
         // check if fault needs action
-        if (faultLog[code].pendingAction) { faultLog[code].pendingAction = false; } 
-        else { continue; } // skip the fault if no action is required
+        // note that the action flag is set to false even if ACT_ON_FAULTS is false. 
+        //  this prevents a buildup of multiple faults that may conflict. (e.g. the optics temp cannot be too low and too high at once)
+        if (faultLog[code].pendingAction) { faultLog[code].pendingAction = false; }  
+        else { continue; }
         
-        if (!ACT_ON_FAULTS) { continue; } // skip every fault if corrective action is disabled
+        // check if corrective actions are enabled
+        if (ACT_ON_FAULTS) { saveRequired = true; }
+        else { continue; }
         
         /* Take action to correct fault */
         // TODO: Expand to include more faults
@@ -127,14 +124,16 @@ void handleFaults() {
             case faultCode::OPTICS_TOO_COLD:
                 if (HEATER_OVERRIDE) {
                     HEATER_OVERRIDE = false;
-                    Serial.println("Corrective Action - One or more temperatures out of acceptable range. Automatic heater control re-enabled.");
+                    Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
+                    Serial.println("(One or more temperatures out of acceptable range!)");
                 }
                 break;
 
             // EEPROM corrupted
             case faultCode::EEPROM_CORRUPTED:
                 if (scienceMode.getMode() != SAFE_MODE) {
-                    Serial.println("Corrective Action - EEPROM corrupted. Mode set to safemode.");
+                    Serial.println("Corrective Action Taken - Mode set to safemode.");
+                    Serial.println("(EEPROM corrupted!)");
                     scienceMode.setMode(SAFE_MODE);
                 }
                 break;
@@ -147,6 +146,7 @@ void handleFaults() {
                 break;
         }
     }
+    if (saveRequired) { saveEEPROM(); }
 }
 
 /* - - - - - - wipeEEPROM - - - - - - *
