@@ -373,6 +373,7 @@ int seekEEPROM() {
             eepromData[byteNum] = EEPROM.read(address + byteNum);
         }
         encodedData.fill(eepromData);
+        encodedData.scrub();
         memcpy(&writeCount, encodedData.getDecodedData(), sizeof(writeCount));
         
         // compare write countst o find the highest. Higher write count corresponds to more recent write
