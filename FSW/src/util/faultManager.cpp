@@ -32,9 +32,6 @@ static FaultReport faultLog[faultCode::COUNT];
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
 
-// flag to indicate whether any faults were logged in the current main loop iteration
-static bool detectedFault = false; 
-
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - logFault - - - - - - *
@@ -48,9 +45,6 @@ static bool detectedFault = false;
  *  None
  */
 void logFault(int code) {
-    if (SUPPRESS_FAULTS) { return; }
-    detectedFault = true;
-
     // check if fault is valid
     if (code >= faultCode::ERR_CODE) {
         Serial.print("Warning, tried to log a fault with invalid fault code: ");
@@ -65,8 +59,14 @@ void logFault(int code) {
     if (faultLog[code].occurrences < 255) { faultLog[code].occurrences++; }
     faultLog[code].pendingAction = 1;
     
-    Serial.print("Fault Logged: ");
-    Serial.println(code);
+    // Print message
+    if (!SUPPRESS_FAULTS) {
+        Serial.print("Fault Logged: ");
+        Serial.print(code);
+        Serial.print(" (");
+        Serial.print(faultLog[code].occurrences);
+        Serial.println(").");
+    }
 }
 
 /* - - - - - - feedWD - - - - - - *
@@ -95,13 +95,14 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    if (!detectedFault || !ACT_ON_FAULTS) { return; }
-    detectedFault = false;
+    if (!ACT_ON_FAULTS) { return; }
+    bool detectedFault = false;
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
         
         if (faultLog[code].pendingAction) {
             faultLog[code].pendingAction = false;
+            detectedFault = true;
 
             /* Take action to correct fault */
             // TODO: Expand to include more faults
@@ -146,6 +147,9 @@ void handleFaults() {
                     break;
             }
         }
+    }
+    if (detectedFault) {
+        saveEEPROM();
     }
 }
 

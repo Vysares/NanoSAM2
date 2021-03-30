@@ -43,6 +43,7 @@ bool init() {
     // load persistent data from EEPROM
     loadEEPROM();
     recordNewStart();
+    resetFaultCounts(); // reset fault occurence counts
 
     // Set pin modes
     pinMode(PIN_HEAT, OUTPUT);

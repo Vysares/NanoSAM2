@@ -379,12 +379,12 @@ void executeCommand(int command) {
         
         case commandCode::SUPPRESS_FAULTS_T:
             SUPPRESS_FAULTS = true;
-            Serial.println("Command Executed - New faults are now suppressed.");
+            Serial.println("Command Executed - Fault messages are suppressed. Faults will still be logged.");
             break;
 
         case commandCode::SUPPRESS_FAULTS_F:
             SUPPRESS_FAULTS = false;
-            Serial.println("Command Executed - New faults can now be logged.");
+            Serial.println("Command Executed - Fault messages enabled.");
             break;
 
         case commandCode::ACT_ON_FAULTS_T:
@@ -459,7 +459,7 @@ void printInfo() {
     Serial.print("Command Mode: ");
     if (isPaused) { Serial.println("Queue"); } 
     else { Serial.println("Execute Immediately"); }
-    Serial.print("Fault Logging: ");
+    Serial.print("Fault Messages: ");
     if (SUPPRESS_FAULTS) { Serial.println("Disabled"); } 
     else { Serial.println("Enabled"); }
     Serial.print("Fault Correction: ");
