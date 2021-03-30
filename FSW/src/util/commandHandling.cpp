@@ -445,7 +445,7 @@ void printInfo() {
     Serial.println(millis());
     Serial.print("Mode: ");
     switch (scienceMode.getMode()) {
-        case SAFE_MODE: Serial.println("Safe Mode");
+        case SAFE_MODE: Serial.println("Safe");
             break;
         case STANDBY_MODE: Serial.println("Standby");
             break;
