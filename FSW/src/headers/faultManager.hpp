@@ -24,9 +24,6 @@ namespace faultCode {
         DIGITAL_TOO_COLD,
         OPTICS_TOO_HOT,
         OPTICS_TOO_COLD,
-
-        // Power
-        DREG_OUT_OF_RANGE,      // Digital regulator voltage is out of normal range
         
         // Bad News
         EEPROM_CORRUPTED,       // EEPROM data is corrupted beyond rescue
