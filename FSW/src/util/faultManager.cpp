@@ -31,7 +31,7 @@ static FaultReport faultLog[faultCode::COUNT];
 
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
-const size_t MAX_ADDRESS = EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE * (EEPROM_SIZE / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE);
+const int MAX_ADDRESS = EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE * (EEPROM_SIZE / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE);
 
 // flag indicating if save to EEPROM is required
 bool saveRequired = false;
