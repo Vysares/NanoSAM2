@@ -32,6 +32,9 @@ static FaultReport faultLog[faultCode::COUNT];
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
 
+// flag to indicate whether a fault has been detected
+bool detectedFault = false;
+
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - logFault - - - - - - *
@@ -57,7 +60,8 @@ void logFault(int code) {
     faultLog[code].timestamp = millis();
 
     if (faultLog[code].occurrences < 255) { faultLog[code].occurrences++; }
-    faultLog[code].pendingAction = 1;
+    faultLog[code].pendingAction = true;
+    detectedFault = true;
     
     // Print message
     if (!SUPPRESS_FAULTS) {
@@ -65,7 +69,7 @@ void logFault(int code) {
         Serial.print(code);
         Serial.print(" (");
         Serial.print(faultLog[code].occurrences);
-        Serial.println(").");
+        Serial.println(")");
     }
 }
 
@@ -95,61 +99,53 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    if (!ACT_ON_FAULTS) { return; }
-    bool detectedFault = false;
+    if (detectedFault) {
+        saveEEPROM();
+        detectedFault = false;
+    }
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
         
-        if (faultLog[code].pendingAction) {
-            faultLog[code].pendingAction = false;
-            detectedFault = true;
+        // check if fault needs action
+        if (faultLog[code].pendingAction) { faultLog[code].pendingAction = false; } 
+        else { continue; } // skip the fault if no action is required
+        
+        if (!ACT_ON_FAULTS) { continue; } // skip every fault if corrective action is disabled
+        
+        /* Take action to correct fault */
+        // TODO: Expand to include more faults
+        switch (code) {
 
-            /* Take action to correct fault */
-            // TODO: Expand to include more faults
-            switch (code) {
-    
-                // temp too hot
-                case faultCode::ANALOG_TOO_HOT:
-                case faultCode::DIGITAL_TOO_HOT:
-                case faultCode::OPTICS_TOO_HOT:
-                    if (HEATER_OVERRIDE) {
-                        HEATER_OVERRIDE = false;
-                        Serial.println("Warning - one or more temperatures above acceptable range!");
-                        Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
-                    }
-                    break;
+            // temp too hot
+            case faultCode::ANALOG_TOO_HOT:
+            case faultCode::DIGITAL_TOO_HOT:
+            case faultCode::OPTICS_TOO_HOT:
 
-                // tempt too cold
-                case faultCode::ANALOG_TOO_COLD:
-                case faultCode::DIGITAL_TOO_COLD:
-                case faultCode::OPTICS_TOO_COLD:
-                    if (HEATER_OVERRIDE) {
-                        HEATER_OVERRIDE = false;
-                        Serial.println("Warning - one or more temperatures below acceptable range!");
-                        Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
-                    }
-                    break;
+            // temp too cold
+            case faultCode::ANALOG_TOO_COLD:
+            case faultCode::DIGITAL_TOO_COLD:
+            case faultCode::OPTICS_TOO_COLD:
+                if (HEATER_OVERRIDE) {
+                    HEATER_OVERRIDE = false;
+                    Serial.println("Corrective Action - One or more temperatures out of acceptable range. Automatic heater control re-enabled.");
+                }
+                break;
 
-                // EEPROM corrupted
-                case faultCode::EEPROM_CORRUPTED:
-                    if (scienceMode.getMode() != SAFE_MODE) {
-                        Serial.println("Warning - Detected corrupted data in EEPROM!");
-                        Serial.println("Corrective Action Taken - Mode set to safemode.");
-                        scienceMode.setMode(SAFE_MODE);
-                    }
-                    break;
+            // EEPROM corrupted
+            case faultCode::EEPROM_CORRUPTED:
+                if (scienceMode.getMode() != SAFE_MODE) {
+                    Serial.println("Corrective Action - EEPROM corrupted. Mode set to safemode.");
+                    scienceMode.setMode(SAFE_MODE);
+                }
+                break;
 
-                // if fault has no corrective action
-                default:
-                    // Serial.print("Fault code ");
-                    // Serial.print(code);
-                    // Serial.println(" has no assigned corrective action.");
-                    break;
-            }
+            // if fault has no corrective action
+            default:
+                // Serial.print("Fault code ");
+                // Serial.print(code);
+                // Serial.println(" has no assigned corrective action.");
+                break;
         }
-    }
-    if (detectedFault) {
-        saveEEPROM();
     }
 }
 
@@ -351,8 +347,7 @@ void loadEEPROM() {
 void resetFaultCounts() {
     for (int i = 0; i < faultCode::COUNT; i++) {
         faultLog[i].occurrences = 0;
-        faultLog[i].pendingAction = 0;
+        faultLog[i].pendingAction = false;
     }
     saveEEPROM();
 }
-

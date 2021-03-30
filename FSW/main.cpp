@@ -105,6 +105,7 @@ int main() {
         
         /* ===== ALWAYS EXECUTE ===== */
         commandHandling(); // handle commands
+        handleFaults();    // handle faults
                                             
         if (housekeepingTimer.checkInvoked()) { // housekeeping
             handleHousekeeping(); 
@@ -117,7 +118,6 @@ int main() {
         /* ===== ONLY EXECTUTE DURING NORMAL OPERATION ===== */
         if (scienceMode.getMode() != SAFE_MODE) {
             scienceMemoryHandling(); // handle science data collection
-            handleFaults();          // handle faults
         }
 
          /* ===== ONLY EXECUTE ON ENTRY TO STANDBY MODE ===== */
