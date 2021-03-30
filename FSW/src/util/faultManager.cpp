@@ -288,7 +288,6 @@ int saveEEPROM() {
 
     // shift EEPROM address
     int startAddress = (payloadData.eepromWriteCount * encodedData.MEMSIZE) % MAX_ADDRESS;
-    Serial.println(startAddress);
 
     // write to EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
@@ -320,7 +319,6 @@ void loadEEPROM() {
 
     // read data from EEPROM
     int startAddress = seekEEPROM(); // find latest EEPROM block
-    Serial.println(startAddress);
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
         eepromData[byteNum] = EEPROM.read(startAddress + byteNum);
     }
@@ -397,7 +395,6 @@ int seekEEPROM() {
 void resetFaultCounts() {
     for (int i = 0; i < faultCode::COUNT; i++) {
         faultLog[i].occurrences = 0;
-        faultLog[i].pendingAction = false;
     }
     saveEEPROM();
 }
