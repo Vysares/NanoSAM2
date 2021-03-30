@@ -430,11 +430,24 @@ void executeCommand(int command) {
  *  None
  */
 void printInfo() {
-    Serial.println("===== Status Report =====");
+    Serial.println("========== Status Report ==========");
     Serial.print("Uptime (ms): ");
     Serial.println(millis());
     Serial.print("Mode: ");
-    Serial.println(scienceMode.getMode());
+    switch (scienceMode.getMode()) {
+        case SAFE_MODE: Serial.println("Safe Mode");
+            break;
+        case STANDBY_MODE: Serial.println("Standby");
+            break;
+        case SUNSET_MODE: Serial.println("Sunset");
+            break;
+        case PRE_SUNRISE_MODE: Serial.println("Watching for Sunrise");
+            break;
+        case SUNRISE_MODE: Serial.println("Sunrise");
+            break;
+        default: Serial.println("Mode Not Recognized!");
+            break;
+    }
     Serial.print("Total Restarts: ");
     Serial.println(payloadData.startCount);
     Serial.print("Unexpected Restarts: ");
@@ -465,5 +478,5 @@ void printInfo() {
     Serial.print("Fault Correction: ");
     if (ACT_ON_FAULTS) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
-    Serial.println("===== End Report =====");
+    Serial.println("========== End Report ==========");
 }
