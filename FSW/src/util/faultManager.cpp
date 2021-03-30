@@ -31,7 +31,7 @@ static FaultReport faultLog[faultCode::COUNT];
 
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
-const int MAX_ADDRESS = EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE * (EEPROM_SIZE / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE);
+const int NUM_EEPROM_BLOCKS = (int)EEPROM.length() / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE;
 
 // flag indicating if save to EEPROM is required
 bool saveRequired = false;
@@ -73,6 +73,7 @@ void logFault(int code) {
         Serial.print(" (");
         Serial.print(faultLog[code].occurrences);
         Serial.println(")");
+        Serial.flush();
     }
 }
 
@@ -104,7 +105,7 @@ void feedWD() {
 void handleFaults() {
     if (SAVE_FAULTS_TO_EEPROM && saveRequired) { 
         saveEEPROM();
-        saveRequired = false;    
+        saveRequired = false;
     }
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
@@ -179,7 +180,7 @@ void wipeEEPROM() {
     Serial.println(payloadData.eepromWriteCount);
 
     // Completely wipe the EEPROM
-    for (int i = 0; i < EEPROM_SIZE; i++) {
+    for (int i = 0; i < EEPROM.length(); i++) {
         EEPROM.write(i, 0);
     }
     payloadData.eepromWriteCount = 1;
@@ -262,7 +263,7 @@ void prepareForRestart() {
  * Outputs:
  *  The total number of bytes overwritten
  */
-int saveEEPROM() {
+void saveEEPROM() {
 
     payloadData.eepromWriteCount++; // one more write to EEPROM
     int bytesWritten = 0;
@@ -271,6 +272,7 @@ int saveEEPROM() {
     // copy persistent data to rawData array
     size_t bytesCopied = 0;
     memAppend(rawData, &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
+    memAppend(rawData, &payloadData.expectingRestartFlag, sizeof(payloadData.expectingRestartFlag), &bytesCopied);
     memAppend(rawData, &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
     memAppend(rawData, &payloadData.consecutiveBadRestarts, sizeof(payloadData.consecutiveBadRestarts), &bytesCopied);
     memAppend(rawData, &payloadData.recoveredMode, sizeof(payloadData.recoveredMode), &bytesCopied);
@@ -281,25 +283,28 @@ int saveEEPROM() {
         memAppend(rawData, &faultLog[i].startNum, sizeof(faultLog[i].startNum), &bytesCopied);
         memAppend(rawData, &faultLog[i].timestamp, sizeof(faultLog[i].timestamp), &bytesCopied);
     }
+    Serial.println(bytesCopied);
 
     // encode the data
     EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
     encodedData.encodeData(rawData);
 
     // shift EEPROM address
-    int startAddress = (payloadData.eepromWriteCount * encodedData.MEMSIZE) % MAX_ADDRESS;
+    //int startAddress = 0;
+    volatile int startAddress = 0; //(payloadData.eepromWriteCount % NUM_EEPROM_BLOCKS) * encodedData.MEMSIZE;
 
     // write to EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
         int eepromAddress = startAddress + byteNum;
         uint8_t dataToWrite = encodedData.getData()[byteNum];
 
-        if (EEPROM.read(eepromAddress) != dataToWrite) { // only overwrite if the byte has changed. This extends the life of the EEPROM.
-            EEPROM.write(eepromAddress, dataToWrite);
-            bytesWritten++;
+        if (eepromAddress >= EEPROM.length()) {
+            Serial.println("Tried to write EEPROM out of bounds! Write aborted.");
+            return;
         }
+        // write the data only if byte has changed
+        EEPROM.update(eepromAddress, dataToWrite);
     }
-    return bytesWritten;
 }
 
 /* - - - - - - loadEEPROM - - - - - - *
@@ -318,6 +323,7 @@ void loadEEPROM() {
     uint8_t eepromData[encodedData.MEMSIZE] = {};
 
     // read data from EEPROM
+    //int startAddress = 0;
     int startAddress = seekEEPROM(); // find latest EEPROM block
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
         eepromData[byteNum] = EEPROM.read(startAddress + byteNum);
@@ -334,6 +340,7 @@ void loadEEPROM() {
     // extract system data
     size_t bytesCopied = 0;
     memExtract(encodedData.getDecodedData(), &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
+    memExtract(encodedData.getDecodedData(), &payloadData.expectingRestartFlag, sizeof(payloadData.expectingRestartFlag), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.consecutiveBadRestarts, sizeof(payloadData.consecutiveBadRestarts), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.recoveredMode, sizeof(payloadData.recoveredMode), &bytesCopied);
@@ -362,24 +369,25 @@ int seekEEPROM() {
     uint8_t eepromData[encodedData.MEMSIZE] = {};
 
     // seek the latest EEPROM address
+    volatile int startAddress = 0;
     uint32_t highestWriteCount = 0;
     uint32_t writeCount = 0;
-    for (int address = 0; address < MAX_ADDRESS; address += encodedData.MEMSIZE) { // for each EEPROM block...
-
+    for (int i = 0; i < NUM_EEPROM_BLOCKS; i++) { // for each EEPROM block...
+        startAddress = i * encodedData.MEMSIZE;
         // read data from EEPROM
         for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
-            eepromData[byteNum] = EEPROM.read(address + byteNum);
+            eepromData[byteNum] = EEPROM.read(startAddress + byteNum);
         }
         encodedData.fill(eepromData);
         encodedData.scrub();
         memcpy(&writeCount, encodedData.getDecodedData(), sizeof(writeCount));
         
-        // compare write countst o find the highest. Higher write count corresponds to more recent write
+        // compare write counts to find the highest. Higher write count corresponds to more recent write
         if (writeCount >= highestWriteCount) {
             highestWriteCount = writeCount;
         }
     }
-    return (highestWriteCount * encodedData.MEMSIZE) % MAX_ADDRESS;
+    return (highestWriteCount % NUM_EEPROM_BLOCKS) * encodedData.MEMSIZE;
 }
 
 /* - - - - - - resetFaultCounts - - - - - - *
@@ -396,5 +404,4 @@ void resetFaultCounts() {
     for (int i = 0; i < faultCode::COUNT; i++) {
         faultLog[i].occurrences = 0;
     }
-    saveEEPROM();
 }

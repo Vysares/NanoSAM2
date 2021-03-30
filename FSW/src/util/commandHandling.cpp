@@ -276,6 +276,16 @@ void executeCommand(int command) {
             STREAM_PHOTO_DIRECT = false;
             Serial.println("Command Executed - Stopped streaming photodiode data from Teensy ADC.");
             break;
+        
+        case commandCode::PRINT_PHOTO_SPI_SINGLE:
+            printEventSPI.invoke();
+            Serial.println("Command Executed - Printing next photdiode sample from SPI.");
+            break;
+
+        case commandCode::PRINT_PHOTO_DIR_SINGLE:
+            printEventDir.invoke();
+            Serial.println("Command Executed - Printing next photdiode sample from Teensy ADC.");
+            break;
 
         // Housekeeping
         case commandCode::TURN_HEATER_ON: 

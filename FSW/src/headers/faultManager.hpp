@@ -24,7 +24,7 @@ namespace faultCode {
         DIGITAL_TOO_COLD,
         OPTICS_TOO_HOT,
         OPTICS_TOO_COLD,
-        
+
         // Bad News
         EEPROM_CORRUPTED,       // EEPROM data is corrupted beyond rescue
         ERR_CODE
@@ -41,10 +41,10 @@ struct FaultReport {
 };
 
 struct PayloadData {
+        uint32_t eepromWriteCount = 0;
         uint8_t expectingRestartFlag = 0;
         uint16_t startCount = 1;
         uint16_t consecutiveBadRestarts = 0;
-        uint32_t eepromWriteCount = 0;
         uint8_t recoveredMode = 0;
         static const size_t MEMSIZE = 10;
 };
@@ -61,7 +61,7 @@ void resetPersistentData();
 
 void recordNewStart();
 void prepareForRestart();
-int saveEEPROM();
+void saveEEPROM();
 void loadEEPROM();
 int seekEEPROM();
 void resetFaultCounts();

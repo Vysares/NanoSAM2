@@ -19,6 +19,8 @@ TimedEvent sunriseTimerEvent = TimedEvent(WINDOW_LENGTH_MSEC);
 TimedEvent sweepTimeoutEvent = TimedEvent(SWEEP_TIMEOUT_MSEC);
 AsyncEvent downlinkEvent = AsyncEvent(MAXFILES);
 AsyncEvent scrubEvent = AsyncEvent(MAXFILES);
+Event printEventSPI = Event();
+Event printEventDir = Event();
 
 // Command Handling
 volatile bool DANGER_COMMANDS_ALLOWED = DANGER_COMMANDS_ALLOWED_INIT;

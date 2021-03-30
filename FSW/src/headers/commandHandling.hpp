@@ -41,6 +41,8 @@ namespace commandCode {
         STREAM_PHOTO_SPI_F,             // stop streaming photodiode data read from SPI
         STREAM_PHOTO_DIRECT_T,          // start streaming photodiode data read directly from pin
         STREAM_PHOTO_DIRECT_F,          // stop streaming photodiode data read directly from pin
+        PRINT_PHOTO_SPI_SINGLE,         // print a single photodiode sample read from SPI
+        PRINT_PHOTO_DIR_SINGLE,         // print a single photodiode sample read from pin
         
         // Housekeeping
         TURN_HEATER_ON,                 // turn heater on, does not override housekeeping heater control

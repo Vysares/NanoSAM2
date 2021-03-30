@@ -37,8 +37,6 @@ const int PIN_DIGITAL_THERM = 14;   // digital board thermistor pin
 const int PIN_ANALOG_THERM = 15;    // analog board thermistor pin
 const int PIN_OPTICS_THERM = 16;    // optics bench thermistor pin
 
-
-
 /* - - - - - - Teensy ADC - - - - - - */
 const int TEENSY_ADC_BINS = 1023;       // bins, number of bins in Teensy ADC
 const float TEENSY_HIGH_VOLTAGE = 3.3;  // volts, max teensy voltage
@@ -49,8 +47,8 @@ const float TEENSY_VOLTAGE_RES = (TEENSY_HIGH_VOLTAGE - TEENSY_LOW_VOLTAGE) / TE
 const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
 
 /* - - - - - - Serial - - - - - - */
-const int SERIAL_BAUD = 19200;       // Hz, baud rate of serial connection
-const int SERIAL_TIMEOUT_MSEC = 50; // milliseconds, time to wait for serial input
+const int SERIAL_BAUD = 19600;       // Hz, baud rate of serial connection
+const int SERIAL_TIMEOUT_MSEC = 15; // milliseconds, time to wait for serial input
 
 /* - - - - - - ADCS - - - - - - */
 // NanoSAM II will assume that ADCS will be implemented later, but have places in the logic
@@ -100,7 +98,8 @@ extern TimedEvent sunriseTimerEvent;
 extern TimedEvent sweepTimeoutEvent;
 extern AsyncEvent downlinkEvent;
 extern AsyncEvent scrubEvent;
-
+extern Event printEventSPI;
+extern Event printEventDir;
 
 /* - - - - - - Command Handling Module - - - - - - */
 const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
@@ -144,7 +143,7 @@ extern volatile bool STREAM_TEMPERATURE;
 const bool STREAM_TEMPERATURE_INIT = false; // if true, temperature data will be printed over serial in real time
 
 // Heater cutoff temperatures
-const float HEATER_TEMP_LOW = -20;   // celsius, heater will turn on at or below this temp
+const float HEATER_TEMP_LOW = -10;   // celsius, heater will turn on at or below this temp
 const float HEATER_TEMP_HIGH = 20;   // celsius, heater will turn off at or above this temp
 
 // optics thermistor calibration
@@ -154,9 +153,9 @@ extern volatile float OPTICS_THERM_CAL_VOLTAGE;
 const float OPTICS_THERM_CAL_VOLTAGE_INIT = 1.777F; // volts, thermistor voltage at baseline temp
 
 // safe temperature range
-const float OPTICS_TEMP_MIN_SAFE = -35; // celsius, minimum safe photodiode temp
+const float OPTICS_TEMP_MIN_SAFE = -25; // celsius, minimum safe photodiode temp
 const float OPTICS_TEMP_MAX_SAFE = 70;  // celsius, maximum safe photodiode temp
-const float BOARD_TEMP_MIN_SAFE = -20;    // celsius, minimum safe board temp
+const float BOARD_TEMP_MIN_SAFE = -25;    // celsius, minimum safe board temp
 const float BOARD_TEMP_MAX_SAFE = 70;   // celsius, maximum safe board temp
 
 // power supply expected voltage range
