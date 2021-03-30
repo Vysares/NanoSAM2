@@ -397,6 +397,16 @@ void executeCommand(int command) {
             Serial.println("Command Executed - NS2 will NOT attempt to correct faults");
             break;
 
+        case commandCode::SAVE_FAULTS_T:
+            SAVE_FAULTS_TO_EEPROM = true;
+            Serial.println("Command Executed - Faults will be saved to EEPROM");
+            break;
+
+        case commandCode::SAVE_FAULTS_F:
+            SAVE_FAULTS_TO_EEPROM = false;
+            Serial.println("Command Executed - Faults will NOT be saved to EEPROM");
+            break;
+
         // Main Loop
         case commandCode::EXIT_MAIN_LOOP:
             exitMainLoopEvent.invoke();
@@ -469,14 +479,17 @@ void printInfo() {
     Serial.print("Risky Commands: ");
     if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
-    Serial.print("Command Mode: ");
+    Serial.print("Command Execution: ");
     if (isPaused) { Serial.println("Queue"); } 
-    else { Serial.println("Execute Immediately"); }
+    else { Serial.println("Immediate"); }
     Serial.print("Fault Messages: ");
     if (SUPPRESS_FAULTS) { Serial.println("Disabled"); } 
     else { Serial.println("Enabled"); }
     Serial.print("Fault Correction: ");
     if (ACT_ON_FAULTS) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
+    Serial.print("Save Faults: ");
+    if (SAVE_FAULTS_TO_EEPROM) { Serial.println("To EEPROM"); } 
+    else { Serial.println("On stack only"); }
     Serial.println("========== End Report ==========");
 }

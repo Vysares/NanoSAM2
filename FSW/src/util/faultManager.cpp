@@ -32,6 +32,9 @@ static FaultReport faultLog[faultCode::COUNT];
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
 
+// flag indicating if ave to EEPROM is required
+bool saveRequired = false;
+
 /* - - - - - - Module Driver Functions - - - - - - */
 
 /* - - - - - - logFault - - - - - - *
@@ -56,7 +59,10 @@ void logFault(int code) {
     faultLog[code].startNum = payloadData.startCount;
     faultLog[code].timestamp = millis();
 
-    if (faultLog[code].occurrences < 255) { faultLog[code].occurrences++; }
+    if (faultLog[code].occurrences < 255) { 
+        faultLog[code].occurrences++; 
+        saveRequired = true;
+    }
     faultLog[code].pendingAction = true;
     
     // Print message
@@ -95,7 +101,10 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    bool saveRequired = false;
+    if (SAVE_FAULTS_TO_EEPROM && saveRequired) { 
+        saveEEPROM();
+        saveRequired = false;    
+    }
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
 
@@ -106,7 +115,7 @@ void handleFaults() {
         else { continue; }
         
         // check if corrective actions are enabled
-        if (ACT_ON_FAULTS) { saveRequired = true; }
+        if (ACT_ON_FAULTS) {  }
         else { continue; }
         
         /* Take action to correct fault */
@@ -146,7 +155,6 @@ void handleFaults() {
                 break;
         }
     }
-    if (saveRequired) { saveEEPROM(); }
 }
 
 /* - - - - - - wipeEEPROM - - - - - - *

@@ -120,6 +120,8 @@ const bool ACT_ON_FAULTS_INIT = false; // whether to attempt corrective action w
 const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM
 const int EEPROM_SIZE = 1080; // size of EEPROM in bytes
 const uint8_t EXPECTING_RESTART_FLAG = 0xaa; // 10101010, value of flag indicating that the last restart was expected.
+extern volatile bool SAVE_FAULTS_TO_EEPROM;
+const bool SAVE_FAULTS_TO_EEPROM_INIT = false; // whether to save fault data to EEPROM
 
 // watchdog
 const int WD_RESET_INTERVAL_MSEC = 100;     // milliseconds, watchdog feeding interval
