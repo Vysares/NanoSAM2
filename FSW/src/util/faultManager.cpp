@@ -22,6 +22,7 @@
 #include "../headers/encodedFile.hpp"
 #include "../headers/commandHandling.hpp"
 #include "../headers/housekeeping.hpp"
+#include "../headers/timing.hpp"
 
 /* Module Variable Definitions */
 // fault log
@@ -57,21 +58,15 @@ void logFault(int code) {
         return;
     }
 
-    Serial.print("Fault Logged: ");
-    Serial.println(code);
-
     // update corresponding fault report
     faultLog[code].startNum = payloadData.startCount;
     faultLog[code].timestamp = millis();
 
-    if (faultLog[code].occurrences < 255) {
-        faultLog[code].occurrences++;
-        
-        // mark for action on first and max occurrences
-        if (faultLog[code].occurrences == 1 || faultLog[code].occurrences == 255) {
-            faultLog[code].pendingAction = 1;
-        }
-    }
+    if (faultLog[code].occurrences < 255) { faultLog[code].occurrences++; }
+    faultLog[code].pendingAction = 1;
+    
+    Serial.print("Fault Logged: ");
+    Serial.println(code);
 }
 
 /* - - - - - - feedWD - - - - - - *
@@ -100,49 +95,54 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    if (!detectedFault || !ACT_ON_NEW_FAULTS) { return; }
+    if (!detectedFault || !ACT_ON_FAULTS) { return; }
     detectedFault = false;
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
         
-        if (faultLog[code].pendingAction == 1) {
-            faultLog[code].pendingAction = 0;
+        if (faultLog[code].pendingAction) {
+            faultLog[code].pendingAction = false;
 
             /* Take action to correct fault */
             // TODO: Expand to include more faults
             switch (code) {
-                case faultCode::UNEXPECTED_RESTART:
-                    Serial.println("Unexpected restart detected. Entering safe mode.");
-                    executeCommand(commandCode::ENTER_SAFE_MODE);
-                    break;
-                
+    
                 // temp too hot
                 case faultCode::ANALOG_TOO_HOT:
                 case faultCode::DIGITAL_TOO_HOT:
                 case faultCode::OPTICS_TOO_HOT:
-                    Serial.println("Warning - one or more temperatures above acceptable range!");
-                    executeCommand(commandCode::TURN_HEATER_OFF);
+                    if (HEATER_OVERRIDE) {
+                        HEATER_OVERRIDE = false;
+                        Serial.println("Warning - one or more temperatures above acceptable range!");
+                        Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
+                    }
                     break;
 
                 // tempt too cold
                 case faultCode::ANALOG_TOO_COLD:
                 case faultCode::DIGITAL_TOO_COLD:
                 case faultCode::OPTICS_TOO_COLD:
-                    Serial.println("Warning - one or more temperatures below acceptable range!");
-                    executeCommand(commandCode::TURN_HEATER_ON);
+                    if (HEATER_OVERRIDE) {
+                        HEATER_OVERRIDE = false;
+                        Serial.println("Warning - one or more temperatures below acceptable range!");
+                        Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
+                    }
                     break;
 
                 // EEPROM corrupted
                 case faultCode::EEPROM_CORRUPTED:
-                    Serial.println("Detected corrupted data in EEPROM, entering safe mode.");
-                    executeCommand(commandCode::ENTER_SAFE_MODE);
+                    if (scienceMode.getMode() != SAFE_MODE) {
+                        Serial.println("Warning - Detected corrupted data in EEPROM!");
+                        Serial.println("Corrective Action Taken - Mode set to safemode.");
+                        scienceMode.setMode(SAFE_MODE);
+                    }
                     break;
 
                 // if fault has no corrective action
                 default:
-                    Serial.print("Fault code ");
-                    Serial.print(code);
-                    Serial.println(" has no assigned corrective action.");
+                    // Serial.print("Fault code ");
+                    // Serial.print(code);
+                    // Serial.println(" has no assigned corrective action.");
                     break;
             }
         }
@@ -190,6 +190,7 @@ void resetPersistentData() {
 
     for (int i = 0; i < faultCode::COUNT; i++) {
         faultLog[i].occurrences = 0;
+        faultLog[i].pendingAction = 0;
         faultLog[i].startNum = 1;
         faultLog[i].timestamp = 0;
     }
@@ -212,6 +213,12 @@ void recordNewStart() {
     if (payloadData.expectingRestartFlag != EXPECTING_RESTART_FLAG) {
         logFault(faultCode::UNEXPECTED_RESTART);
         payloadData.consecutiveBadRestarts++;
+        Serial.println("Unexpected restart detected.");
+        if (ACT_ON_FAULTS) { 
+            Serial.println("Entering Safe Mode.");
+            scienceMode.setMode(SAFE_MODE);
+        }
+        
     } else { // restart was expected
         payloadData.consecutiveBadRestarts = 0;
     }

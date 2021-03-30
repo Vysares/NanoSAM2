@@ -113,8 +113,8 @@ extern volatile bool SUPPRESS_FAULTS;
 const bool SUPPRESS_FAULTS_INIT = false;  // whether or not to log new fault occurrences.
 
 // Corrective action
-extern volatile bool ACT_ON_NEW_FAULTS; 
-const bool ACT_ON_NEW_FAULTS_INIT = false; // whether to attempt corrective action when faults are detected
+extern volatile bool ACT_ON_FAULTS; 
+const bool ACT_ON_FAULTS_INIT = false; // whether to attempt corrective action when faults are detected
 
 // EEPROM
 const int PERSIST_DATA_ADDR = 0; // first address of persistent system data in EEPROM

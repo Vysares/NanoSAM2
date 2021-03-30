@@ -70,8 +70,8 @@ namespace commandCode {
         RESET_PERSISTENT_DATA,         // resets all persistent data to default values
         SUPPRESS_FAULTS_T,             // stops new faults from being logged
         SUPPRESS_FAULTS_F,             // allows new faults to be logged
-        ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
-        ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
+        ACT_ON_FAULTS_T,               // enables corrective action when faults are detected
+        ACT_ON_FAULTS_F,               // disables corrective action when faults are detected
         DISABLE_WD_RESET,              // disable watchdog reset signal, forcing a restart
 
         // System Commands

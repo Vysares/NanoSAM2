@@ -37,10 +37,10 @@ namespace faultCode {
 
 struct FaultReport {
     uint8_t occurrences = 0;
-    uint8_t pendingAction = 0; 
     uint16_t startNum = 1;
     uint32_t timestamp = 0;
-    static const int MEMSIZE = 8;
+    bool pendingAction = 0; // not written to EEPROM 
+    static const int MEMSIZE = sizeof(occurrences) + sizeof(startNum) + sizeof(timestamp);
 };
 
 struct PayloadData {

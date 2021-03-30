@@ -388,12 +388,12 @@ void executeCommand(int command) {
             break;
 
         case commandCode::ACT_ON_FAULTS_T:
-            ACT_ON_NEW_FAULTS = true;
+            ACT_ON_FAULTS = true;
             Serial.println("Command Executed - NS2 will attempt to correct faults");
             break;
 
         case commandCode::ACT_ON_FAULTS_F:
-            ACT_ON_NEW_FAULTS = false;
+            ACT_ON_FAULTS = false;
             Serial.println("Command Executed - NS2 will NOT attempt to correct faults");
             break;
 
@@ -437,6 +437,8 @@ void printInfo() {
     Serial.println(scienceMode.getMode());
     Serial.print("Total Restarts: ");
     Serial.println(payloadData.startCount);
+    Serial.print("Unexpected Restarts: ");
+    Serial.println(payloadData.consecutiveBadRestarts);
     Serial.print("EEPROM Writes: ");
     Serial.println(payloadData.eepromWriteCount);
     Serial.print("Analog Board Current (A): ");
@@ -456,6 +458,12 @@ void printInfo() {
     else { Serial.println("Disabled"); }
     Serial.print("Command Mode: ");
     if (isPaused) { Serial.println("Queue"); } 
-    else { Serial.println("Execute immediately"); }
+    else { Serial.println("Execute Immediately"); }
+    Serial.print("Fault Logging: ");
+    if (SUPPRESS_FAULTS) { Serial.println("Disabled"); } 
+    else { Serial.println("Enabled"); }
+    Serial.print("Fault Correction: ");
+    if (ACT_ON_FAULTS) { Serial.println("Enabled"); } 
+    else { Serial.println("Disabled"); }
     Serial.println("===== End Report =====");
 }

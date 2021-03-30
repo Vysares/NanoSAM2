@@ -25,7 +25,7 @@ volatile bool DANGER_COMMANDS_ALLOWED = DANGER_COMMANDS_ALLOWED_INIT;
 
 // Fault Mitigation
 volatile bool SUPPRESS_FAULTS = SUPPRESS_FAULTS_INIT;
-volatile bool ACT_ON_NEW_FAULTS = ACT_ON_NEW_FAULTS_INIT;
+volatile bool ACT_ON_FAULTS = ACT_ON_FAULTS_INIT;
 RecurringEvent wdTimer = RecurringEvent(WD_RESET_INTERVAL_MSEC);
 
 // Housekeeping
