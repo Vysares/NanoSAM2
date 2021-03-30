@@ -66,6 +66,7 @@ void recordNewStart();
 void prepareForRestart();
 int saveEEPROM();
 void loadEEPROM();
+int seekEEPROM();
 void resetFaultCounts();
 
 #endif

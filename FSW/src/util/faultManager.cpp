@@ -31,6 +31,7 @@ static FaultReport faultLog[faultCode::COUNT];
 
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
+const size_t MAX_ADDRESS = EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE * (EEPROM_SIZE / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE);
 
 // flag indicating if ave to EEPROM is required
 bool saveRequired = false;
@@ -120,6 +121,12 @@ void handleFaults() {
         /* Take action to correct fault */
         // TODO: Expand to include more faults
         switch (code) {
+
+            case faultCode::UNEXPECTED_RESTART:
+                scienceMode.setMode(SAFE_MODE);
+                Serial.println("Corrective Action Taken - Entering Safe Mode.");
+                Serial.println("(Unexpected restart!)");
+                break;
 
             // temp too hot
             case faultCode::ANALOG_TOO_HOT:
@@ -219,13 +226,8 @@ void recordNewStart() {
     // check if restart was unexpected
     if (payloadData.expectingRestartFlag != EXPECTING_RESTART_FLAG) {
         logFault(faultCode::UNEXPECTED_RESTART);
-        payloadData.consecutiveBadRestarts++;
-        Serial.println("Unexpected restart detected.");
-        if (ACT_ON_FAULTS) { 
-            Serial.println("Entering Safe Mode.");
-            scienceMode.setMode(SAFE_MODE);
-        }
-        
+        payloadData.consecutiveBadRestarts++; 
+
     } else { // restart was expected
         payloadData.consecutiveBadRestarts = 0;
     }
@@ -284,9 +286,13 @@ int saveEEPROM() {
     EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
     encodedData.encodeData(rawData);
 
+    // shift EEPROM address
+    int startAddress = (payloadData.eepromWriteCount * encodedData.MEMSIZE) % MAX_ADDRESS;
+    Serial.println(startAddress);
+
     // write to EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
-        int eepromAddress = PERSIST_DATA_ADDR + byteNum;
+        int eepromAddress = startAddress + byteNum;
         uint8_t dataToWrite = encodedData.getData()[byteNum];
 
         if (EEPROM.read(eepromAddress) != dataToWrite) { // only overwrite if the byte has changed. This extends the life of the EEPROM.
@@ -312,12 +318,13 @@ void loadEEPROM() {
     EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
     uint8_t eepromData[encodedData.MEMSIZE] = {};
 
-    // read EEPROM
+    // read data from EEPROM
+    int startAddress = seekEEPROM(); // find latest EEPROM block
+    Serial.println(startAddress);
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
-        int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        eepromData[byteNum] = EEPROM.read(eepromAddress);
+        eepromData[byteNum] = EEPROM.read(startAddress + byteNum);
     }
-
+    
     // decode and scrub EEPROM data
     encodedData.fill(eepromData);
     ScrubReport scrubInfo = encodedData.scrub();
@@ -339,6 +346,41 @@ void loadEEPROM() {
         memExtract(encodedData.getDecodedData(), &faultLog[i].startNum, sizeof(faultLog[i].startNum), &bytesCopied);
         memExtract(encodedData.getDecodedData(), &faultLog[i].timestamp, sizeof(faultLog[i].timestamp), &bytesCopied);
     }
+}
+
+/* - - - - - - seekEEPROM - - - - - - *
+ * Usage:
+ *  Finds the address in EEPROM where persistent data was last saved
+ *  
+ * Inputs:
+ *  None
+
+ * Outputs:
+ *  Start address in EEPROM where data was most recently written
+ */
+int seekEEPROM() {
+
+    EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
+    uint8_t eepromData[encodedData.MEMSIZE] = {};
+
+    // seek the latest EEPROM address
+    uint32_t highestWriteCount = 0;
+    uint32_t writeCount = 0;
+    for (int address = 0; address < MAX_ADDRESS; address += encodedData.MEMSIZE) { // for each EEPROM block...
+
+        // read data from EEPROM
+        for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
+            eepromData[byteNum] = EEPROM.read(address + byteNum);
+        }
+        encodedData.fill(eepromData);
+        memcpy(&writeCount, encodedData.getDecodedData(), sizeof(writeCount));
+        
+        // compare write countst o find the highest. Higher write count corresponds to more recent write
+        if (writeCount >= highestWriteCount) {
+            highestWriteCount = writeCount;
+        }
+    }
+    return (highestWriteCount * encodedData.MEMSIZE) % MAX_ADDRESS;
 }
 
 /* - - - - - - resetFaultCounts - - - - - - *
