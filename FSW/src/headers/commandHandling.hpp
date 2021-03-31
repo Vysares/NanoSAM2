@@ -37,9 +37,9 @@ namespace commandCode {
         // Data Collection
         SAVE_BUFFER,                    // saves the buffer in the next available file slot
         DOWNLINK_START,                 // start downlink at next available time
-        STREAM_PHOTO_T,                 // start streaming photodiode data read from SPI
-        STREAM_PHOTO_F,                 // stop streaming photodiode data read from SPI
-        PRINT_PHOTO_SINGLE,             // print a single photodiode sample read from SPI
+        STREAM_PHOTO_T,                 // start streaming photodiode data
+        STREAM_PHOTO_F,                 // stop streaming photodiode data
+        PRINT_PHOTO_SINGLE,             // print a single photodiode sample
         
         // Housekeeping
         TURN_HEATER_ON,                 // turn heater on, does not override housekeeping heater control
