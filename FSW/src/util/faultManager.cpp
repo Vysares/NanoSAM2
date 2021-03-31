@@ -133,6 +133,11 @@ void handleFaults() {
             case faultCode::ANALOG_TOO_HOT:
             case faultCode::DIGITAL_TOO_HOT:
             case faultCode::OPTICS_TOO_HOT:
+                if (HEATER_OVERRIDE) {
+                    HEATER_OVERRIDE = false;
+                    Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
+                    Serial.println("(One or more temperatures above acceptable range!)");
+                }
 
             // temp too cold
             case faultCode::ANALOG_TOO_COLD:
@@ -141,7 +146,7 @@ void handleFaults() {
                 if (HEATER_OVERRIDE) {
                     HEATER_OVERRIDE = false;
                     Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
-                    Serial.println("(One or more temperatures out of acceptable range!)");
+                    Serial.println("(One or more temperatures below acceptable range!)");
                 }
                 break;
 

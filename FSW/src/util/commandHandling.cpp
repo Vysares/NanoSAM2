@@ -258,7 +258,7 @@ void executeCommand(int command) {
         case commandCode::STREAM_PHOTO_T:
             STREAM_PHOTO = true;
             Serial.println("Command Executed - Transmitting photodiode voltages read in real time.");
-            Serial.println("PHOTO_DIR | time (ms) | SPI voltage (V) | Pin voltage (V)");
+            Serial.println("PHOTO | time (ms) | SPI voltage (V) | Pin voltage (V)");
             break;
 
         case commandCode::STREAM_PHOTO_F:
@@ -269,7 +269,7 @@ void executeCommand(int command) {
         case commandCode::PRINT_PHOTO_SINGLE:
             printPhotoEvent.invoke();
             Serial.println("Command Executed - Printing next photdiode sample.");
-            Serial.println("PHOTO_DIR | time (ms) | SPI voltage (V) | Pin voltage (V)");
+            Serial.println("PHOTO | time (ms) | SPI voltage (V) | Pin voltage (V)");
             break;
 
         // Housekeeping

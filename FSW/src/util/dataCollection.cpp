@@ -78,7 +78,7 @@ uint16_t dataProcessing() {
     if (printPhotoEvent.checkInvoked() || STREAM_PHOTO) {
         float spiVoltage = photodiode16 * ADC_VOLTAGE_RES;
         float directVoltage = analogRead(PIN_PHOTO) * TEENSY_VOLTAGE_RES;
-        Serial.print("PHOTO_SPI, ");
+        Serial.print("PHOTO, ");
         Serial.print(millis());
         Serial.print(", ");
         Serial.print(spiVoltage);
