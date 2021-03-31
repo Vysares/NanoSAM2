@@ -29,12 +29,19 @@ Here is an outline of the basic steps, but make sure to check out the video if y
 4. Plug in your microcontroller via USB
     1. Ensure that `Teensy 4.0` is the microcontroller selected in the Arduino IDE
     2. Ensure that the proper USB port is selected under the `Tools/serial` menu item in the Arduino IDE  
-5. Open the serial monitor in the Arduino IDE
-6. Upload your sketch using the arrow in the top left of the Arduino IDE
-7. Verify that information is being output in the serial monitor
-8. If you make changes to your local repository, repeat step 3 and re-upload   
+5. Upload your sketch using the arrow in the top left of the Arduino IDE  
+6. Open the `TestNS2` GUI (`GSW/testUtility/executable/TestNS2.exe`)  
+    1. This GUI allows you to connect to your Teensy, view serial communications, send commands, and save data  
+8. Scan for a serial port and then open the serial port found for your Teensy  
+9. Verify that information is being output in the serial monitor  
+10. You may want to send commands to enable or disable data streaming for the temperature sensors or photodiode  
+    1. See the command list here: https://docs.google.com/document/d/1lOvfuf9k6Ue1LnR8dghRee7cvlNQeOLKLz6XQJRnUd8/edit?usp=sharing  
+11. When you want to save data, rename the file in the bottom left of the GUI and click the save button. This saves the context of the `NS2 Output` window.  
+12. If you make changes to your local repository, close your serial connection in the GUI, repeat step 3 and re-upload   
 
 ### Compilation ###
 The FSW file structure is flexible as long as `main.cpp` is in the sketch directory and any other files are included under the directory `src`.  
 For NanoSAM II, there are utility and header files, organized into the `util` and `header` dirs respectively. Include these directories under `src` in your arduino sketches.  
 
+### Post-Processing ### 
+Use `processDataNS2.m` in the `MATLAB`directory to process the text files saved by the `TestNS2` GUI. This will generate plots of temperature and photodiode voltage. 
