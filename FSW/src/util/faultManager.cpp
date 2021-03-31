@@ -22,6 +22,7 @@
 #include "../headers/encodedFile.hpp"
 #include "../headers/commandHandling.hpp"
 #include "../headers/housekeeping.hpp"
+#include "../headers/timing.hpp"
 
 /* Module Variable Definitions */
 // fault log
@@ -30,9 +31,10 @@ static FaultReport faultLog[faultCode::COUNT];
 
 // decoded size of data on EEPROM, in terms of bytes
 const size_t EEPROM_DECODED_SIZE = faultCode::COUNT * FaultReport::MEMSIZE + PayloadData::MEMSIZE; 
+const int NUM_EEPROM_BLOCKS = (int)EEPROM.length() / EncodedFile<EEPROM_DECODED_SIZE>::MEMSIZE;
 
-// flag to indicate whether any faults were logged in the current main loop iteration
-static bool detectedFault = false; 
+// flag indicating if save to EEPROM is required
+bool saveRequired = false;
 
 /* - - - - - - Module Driver Functions - - - - - - */
 
@@ -47,9 +49,6 @@ static bool detectedFault = false;
  *  None
  */
 void logFault(int code) {
-    if (SUPPRESS_FAULTS) { return; }
-    detectedFault = true;
-
     // check if fault is valid
     if (code >= faultCode::ERR_CODE) {
         Serial.print("Warning, tried to log a fault with invalid fault code: ");
@@ -57,20 +56,24 @@ void logFault(int code) {
         return;
     }
 
-    Serial.print("Fault Logged: ");
-    Serial.println(code);
-
     // update corresponding fault report
     faultLog[code].startNum = payloadData.startCount;
     faultLog[code].timestamp = millis();
 
-    if (faultLog[code].occurrences < 255) {
-        faultLog[code].occurrences++;
-        
-        // mark for action on first and max occurrences
-        if (faultLog[code].occurrences == 1 || faultLog[code].occurrences == 255) {
-            faultLog[code].pendingAction = 1;
-        }
+    if (faultLog[code].occurrences < 255) { 
+        faultLog[code].occurrences++; 
+        saveRequired = true;
+    }
+    faultLog[code].pendingAction = true;
+    
+    // Print message
+    if (!SUPPRESS_FAULTS) {
+        Serial.print("Fault Logged: ");
+        Serial.print(code);
+        Serial.print(" (");
+        Serial.print(faultLog[code].occurrences);
+        Serial.println(")");
+        Serial.flush();
     }
 }
 
@@ -100,51 +103,69 @@ void feedWD() {
  *  None
  */
 void handleFaults() {
-    if (!detectedFault || !ACT_ON_NEW_FAULTS) { return; }
-    detectedFault = false;
+    if (SAVE_FAULTS_TO_EEPROM && saveRequired) { 
+        saveEEPROM();
+        saveRequired = false;
+    }
 
     for (int code = 0; code < faultCode::COUNT; code++) { // for each fault report...
+
+        // check if fault needs action
+        // note that the action flag is set to false even if ACT_ON_FAULTS is false. 
+        //  this prevents a buildup of multiple faults that may conflict. (e.g. the optics temp cannot be both too hot and too cold)
+        if (faultLog[code].pendingAction) { faultLog[code].pendingAction = false; }  
+        else { continue; }
         
-        if (faultLog[code].pendingAction == 1) {
-            faultLog[code].pendingAction = 0;
+        // skip all if corrective actions are disabled
+        if (!ACT_ON_FAULTS) { continue; }
+        
+        /* Take action to correct fault */
+        // TODO: Expand to include more faults
+        switch (code) {
 
-            /* Take action to correct fault */
-            // TODO: Expand to include more faults
-            switch (code) {
-                case faultCode::UNEXPECTED_RESTART:
-                    Serial.println("Unexpected restart detected. Entering safe mode.");
-                    executeCommand(commandCode::ENTER_SAFE_MODE);
-                    break;
-                
-                // temp too hot
-                case faultCode::ANALOG_TOO_HOT:
-                case faultCode::DIGITAL_TOO_HOT:
-                case faultCode::OPTICS_TOO_HOT:
-                    Serial.println("Warning - one or more temperatures above acceptable range!");
-                    executeCommand(commandCode::TURN_HEATER_OFF);
-                    break;
+            case faultCode::UNEXPECTED_RESTART:
+                scienceMode.setMode(SAFE_MODE);
+                Serial.println("Corrective Action Taken - Entering Safe Mode.");
+                Serial.println("(Unexpected restart!)");
+                break;
 
-                // tempt too cold
-                case faultCode::ANALOG_TOO_COLD:
-                case faultCode::DIGITAL_TOO_COLD:
-                case faultCode::OPTICS_TOO_COLD:
-                    Serial.println("Warning - one or more temperatures below acceptable range!");
-                    executeCommand(commandCode::TURN_HEATER_ON);
-                    break;
+            // temp too hot
+            case faultCode::ANALOG_TOO_HOT:
+            case faultCode::DIGITAL_TOO_HOT:
+            case faultCode::OPTICS_TOO_HOT:
+                if (HEATER_OVERRIDE) {
+                    HEATER_OVERRIDE = false;
+                    Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
+                    Serial.println("(One or more temperatures above acceptable range!)");
+                }
+                break;
 
-                // EEPROM corrupted
-                case faultCode::EEPROM_CORRUPTED:
-                    Serial.println("Detected corrupted data in EEPROM, entering safe mode.");
-                    executeCommand(commandCode::ENTER_SAFE_MODE);
-                    break;
+            // temp too cold
+            case faultCode::ANALOG_TOO_COLD:
+            case faultCode::DIGITAL_TOO_COLD:
+            case faultCode::OPTICS_TOO_COLD:
+                if (HEATER_OVERRIDE) {
+                    HEATER_OVERRIDE = false;
+                    Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
+                    Serial.println("(One or more temperatures below acceptable range!)");
+                }
+                break;
 
-                // if fault has no corrective action
-                default:
-                    Serial.print("Fault code ");
-                    Serial.print(code);
-                    Serial.println(" has no assigned corrective action.");
-                    break;
-            }
+            // EEPROM corrupted
+            case faultCode::EEPROM_CORRUPTED:
+                if (scienceMode.getMode() != SAFE_MODE) {
+                    Serial.println("Corrective Action Taken - Mode set to safemode.");
+                    Serial.println("(EEPROM corrupted!)");
+                    scienceMode.setMode(SAFE_MODE);
+                }
+                break;
+
+            // if fault has no corrective action
+            default:
+                // Serial.print("Fault code ");
+                // Serial.print(code);
+                // Serial.println(" has no assigned corrective action.");
+                break;
         }
     }
 }
@@ -165,7 +186,7 @@ void wipeEEPROM() {
     Serial.println(payloadData.eepromWriteCount);
 
     // Completely wipe the EEPROM
-    for (int i = 0; i < EEPROM_SIZE; i++) {
+    for (int i = 0; i < EEPROM.length(); i++) {
         EEPROM.write(i, 0);
     }
     payloadData.eepromWriteCount = 1;
@@ -190,6 +211,7 @@ void resetPersistentData() {
 
     for (int i = 0; i < faultCode::COUNT; i++) {
         faultLog[i].occurrences = 0;
+        faultLog[i].pendingAction = 0;
         faultLog[i].startNum = 1;
         faultLog[i].timestamp = 0;
     }
@@ -211,7 +233,8 @@ void recordNewStart() {
     // check if restart was unexpected
     if (payloadData.expectingRestartFlag != EXPECTING_RESTART_FLAG) {
         logFault(faultCode::UNEXPECTED_RESTART);
-        payloadData.consecutiveBadRestarts++;
+        payloadData.consecutiveBadRestarts++; 
+
     } else { // restart was expected
         payloadData.consecutiveBadRestarts = 0;
     }
@@ -246,7 +269,7 @@ void prepareForRestart() {
  * Outputs:
  *  The total number of bytes overwritten
  */
-int saveEEPROM() {
+void saveEEPROM() {
 
     payloadData.eepromWriteCount++; // one more write to EEPROM
     int bytesWritten = 0;
@@ -255,6 +278,7 @@ int saveEEPROM() {
     // copy persistent data to rawData array
     size_t bytesCopied = 0;
     memAppend(rawData, &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
+    memAppend(rawData, &payloadData.expectingRestartFlag, sizeof(payloadData.expectingRestartFlag), &bytesCopied);
     memAppend(rawData, &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
     memAppend(rawData, &payloadData.consecutiveBadRestarts, sizeof(payloadData.consecutiveBadRestarts), &bytesCopied);
     memAppend(rawData, &payloadData.recoveredMode, sizeof(payloadData.recoveredMode), &bytesCopied);
@@ -270,17 +294,22 @@ int saveEEPROM() {
     EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
     encodedData.encodeData(rawData);
 
+    // shift EEPROM address
+    //int startAddress = 0;
+    volatile int startAddress = (payloadData.eepromWriteCount % NUM_EEPROM_BLOCKS) * encodedData.MEMSIZE;
+
     // write to EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
-        int eepromAddress = PERSIST_DATA_ADDR + byteNum;
+        int eepromAddress = startAddress + byteNum;
         uint8_t dataToWrite = encodedData.getData()[byteNum];
 
-        if (EEPROM.read(eepromAddress) != dataToWrite) { // only overwrite if the byte has changed. This extends the life of the EEPROM.
-            EEPROM.write(eepromAddress, dataToWrite);
-            bytesWritten++;
+        if (eepromAddress >= EEPROM.length()) {
+            Serial.println("Tried to write EEPROM out of bounds! Write aborted.");
+            return;
         }
+        // write the data only if byte has changed
+        EEPROM.update(eepromAddress, dataToWrite);
     }
-    return bytesWritten;
 }
 
 /* - - - - - - loadEEPROM - - - - - - *
@@ -298,12 +327,13 @@ void loadEEPROM() {
     EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
     uint8_t eepromData[encodedData.MEMSIZE] = {};
 
-    // read EEPROM
+    // read data from EEPROM
+    //int startAddress = 0;
+    int startAddress = seekEEPROM(); // find latest EEPROM block
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
-        int eepromAddress = PERSIST_DATA_ADDR + byteNum;
-        eepromData[byteNum] = EEPROM.read(eepromAddress);
+        eepromData[byteNum] = EEPROM.read(startAddress + byteNum);
     }
-
+    
     // decode and scrub EEPROM data
     encodedData.fill(eepromData);
     ScrubReport scrubInfo = encodedData.scrub();
@@ -315,6 +345,7 @@ void loadEEPROM() {
     // extract system data
     size_t bytesCopied = 0;
     memExtract(encodedData.getDecodedData(), &payloadData.eepromWriteCount, sizeof(payloadData.eepromWriteCount), &bytesCopied);
+    memExtract(encodedData.getDecodedData(), &payloadData.expectingRestartFlag, sizeof(payloadData.expectingRestartFlag), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.startCount, sizeof(payloadData.startCount), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.consecutiveBadRestarts, sizeof(payloadData.consecutiveBadRestarts), &bytesCopied);
     memExtract(encodedData.getDecodedData(), &payloadData.recoveredMode, sizeof(payloadData.recoveredMode), &bytesCopied);
@@ -325,6 +356,43 @@ void loadEEPROM() {
         memExtract(encodedData.getDecodedData(), &faultLog[i].startNum, sizeof(faultLog[i].startNum), &bytesCopied);
         memExtract(encodedData.getDecodedData(), &faultLog[i].timestamp, sizeof(faultLog[i].timestamp), &bytesCopied);
     }
+}
+
+/* - - - - - - seekEEPROM - - - - - - *
+ * Usage:
+ *  Finds the address in EEPROM where persistent data was last saved
+ *  
+ * Inputs:
+ *  None
+
+ * Outputs:
+ *  Start address in EEPROM where data was most recently written
+ */
+int seekEEPROM() {
+
+    EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();
+    uint8_t eepromData[encodedData.MEMSIZE] = {};
+
+    // seek the latest EEPROM address
+    volatile int startAddress = 0;
+    uint32_t highestWriteCount = 0;
+    uint32_t writeCount = 0;
+    for (int i = 0; i < NUM_EEPROM_BLOCKS; i++) { // for each EEPROM block...
+        startAddress = i * encodedData.MEMSIZE;
+        // read data from EEPROM
+        for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
+            eepromData[byteNum] = EEPROM.read(startAddress + byteNum);
+        }
+        encodedData.fill(eepromData);
+        encodedData.scrub();
+        memcpy(&writeCount, encodedData.getDecodedData(), sizeof(writeCount));
+        
+        // compare write counts to find the highest. Higher write count corresponds to more recent write
+        if (writeCount >= highestWriteCount) {
+            highestWriteCount = writeCount;
+        }
+    }
+    return (highestWriteCount % NUM_EEPROM_BLOCKS) * encodedData.MEMSIZE;
 }
 
 /* - - - - - - resetFaultCounts - - - - - - *
@@ -340,8 +408,5 @@ void loadEEPROM() {
 void resetFaultCounts() {
     for (int i = 0; i < faultCode::COUNT; i++) {
         faultLog[i].occurrences = 0;
-        faultLog[i].pendingAction = 0;
     }
-    saveEEPROM();
 }
-

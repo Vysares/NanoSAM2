@@ -40,9 +40,9 @@ bool init() {
     // feed the dog
     feedWD();
 
-    // load persistent data from EEPROM
-    loadEEPROM();
-    recordNewStart();
+    // setup serial
+    Serial.begin(SERIAL_BAUD);
+    Serial.setTimeout(SERIAL_TIMEOUT_MSEC);
 
     // Set pin modes
     pinMode(PIN_HEAT, OUTPUT);
@@ -56,12 +56,7 @@ bool init() {
     pinMode(PIN_ANALOG_THERM, INPUT);
     pinMode(PIN_OPTICS_THERM, INPUT);
 
-    // setup serial
-    Serial.begin(SERIAL_BAUD);
-    Serial.setTimeout(SERIAL_TIMEOUT_MSEC);
-
     scienceMode.setPointingAtSun(true);
-    scienceMode.setMode(STANDBY_MODE); // this is done in the class constructor so we may not need it
 
     // lockout duration has to be initialized with a default value during compilation,
     //    set it to the proper macro from config.hpp
@@ -71,6 +66,11 @@ bool init() {
     dataProcessEvent.start();
     wdTimer.start();
     housekeepingTimer.start();
+
+    // load persistent data from EEPROM
+    loadEEPROM();
+    resetFaultCounts(); // reset fault occurence counts
+    recordNewStart();   // record the startup and check if it was expected
 
     // Sample housekeeping data
     handleHousekeeping(); 
@@ -84,10 +84,10 @@ bool init() {
  *  Main function entered on runtime, fill with NS2 functionality
  * 
  * Inputs:
- *  none
- *  
- * Outputs:
  *  None
+ *
+ * Outputs:
+ *  -1 if initialization failed, 0 if loop is safely exited
  */
 int main() {
     //carry out initializations
@@ -101,9 +101,11 @@ int main() {
      * = = = = = = Main Loop = = = = = = 
      * = = = = = = = = = = = = = = = = = */
     while(true) { // run main loop until exit command
+        mainLoopIterations++;
         
         /* ===== ALWAYS EXECUTE ===== */
         commandHandling(); // handle commands
+        handleFaults();    // handle faults
                                             
         if (housekeepingTimer.checkInvoked()) { // housekeeping
             handleHousekeeping(); 
@@ -116,7 +118,6 @@ int main() {
         /* ===== ONLY EXECTUTE DURING NORMAL OPERATION ===== */
         if (scienceMode.getMode() != SAFE_MODE) {
             scienceMemoryHandling(); // handle science data collection
-            handleFaults();          // handle faults
         }
 
          /* ===== ONLY EXECUTE ON ENTRY TO STANDBY MODE ===== */
@@ -142,6 +143,5 @@ int main() {
             break;
         }
     }
-
     return 0;
 }

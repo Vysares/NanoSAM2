@@ -112,9 +112,6 @@ void sampleHousekeepingData() {
     if (latestHkSample.digitalTemp > BOARD_TEMP_MAX_SAFE) { logFault(faultCode::DIGITAL_TOO_HOT); } // digital board temp too high
     else if (latestHkSample.digitalTemp < BOARD_TEMP_MIN_SAFE) { logFault(faultCode::DIGITAL_TOO_COLD); } // digital board temp too low
 
-    if (latestHkSample.digitalRegPG > PG_VOLTAGE_MAX_EXPECTED || latestHkSample.digitalRegPG < PG_VOLTAGE_MIN_EXPECTED) { 
-        logFault(faultCode::DREG_OUT_OF_RANGE); } // digital regulator PG signal too low
-
     // Print temperature data
     if (STREAM_TEMPERATURE) {
         Serial.print("TEMP, ");

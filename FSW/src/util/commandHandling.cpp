@@ -255,26 +255,21 @@ void executeCommand(int command) {
             else { Serial.println("Command Executed - Downlink will begin when payload enters standby."); }
             break;
 
-        case commandCode::STREAM_PHOTO_SPI_T:
-            STREAM_PHOTO_SPI = true;
-            Serial.println("Command Executed - Transmitting photodiode voltages read by SPI in real time.");
-            Serial.println("PHOTO_SPI | time (ms) | photodiode voltage (V)");
+        case commandCode::STREAM_PHOTO_T:
+            STREAM_PHOTO = true;
+            Serial.println("Command Executed - Transmitting photodiode voltages read in real time.");
+            Serial.println("PHOTO | time (ms) | SPI voltage (V) | Pin voltage (V)");
             break;
 
-        case commandCode::STREAM_PHOTO_SPI_F:
-            STREAM_PHOTO_SPI = false;
-            Serial.println("Command Executed - Stopped streaming photodiode data from SPI.");
+        case commandCode::STREAM_PHOTO_F:
+            STREAM_PHOTO = false;
+            Serial.println("Command Executed - Stopped streaming photodiode data.");
             break;
-
-        case commandCode::STREAM_PHOTO_DIRECT_T:
-            STREAM_PHOTO_DIRECT = true;
-            Serial.println("Command Executed - Transmitting photodiode voltages read by Teensy ADC in real time.");
-            Serial.println("PHOTO_DIR | time (ms) | photodiode voltage (V)");
-            break;
-
-        case commandCode::STREAM_PHOTO_DIRECT_F:
-            STREAM_PHOTO_DIRECT = false;
-            Serial.println("Command Executed - Stopped streaming photodiode data from Teensy ADC.");
+        
+        case commandCode::PRINT_PHOTO_SINGLE:
+            printPhotoEvent.invoke();
+            Serial.println("Command Executed - Printing next photdiode sample.");
+            Serial.println("PHOTO | time (ms) | SPI voltage (V) | Pin voltage (V)");
             break;
 
         // Housekeeping
@@ -326,12 +321,12 @@ void executeCommand(int command) {
         // Command Handling
         case commandCode::PAUSE_EXECUTE_COMMANDS: 
             isPaused = true;
-            Serial.println("Command Executed - Command execution paused.");
+            Serial.println("Command Executed - Command execution paused. New commands will be added to the queue.");
             break;
         
         case commandCode::RESUME_EXECUTE_COMMANDS: 
             isPaused = false;
-            Serial.println("Command Executed - Command execution resumed.");
+            Serial.println("Command Executed - Command execution resumed. Executing all queued commands.");
             break;
         
         case commandCode::CLEAR_COMMAND_QUEUE: 
@@ -379,22 +374,32 @@ void executeCommand(int command) {
         
         case commandCode::SUPPRESS_FAULTS_T:
             SUPPRESS_FAULTS = true;
-            Serial.println("Command Executed - New faults are now suppressed.");
+            Serial.println("Command Executed - Fault messages are suppressed. Faults will still be logged.");
             break;
 
         case commandCode::SUPPRESS_FAULTS_F:
             SUPPRESS_FAULTS = false;
-            Serial.println("Command Executed - New faults can now be logged.");
+            Serial.println("Command Executed - Fault messages enabled.");
             break;
 
         case commandCode::ACT_ON_FAULTS_T:
-            ACT_ON_NEW_FAULTS = true;
+            ACT_ON_FAULTS = true;
             Serial.println("Command Executed - NS2 will attempt to correct faults");
             break;
 
         case commandCode::ACT_ON_FAULTS_F:
-            ACT_ON_NEW_FAULTS = false;
+            ACT_ON_FAULTS = false;
             Serial.println("Command Executed - NS2 will NOT attempt to correct faults");
+            break;
+
+        case commandCode::SAVE_FAULTS_T:
+            SAVE_FAULTS_TO_EEPROM = true;
+            Serial.println("Command Executed - Faults will be saved to EEPROM");
+            break;
+
+        case commandCode::SAVE_FAULTS_F:
+            SAVE_FAULTS_TO_EEPROM = false;
+            Serial.println("Command Executed - Faults will NOT be saved to EEPROM");
             break;
 
         // Main Loop
@@ -430,13 +435,28 @@ void executeCommand(int command) {
  *  None
  */
 void printInfo() {
-    Serial.println("===== Status Report =====");
+    Serial.println("========== Status Report ==========");
     Serial.print("Uptime (ms): ");
     Serial.println(millis());
     Serial.print("Mode: ");
-    Serial.println(scienceMode.getMode());
+    switch (scienceMode.getMode()) {
+        case SAFE_MODE: Serial.println("Safe");
+            break;
+        case STANDBY_MODE: Serial.println("Standby");
+            break;
+        case SUNSET_MODE: Serial.println("Sunset");
+            break;
+        case PRE_SUNRISE_MODE: Serial.println("Watching for Sunrise");
+            break;
+        case SUNRISE_MODE: Serial.println("Sunrise");
+            break;
+        default: Serial.println("Mode Not Recognized!");
+            break;
+    }
     Serial.print("Total Restarts: ");
     Serial.println(payloadData.startCount);
+    Serial.print("Unexpected Restarts: ");
+    Serial.println(payloadData.consecutiveBadRestarts);
     Serial.print("EEPROM Writes: ");
     Serial.println(payloadData.eepromWriteCount);
     Serial.print("Analog Board Current (A): ");
@@ -454,8 +474,17 @@ void printInfo() {
     Serial.print("Risky Commands: ");
     if (DANGER_COMMANDS_ALLOWED) { Serial.println("Enabled"); } 
     else { Serial.println("Disabled"); }
-    Serial.print("Command Mode: ");
+    Serial.print("Command Execution: ");
     if (isPaused) { Serial.println("Queue"); } 
-    else { Serial.println("Execute immediately"); }
-    Serial.println("===== End Report =====");
+    else { Serial.println("Immediate"); }
+    Serial.print("Fault Messages: ");
+    if (SUPPRESS_FAULTS) { Serial.println("Disabled"); } 
+    else { Serial.println("Enabled"); }
+    Serial.print("Fault Correction: ");
+    if (ACT_ON_FAULTS) { Serial.println("Enabled"); } 
+    else { Serial.println("Disabled"); }
+    Serial.print("Save Faults: ");
+    if (SAVE_FAULTS_TO_EEPROM) { Serial.println("To EEPROM"); } 
+    else { Serial.println("On stack only"); }
+    Serial.println("========== End Report ==========");
 }

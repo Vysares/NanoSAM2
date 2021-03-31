@@ -11,21 +11,23 @@
 Event exitMainLoopEvent = Event();
 
 // Data Collection
-volatile bool STREAM_PHOTO_SPI = STREAM_PHOTO_SPI_INIT;
-volatile bool STREAM_PHOTO_DIRECT = STREAM_PHOTO_DIRECT_INIT;
+volatile bool STREAM_PHOTO = STREAM_PHOTO_INIT;
 RecurringEvent dataProcessEvent = RecurringEvent(SAMPLE_PERIOD_MSEC);
 Event saveBufferEvent = Event();
 TimedEvent sunriseTimerEvent = TimedEvent(WINDOW_LENGTH_MSEC);
 TimedEvent sweepTimeoutEvent = TimedEvent(SWEEP_TIMEOUT_MSEC);
 AsyncEvent downlinkEvent = AsyncEvent(MAXFILES);
 AsyncEvent scrubEvent = AsyncEvent(MAXFILES);
+Event printPhotoEvent = Event();
+
 
 // Command Handling
 volatile bool DANGER_COMMANDS_ALLOWED = DANGER_COMMANDS_ALLOWED_INIT;
 
 // Fault Mitigation
 volatile bool SUPPRESS_FAULTS = SUPPRESS_FAULTS_INIT;
-volatile bool ACT_ON_NEW_FAULTS = ACT_ON_NEW_FAULTS_INIT;
+volatile bool ACT_ON_FAULTS = ACT_ON_FAULTS_INIT;
+volatile bool SAVE_FAULTS_TO_EEPROM = SAVE_FAULTS_TO_EEPROM_INIT;
 RecurringEvent wdTimer = RecurringEvent(WD_RESET_INTERVAL_MSEC);
 
 // Housekeeping

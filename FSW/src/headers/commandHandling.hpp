@@ -25,7 +25,7 @@ namespace commandCode {
     enum Code { // all possible commands
         // commands are 1 indexed so that the default initializer can be used for the command queue
         // Info
-        INFO = 1,                       // Triggers a readback of system data
+        INFO = 1,                       // Prints a report of system data
 
         // Mode Change
         ENTER_SAFE_MODE,                // enter safemode state
@@ -37,19 +37,18 @@ namespace commandCode {
         // Data Collection
         SAVE_BUFFER,                    // saves the buffer in the next available file slot
         DOWNLINK_START,                 // start downlink at next available time
-        STREAM_PHOTO_SPI_T,             // start streaming photodiode data read from SPI
-        STREAM_PHOTO_SPI_F,             // stop streaming photodiode data read from SPI
-        STREAM_PHOTO_DIRECT_T,          // start streaming photodiode data read directly from pin 21
-        STREAM_PHOTO_DIRECT_F,          // stop streaming photodiode data read directly from pin 21
+        STREAM_PHOTO_T,                 // start streaming photodiode data
+        STREAM_PHOTO_F,                 // stop streaming photodiode data
+        PRINT_PHOTO_SINGLE,             // print a single photodiode sample
         
         // Housekeeping
         TURN_HEATER_ON,                 // turn heater on, does not override housekeeping heater control
         TURN_HEATER_OFF,                // turn heater off, does not override housekeeping heater control
-        HEATER_OVERRIDE_T,              // disables houskeeping heater control
+        HEATER_OVERRIDE_T,              // disables housekeeping heater control
         HEATER_OVERRIDE_F,              // enables housekeeping heater control
         STREAM_TEMPERATURE_T,           // start streaming temperature measurements
         STREAM_TEMPERATURE_F,           // stop streaming temperature measurements
-        CALIBRATE_OPTICS_THERM,         // take new voltage measurement at known temp for optics thermistor
+        CALIBRATE_OPTICS_THERM,         // take new voltage baseline at known temp for optics thermistor
 
         // Command Handling
         PAUSE_EXECUTE_COMMANDS,         // pause command execution
@@ -68,10 +67,12 @@ namespace commandCode {
         // Fault Mitigation
         WIPE_EEPROM,                   // completely wipes the EEPROM and then resets persistent data
         RESET_PERSISTENT_DATA,         // resets all persistent data to default values
-        SUPPRESS_FAULTS_T,             // stops new faults from being logged
-        SUPPRESS_FAULTS_F,             // allows new faults to be logged
-        ACT_ON_FAULTS_T,               // sets fault action flag so that corrective action is taken
-        ACT_ON_FAULTS_F,               // sets fault action flag so that corrective action is not taken
+        SUPPRESS_FAULTS_T,             // disables new fault messages, faults are still logged
+        SUPPRESS_FAULTS_F,             // allows new fault messages
+        ACT_ON_FAULTS_T,               // enables corrective action when new faults are detected
+        ACT_ON_FAULTS_F,               // disables corrective action when new faults are detected
+        SAVE_FAULTS_T,                 // enables saving of new faults to EEPROM
+        SAVE_FAULTS_F,                 // disables saving of new faults to EEPROM
         DISABLE_WD_RESET,              // disable watchdog reset signal, forcing a restart
 
         // System Commands
