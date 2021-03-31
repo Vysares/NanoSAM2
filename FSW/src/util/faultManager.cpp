@@ -283,7 +283,6 @@ void saveEEPROM() {
         memAppend(rawData, &faultLog[i].startNum, sizeof(faultLog[i].startNum), &bytesCopied);
         memAppend(rawData, &faultLog[i].timestamp, sizeof(faultLog[i].timestamp), &bytesCopied);
     }
-    Serial.println(bytesCopied);
 
     // encode the data
     EncodedFile<EEPROM_DECODED_SIZE> encodedData = EncodedFile<EEPROM_DECODED_SIZE>();

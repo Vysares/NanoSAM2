@@ -255,36 +255,21 @@ void executeCommand(int command) {
             else { Serial.println("Command Executed - Downlink will begin when payload enters standby."); }
             break;
 
-        case commandCode::STREAM_PHOTO_SPI_T:
-            STREAM_PHOTO_SPI = true;
-            Serial.println("Command Executed - Transmitting photodiode voltages read by SPI in real time.");
-            Serial.println("PHOTO_SPI | time (ms) | photodiode voltage (V)");
+        case commandCode::STREAM_PHOTO_T:
+            STREAM_PHOTO = true;
+            Serial.println("Command Executed - Transmitting photodiode voltages read in real time.");
+            Serial.println("PHOTO_DIR | time (ms) | SPI voltage (V) | Pin voltage (V)");
             break;
 
-        case commandCode::STREAM_PHOTO_SPI_F:
-            STREAM_PHOTO_SPI = false;
-            Serial.println("Command Executed - Stopped streaming photodiode data from SPI.");
-            break;
-
-        case commandCode::STREAM_PHOTO_DIRECT_T:
-            STREAM_PHOTO_DIRECT = true;
-            Serial.println("Command Executed - Transmitting photodiode voltages read by Teensy ADC in real time.");
-            Serial.println("PHOTO_DIR | time (ms) | photodiode voltage (V)");
-            break;
-
-        case commandCode::STREAM_PHOTO_DIRECT_F:
-            STREAM_PHOTO_DIRECT = false;
-            Serial.println("Command Executed - Stopped streaming photodiode data from Teensy ADC.");
+        case commandCode::STREAM_PHOTO_F:
+            STREAM_PHOTO = false;
+            Serial.println("Command Executed - Stopped streaming photodiode data.");
             break;
         
-        case commandCode::PRINT_PHOTO_SPI_SINGLE:
-            printEventSPI.invoke();
-            Serial.println("Command Executed - Printing next photdiode sample from SPI.");
-            break;
-
-        case commandCode::PRINT_PHOTO_DIR_SINGLE:
-            printEventDir.invoke();
-            Serial.println("Command Executed - Printing next photdiode sample from Teensy ADC.");
+        case commandCode::PRINT_PHOTO_SINGLE:
+            printPhotoEvent.invoke();
+            Serial.println("Command Executed - Printing next photdiode sample.");
+            Serial.println("PHOTO_DIR | time (ms) | SPI voltage (V) | Pin voltage (V)");
             break;
 
         // Housekeeping

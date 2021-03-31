@@ -47,7 +47,7 @@ const float TEENSY_VOLTAGE_RES = (TEENSY_HIGH_VOLTAGE - TEENSY_LOW_VOLTAGE) / TE
 const int ADC_MAX_SPEED = 2000000; // Hz, maximum SPI clock speed for ADC
 
 /* - - - - - - Serial - - - - - - */
-const int SERIAL_BAUD = 19600;       // Hz, baud rate of serial connection
+const int SERIAL_BAUD = 19200;       // Hz, baud rate of serial connection
 const int SERIAL_TIMEOUT_MSEC = 15; // milliseconds, time to wait for serial input
 
 /* - - - - - - ADCS - - - - - - */
@@ -73,10 +73,8 @@ const float ADC_MIN_VOLTAGE = 0.0;  // Volts, lower end of ADC voltage range
 const float ADC_VOLTAGE_RES = (ADC_MAX_VOLTAGE - ADC_MIN_VOLTAGE) / ADC_BINS; // volts per ADC bin
 
 // Continuous data streaming
-extern volatile bool STREAM_PHOTO_SPI;
-const bool STREAM_PHOTO_SPI_INIT = false; // whether to print photodiode samples in real time read by SPI.
-extern volatile bool STREAM_PHOTO_DIRECT;
-const bool STREAM_PHOTO_DIRECT_INIT = false; // whether to print photodiode samples in real time read by onboard ADC.
+extern volatile bool STREAM_PHOTO;
+const bool STREAM_PHOTO_INIT = false; // whether to print photodiode samples in real time.
 
 // TODO: Update this with size of actual timestamp once it is known
 const int TIMESTAMP_SIZE = sizeof(unsigned long);   // bytes needed to store timestamp
@@ -98,8 +96,7 @@ extern TimedEvent sunriseTimerEvent;
 extern TimedEvent sweepTimeoutEvent;
 extern AsyncEvent downlinkEvent;
 extern AsyncEvent scrubEvent;
-extern Event printEventSPI;
-extern Event printEventDir;
+extern Event printPhotoEvent;
 
 /* - - - - - - Command Handling Module - - - - - - */
 const int COMMAND_QUEUE_SIZE = 100;     // maximum number of commands the command queue can store.
