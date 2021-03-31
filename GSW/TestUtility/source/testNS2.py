@@ -116,13 +116,16 @@ def openSerialPort(event=None): # opens a new serial connection if port exists
     if not re.match(r"COM[0-9]+", portField.get()):
         updateLog('Port field must take the form \"COM<0-99>\"')
         return
-    
     availablePorts = list_ports.comports()
     for port in availablePorts: # if port exists, connect to it
         if portField.get() in port.description:
             teensy.close()
             teensy.port = portField.get()
-            teensy.open()
+            try:
+                teensy.open()
+            except:
+                updateLog('Found port but failed to connect.')
+                return
             updateLog('Connected to port \"' + portField.get() + '\"')
             updateLog('Make sure to close the port before reprogramming or disconnecting the Teensy.')
             sendCommand('1');
@@ -233,8 +236,9 @@ except:
 running = True;
 # configure serial connection
 teensy = serial.Serial()
+teensy.close() # probably unnecessary but just to be safe
 teensy.baudrate = 19200
-teensy.timeout = 0.05
+teensy.timeout = 10/1000
 
 # configure file
 if not os.path.isdir('SavedFiles'):
