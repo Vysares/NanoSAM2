@@ -13,7 +13,7 @@
 clear; close all; clc
 
 % config
-filename = 'biggerFile.txt'; % only the name of the file and extension
+filename = 'veryBigFile.txt'; % only the name of the file and extension
 filepath = ''; % absolute or relative path, must end in slash
 
 % initialization 
@@ -27,13 +27,11 @@ photoSpiVals = zeros(0,2);  % timestamp (s), voltage (V)
 tempVals = zeros(0,5);      
 
 % check strings
-photoDirCheck = 'PHOTO_DIR,';
-photoSpiCheck = 'PHOTO_SPI,';
+photoCheck = 'PHOTO';
 tempCheck = 'TEMP,';
 
 % guard to prevent comparisons between a char array that is too short
-minLineSize = max([strlength(photoDirCheck), strlength(photoSpiCheck),...
-    strlength(tempCheck)]);
+minLineSize = max([strlength(photoCheck), strlength(tempCheck)]);
 
 % - - - - - - - data reading - - - - - - - %
 
@@ -48,21 +46,24 @@ while (true)
     % sort line according to first string 
     if (strlength(readLine) < minLineSize)
         % ignore line if it is too short to compare
-        lineIgnored = linesIgnored + 1;
+        linesIgnored = linesIgnored + 1;
         
-    elseif (strcmp(readLine(1:strlength(photoDirCheck)), photoDirCheck))
-        % photodiode teensy measurement found
-        readLine = erase(readLine, ','); % remove commas
-        split = strsplit(readLine); % split whitespace delimited
-        photoDirVals(end+1, 1) = millisec2sec(split{2}); % timestamp (s)
-        photoDirVals(end, 2) = str2double(split{3}); % voltage
-    
-    elseif (strcmp(readLine(1:strlength(photoSpiCheck)), photoSpiCheck))
-        % photodiode SPI measurement found
-        readLine = erase(readLine, ','); % remove commas
-        split = strsplit(readLine); % split whitespace delimited
-        photoSpiVals(end+1, 1) = millisec2sec(split{2}); % timestamp (s)
-        photoSpiVals(end, 2) = str2double(split{3}); % voltage
+    elseif (strcmp(readLine(1:strlength(photoCheck)), photoCheck))
+        % check for label line (contains |)
+        if (sum(ismember(readLine, '|')) > 0)
+            linesIgnored = linesIgnored + 1;
+            
+        else      
+            % photodiode measurement found
+            readLine = erase(readLine, ','); % remove commas
+            split = strsplit(readLine); % split whitespace delimited
+            photoDirVals(end+1, 1) = millisec2sec(split{2}); % timestamp (s)
+            photoDirVals(end, 2) = str2double(split{4}); % voltage
+            
+            photoSpiVals(end+1, 1) = millisec2sec(split{2}); % timestamp (s)
+            photoSpiVals(end, 2) = str2double(split{3}); % voltage
+            
+        end
             
     elseif (strcmp(readLine(1:strlength(tempCheck)), tempCheck))
         % temp measurement found
@@ -88,8 +89,34 @@ fclose(fid);
 
 % - - - - - - - post processing - - - - - - - %
 % normalize voltage and temp timestamps to smallest timestamp
-minTimestamp = getMinTimestamp(photoSpiVals(1,1), photoDirVals(1,1),...
-    tempVals(1,1));
+
+minVec = [];
+if isempty(tempVals) % check for empty temp timestamps 
+    fprintf("Found no temperature data in %s\n", filename)
+else
+    minVec = [minVec timeVals(1,1)];
+end
+
+if isempty(photoDirVals) % check for empty teensy timestamps 
+    fprintf("Found no Teensy Photodiode data in %s\n", filename)
+else
+    minVec = [minVec photoDirVals(1,1)];
+end
+
+if isempty(photoSpiVals)% check for empty SPI timestamps 
+    fprintf("Found no SPI Photodiode data in %s\n", filename)
+else
+    minVec = [minVec photoSpiVals(1,1)];
+end
+
+if isempty(minVec) % gathered no data
+    minTimestamp = 0;
+    fprintf("WARNING: No valid data found\n")
+else
+    minTimestamp = min(minVec);
+end 
+
+% remove min timestamp offset from data
 photoSpiVals(:,1) = photoSpiVals(:,1) - minTimestamp;
 photoDirVals(:,1) = photoDirVals(:,1) - minTimestamp;
 tempVals(:,1) = tempVals(:,1) - minTimestamp;
@@ -98,6 +125,8 @@ tempVals(:,1) = tempVals(:,1) - minTimestamp;
 plotPhotodiode(photoDirVals, photoSpiVals);
 plotTemp(tempVals);
 
+fprintf("Ignored %i lines out of %i lines read", linesIgnored, linesRead)
+fprintf(" (%.3f%% ignored)", linesIgnored/linesRead*100)
 
 % end of main
 
@@ -107,11 +136,6 @@ function sec = millisec2sec(ms)
  % takes char array input, outputs a double
     sec = str2double(ms) / 1000;
 
-end
-
-function minTS = getMinTimestamp(spi, dir, temp)
- % normalizes timestamps by the smallest in the entire dataset
-    minTS = min([spi, dir, temp]);
 end
 
 function plotPhotodiode(photoDirVals, photoSpiVals)
