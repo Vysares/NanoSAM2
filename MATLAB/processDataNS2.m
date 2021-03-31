@@ -87,13 +87,14 @@ fclose(fid);
 
 
 % - - - - - - - post processing - - - - - - - %
-% normalize teensy and temp timestamps to spi timestamp
-photoDirVals(:,1) = photoDirVals(:,1) - photoSpiVals(1,1);
-tempVals(:,1) = tempVals(:,1) - photoSpiVals(1,1);
+% normalize voltage and temp timestamps to smallest timestamp
+minTimestamp = getMinTimestamp(photoSpiVals(1,1), photoDirVals(1,1),...
+    tempVals(1,1));
+photoSpiVals(:,1) = photoSpiVals(:,1) - minTimestamp;
+photoDirVals(:,1) = photoDirVals(:,1) - minTimestamp;
+tempVals(:,1) = tempVals(:,1) - minTimestamp;
 
-% normalize spi timestamp to itself
-photoSpiVals(:,1) = removeTimeOffset(photoSpiVals(:,1));
-
+% plots
 plotPhotodiode(photoDirVals, photoSpiVals);
 plotTemp(tempVals);
 
@@ -108,9 +109,9 @@ function sec = millisec2sec(ms)
 
 end
 
-function newTimeArr = removeTimeOffset(timeArr)
- % normalizes timestamps by the first entry to reduce number size
-    newTimeArr = timeArr - timeArr(1);
+function minTS = getMinTimestamp(spi, dir, temp)
+ % normalizes timestamps by the smallest in the entire dataset
+    minTS = min([spi, dir, temp]);
 end
 
 function plotPhotodiode(photoDirVals, photoSpiVals)
@@ -146,7 +147,6 @@ function plotTemp(tempVals)
     yline(60, 'g--', "linewidth", 2);
     
     legend("Optics", "Analog", "Digital", "Temp Requirement Bounds")
-    
     
     figure % for heater status
     plot(time, tempVals(:,2), "linewidth", 2)
