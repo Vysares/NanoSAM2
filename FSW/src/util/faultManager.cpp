@@ -291,7 +291,7 @@ void saveEEPROM() {
 
     // shift EEPROM address
     //int startAddress = 0;
-    volatile int startAddress = 0; //(payloadData.eepromWriteCount % NUM_EEPROM_BLOCKS) * encodedData.MEMSIZE;
+    volatile int startAddress = (payloadData.eepromWriteCount % NUM_EEPROM_BLOCKS) * encodedData.MEMSIZE;
 
     // write to EEPROM
     for (int byteNum = 0; byteNum < encodedData.MEMSIZE; byteNum++) {
