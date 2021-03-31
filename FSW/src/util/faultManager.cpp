@@ -138,6 +138,7 @@ void handleFaults() {
                     Serial.println("Corrective Action Taken - Automatic heater control re-enabled.");
                     Serial.println("(One or more temperatures above acceptable range!)");
                 }
+                break;
 
             // temp too cold
             case faultCode::ANALOG_TOO_COLD:
