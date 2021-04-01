@@ -7,6 +7,7 @@ import tkinter.messagebox
 import os
 import re
 import ctypes
+import csv
 
 # ==== setup application window ====
 root = Tk()
@@ -28,13 +29,14 @@ commandLabel = Label(commandFrame, text='Command Code : ')
 
 # log frame
 logFrame = LabelFrame(root, text='Log', padx=5, pady=5)
-log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=30, font=('Consolas',10), wrap=WORD)
+log = tkScrolledText.ScrolledText(logFrame, state='disabled', width=50, height=25, font=('Consolas',10), wrap=WORD)
 
 # monitor frame
 monitorFrame = LabelFrame(root, text='NS2 Output', padx=5, pady=5)
 monitor = tkScrolledText.ScrolledText(monitorFrame, state='disabled', width=95, height=10, font=('Consolas',10), wrap=WORD)
 autoScroll = BooleanVar(value=True)
 check_autoScroll = Checkbutton(monitorFrame, text='Auto Scroll', variable=autoScroll, onvalue=True, offvalue=False)
+tempLabel = Label(monitorFrame, text='Last Temperature Sample : ---')
 
 # file frame
 fileFrame = LabelFrame(root, text='Save to File', padx=5, pady=5)
@@ -93,6 +95,9 @@ def readSerial(): # reads incoming communication from NS2 via the open serial po
         monitor.configure(state ='normal')
         monitor.insert(END, parsedData) # insert data in monitor
         monitor.configure(state ='disabled')
+        # update temperature label
+        if 'TEMP,' in parsedData:
+            tempLabel.configure(text='Last Temperature Sample : ' + parsedData[5:-2])
         # write to backup file
         backupFile.write(parsedData)
         backupFile.flush()
@@ -212,6 +217,7 @@ monitorFrame.grid(row=0, column=1, padx=5, pady=5, sticky=N+W+E+S, rowspan=4)
 monitor.pack(expand=True, fill=BOTH)
 check_autoScroll.pack(side='left')
 button_clearOutput.pack(side='right')
+tempLabel.pack(fill=BOTH)
 
 # draw serial frame
 serialFrame.grid(row=2, column=0, padx=5, pady=5, sticky=W+E)
