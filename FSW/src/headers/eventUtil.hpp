@@ -3,7 +3,6 @@
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
-#include <vector>
 
 // Other libraries
 #include <Arduino.h>

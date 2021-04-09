@@ -7,7 +7,7 @@
 
 // Other libraries
 #include <SerialFlash.h> // for file I/O to flash modules
-#include <SPI.h> // will probably use this shortly, but it is not in use yet
+#include <SPI.h> 
 #include <TimeLib.h>
 
 // NS2 headers

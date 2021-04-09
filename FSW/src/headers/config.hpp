@@ -17,7 +17,7 @@
 
 // NS2 Headers
 #include "eventUtil.hpp"
-#include "timingClass.hpp"
+#include "scienceMode.hpp"
 
 /* = = = = = = = = = = = = = = = = = = = = = = = = = =
  * = = = = = = Configuration Declarations  = = = = = = 

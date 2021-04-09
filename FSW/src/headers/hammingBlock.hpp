@@ -3,7 +3,6 @@
 
 /* - - - - - - Includes - - - - - - */
 // C++ libraries
-#include <cstring>
 
 // Other libraries
 
