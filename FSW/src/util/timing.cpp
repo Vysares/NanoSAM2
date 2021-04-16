@@ -53,6 +53,9 @@ void ScienceMode::setMode(int newMode) {
         saveBufferEvent.invoke();
     }
     mode = newMode;
+
+    Serial.print("Mode Changed: ");
+    Serial.println(newMode);
 }
 
 bool ScienceMode::getPointingAtSun() {
